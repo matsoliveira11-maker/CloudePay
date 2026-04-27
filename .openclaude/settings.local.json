@@ -1,0 +1,25 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm install:*)",
+      "Bash(npm run:*)",
+      "Bash(npx tsc:*)",
+      "Bash(timeout 5 bash -c \"while ! nc -z localhost 5173; do sleep 1; done; echo 'Server is ready on http://localhost:5173'\")",
+      "Bash(find C:UsersmateusOneDriveImagensCloudePay -type f -name *.js -o -name *.jsx -o -name *.ts -o -name *.tsx -o -name *.vue -o -name *.php)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" http://localhost:5176/)",
+      "Bash(curl -s http://localhost:5176/)",
+      "Bash(ls:*)",
+      "Bash(__NEW_LINE_e668d6e5d18c42a8__ find:*)",
+      "Bash(__NEW_LINE_f4a2f77391914504__ find:*)",
+      "Bash(pwd:*)",
+      "Bash(cat:*)",
+      "Bash(__NEW_LINE_c9c5e8d2164837ef__ pwd:*)",
+      "Bash(type:*)",
+      "Bash(__NEW_LINE_7958aa664028bc30__ cat:*)",
+      "Bash(/tmp/tc_test.txt:*)",
+      "Read(//tmp/**)",
+      "Bash(__NEW_LINE_0f14b7abc4ecff8d__ sed:*)",
+      "Bash(curl -s http://localhost:5180/configuracoes)"
+    ]
+  }
+}
