@@ -152,24 +152,76 @@ export async function createCharge(input: {
   description?: string | null;
   payer_name?: string | null;
   payer_cpf: string;
-  payer_email: string;
+  payer_email?: string | null;
   notes?: string | null;
   charge_type?: ChargeType;
 }): Promise<Charge> {
   const fee_cents = Math.round(input.amount_cents * FEE_RATE);
   const expires_at = new Date(Date.now() + 30 * 60 * 1000).toISOString();
+  
+  // 1. BUSCAR TOKEN DO VENDEDOR
+  const { data: profile, error: profileError } = await supabase
+    .from('profiles')
+    .select('mp_access_token')
+    .eq('id', input.profile_id)
+    .single();
 
-  // Mock do código PIX copia-e-cola (até integrar gateway)
-  const pix_code = `00020126360014BR.GOV.BCB.PIX0114+5511999999999520400005303986540${(input.amount_cents / 100).toFixed(2)}5802BR5913CLOUDEPAY REAL6009SAO PAULO62070503***6304MOCK`;
+  const sellerToken = profile?.mp_access_token;
 
-  const qr_code_image = await QRCode.toDataURL(pix_code, {
-    margin: 1, width: 280, color: { dark: "#0a0a0a", light: "#ffffff" },
+  if (!sellerToken) {
+    throw new Error("Você precisa conectar sua conta do Mercado Pago nas Configurações para gerar cobranças reais.");
+  }
+
+  // Sua comissão (1%)
+  const application_fee = Number((input.amount_cents * 0.01 / 100).toFixed(2));
+
+  const response = await fetch("https://api.mercadopago.com/v1/payments", {
+    method: "POST",
+    headers: {
+      "Authorization": `Bearer ${sellerToken}`,
+      "Content-Type": "application/json",
+      "X-Idempotency-Key": `charge_${Date.now()}`
+    },
+    body: JSON.stringify({
+      transaction_amount: input.amount_cents / 100,
+      description: input.service_name || "Serviço CloudePay",
+      payment_method_id: "pix",
+      application_fee: application_fee > 0 ? application_fee : undefined,
+      payer: {
+        email: input.payer_email || "pagamento@cloudepay.app",
+        first_name: input.payer_name || "Cliente",
+        identification: {
+          type: "CPF",
+          number: input.payer_cpf.replace(/\D/g, "")
+        }
+      },
+      installments: 1
+    })
   });
 
+  if (!response.ok) {
+    const errorData = await response.json();
+    console.error("[MP Error]", errorData);
+    
+    if (errorData.message?.includes("application_fee")) {
+        throw new Error("Erro de Split: Sua conta Mercado Pago ainda não permite cobrar taxas de serviço. Tente conectar novamente ou entre em contato.");
+    }
+    
+    throw new Error("Erro ao gerar PIX real. Verifique se sua conta Mercado Pago está ativa.");
+  }
+
+  const payment = await response.json();
+  
+  const pix_code = payment.point_of_interaction.transaction_data.qr_code;
+  const qr_code_image = payment.point_of_interaction.transaction_data.qr_code_base64;
+  const gateway_id = payment.id.toString();
+
+  // 2. SALVAR NO SUPABASE
   const { data, error } = await supabase
     .from('charges')
     .insert({
       profile_id: input.profile_id,
+      gateway_id,
       amount_cents: input.amount_cents,
       fee_cents,
       net_amount_cents: input.amount_cents - fee_cents,
@@ -177,18 +229,18 @@ export async function createCharge(input: {
       description: input.description?.trim() || null,
       payer_name: input.payer_name?.trim() || null,
       payer_cpf: input.payer_cpf.replace(/\D/g, ""),
-      payer_email: input.payer_email.trim().toLowerCase(),
+      payer_email: (input.payer_email || "pagamento@cloudepay.app").trim().toLowerCase(),
       notes: input.notes?.trim() || null,
       status: "pending",
       charge_type: input.charge_type || "avulsa",
       pix_code,
-      qr_code_image,
+      qr_code_image: `data:image/png;base64,${qr_code_image}`,
       expires_at,
     })
     .select()
     .single();
 
-  if (error || !data) throw new Error(error?.message || "Erro ao criar cobrança");
+  if (error || !data) throw new Error(error?.message || "Erro ao salvar cobrança");
   return data as Charge;
 }
 
