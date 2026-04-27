@@ -345,7 +345,7 @@ function StatusBadge({ status }: { status: "pending" | "paid" | "expired" }) {
       cls: "bg-amber-500/10 text-amber-600 border-amber-500/20 dark:bg-amber-500/10 dark:text-amber-500 dark:border-amber-500/10",
     },
     expired: {
-      label: "Expirado",
+      label: "Cancelada",
       icon: XCircle,
       cls: "bg-neutral-100 text-neutral-400 border-neutral-200 dark:bg-white/5 dark:text-white/40 dark:border-white/5",
     },

@@ -254,7 +254,7 @@ function SuccessStage({ charge, profile }: { charge: Charge; profile: Profile })
       </div>
 
       <p className="mt-8 text-[10px] text-white/20 uppercase tracking-[0.2em] font-heading font-bold">
-        Comprovante enviado para seu e-mail.
+        Pagamento processado com segurança via CloudePay.
       </p>
     </motion.div>
   );

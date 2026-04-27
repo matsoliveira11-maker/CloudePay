@@ -157,7 +157,7 @@ export async function createCharge(input: {
   charge_type?: ChargeType;
 }): Promise<Charge> {
   const fee_cents = Math.round(input.amount_cents * FEE_RATE);
-  const expires_at = new Date(Date.now() + 15 * 60 * 1000).toISOString();
+  const expires_at = new Date(Date.now() + 30 * 60 * 1000).toISOString();
 
   // Mock do código PIX copia-e-cola (até integrar gateway)
   const pix_code = `00020126360014BR.GOV.BCB.PIX0114+5511999999999520400005303986540${(input.amount_cents / 100).toFixed(2)}5802BR5913CLOUDEPAY REAL6009SAO PAULO62070503***6304MOCK`;
