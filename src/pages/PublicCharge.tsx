@@ -1,17 +1,14 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import Logo from "../components/Logo";
-import Button from "../components/Button";
 import * as api from "../lib/api";
 import type { Charge, Profile } from "../lib/mockBackend";
 import { formatBRL } from "../lib/format";
 import {
-  QrCode,
   CopySimple,
   CheckCircle,
   Clock,
   ShieldCheck,
-  Warning,
 } from "phosphor-react";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -54,43 +51,26 @@ export default function PublicCharge() {
     load();
   }, [slug, chargeId]);
 
-  // Renderers
   return (
-    <div className="min-h-screen bg-[#0a0a0a] text-white selection:bg-[#9EEA6C]/30">
+    <div className="min-h-screen bg-[#0a0a0a] text-white flex flex-col items-center justify-center p-4 sm:p-6 overflow-hidden">
       <AnimatePresence mode="wait">
         {stage === "loading" && (
           <motion.div 
             key="loading"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="flex min-h-screen items-center justify-center"
-          >
-            <div className="h-10 w-10 animate-spin rounded-full border-[3px] border-white/5 border-t-[#9EEA6C]" />
-          </motion.div>
+            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+            className="h-8 w-8 animate-spin rounded-full border-2 border-white/5 border-t-[#9EEA6C]"
+          />
         )}
 
         {stage === "notfound" && (
           <motion.div 
             key="notfound"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="flex min-h-screen flex-col items-center justify-center px-6 text-center"
+            initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }}
+            className="text-center"
           >
-            <div className="mb-8 p-4 bg-white/5 rounded-full">
-              <Warning size={40} weight="duotone" className="text-amber-400" />
-            </div>
-            <Logo variant="white" />
-            <h1 className="mt-8 text-2xl font-heading font-extrabold">Link indisponível</h1>
-            <p className="mt-3 max-w-xs text-sm text-white/40 font-body leading-relaxed">
-              Esta cobrança não foi encontrada, já foi paga ou o link expirou.
-            </p>
-            <button 
-              onClick={() => nav("/")} 
-              className="mt-10 rounded-2xl bg-white px-8 py-4 text-sm font-heading font-extrabold text-[#0a0a0a] active:scale-95 transition-transform"
-            >
-              Voltar ao início
-            </button>
+            <Logo variant="white" size="sm" />
+            <h1 className="mt-6 text-xl font-heading font-extrabold text-white/40 uppercase tracking-widest">Link expirado ou inválido</h1>
+            <button onClick={() => nav("/")} className="mt-8 text-sm font-bold text-[#9EEA6C] underline underline-offset-4">Voltar ao início</button>
           </motion.div>
         )}
 
@@ -171,101 +151,82 @@ function PixStage({
 
   return (
     <motion.div 
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      className="mx-auto max-w-md flex flex-col min-h-screen px-5 py-8"
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="w-full max-w-[440px] space-y-4"
     >
-      <header className="flex flex-col items-center mb-8">
+      <div className="flex flex-col items-center gap-3 mb-2">
         <Logo size="sm" variant="white" />
-        <div className="mt-6 flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/5 border border-white/10">
-          <ShieldCheck size={14} className="text-[#9EEA6C]" weight="fill" />
-          <span className="text-[10px] font-heading font-extrabold uppercase tracking-widest text-white/60">Pagamento Seguro</span>
+        <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-white/5 border border-white/10">
+          <ShieldCheck size={12} className="text-[#9EEA6C]" />
+          <span className="text-[9px] font-heading font-extrabold uppercase tracking-widest text-white/50">Pagamento Seguro</span>
         </div>
-      </header>
+      </div>
 
-      <main className="flex-1 space-y-6">
-        {/* Card do Vendedor */}
-        <div className="relative overflow-hidden rounded-[32px] bg-white/5 border border-white/10 p-6 text-center">
-          <div className="absolute -top-12 -right-12 h-32 w-32 bg-[#9EEA6C]/10 blur-3xl rounded-full" />
-          
-          <p className="text-[10px] font-heading font-extrabold uppercase tracking-[0.15em] text-white/30 mb-2">Você está pagando para</p>
-          <h1 className="text-xl font-heading font-extrabold text-white">{profile.full_name}</h1>
-          <div className="mt-4 inline-block px-4 py-2 rounded-2xl bg-[#9EEA6C]/10 border border-[#9EEA6C]/20">
-            <span className="text-sm font-medium text-[#9EEA6C]">{charge.service_name}</span>
-          </div>
-        </div>
-
-        {/* Card do Valor + QR */}
-        <div className="rounded-[32px] bg-white/5 border border-white/10 p-6">
-          <div className="text-center mb-6">
-            <p className="text-[10px] font-heading font-extrabold uppercase tracking-[0.15em] text-white/30 mb-1">Total a pagar</p>
-            <div className="text-4xl font-heading font-black text-white tracking-tight">
+      {/* O CARD PREMIUM */}
+      <div className="relative overflow-hidden rounded-[32px] bg-gradient-to-br from-[#121212] to-[#080808] border border-white/10 p-6 sm:p-8 shadow-2xl">
+        <div className="absolute top-0 right-0 h-32 w-32 bg-[#9EEA6C]/5 blur-3xl rounded-full" />
+        
+        <div className="flex justify-between items-start gap-4">
+          <div className="flex-1 min-w-0">
+            <p className="text-[10px] font-heading font-extrabold uppercase tracking-[0.2em] text-white/30 mb-2">Payment Request</p>
+            <h1 className="text-[24px] sm:text-[28px] font-heading font-black leading-[1.1] truncate mb-4">{charge.service_name}</h1>
+            
+            <p className="text-[10px] font-heading font-extrabold uppercase tracking-[0.2em] text-white/30 mb-1">Amount Due</p>
+            <div className="text-[38px] sm:text-[44px] font-heading font-black text-white leading-none tracking-tight">
               {formatBRL(charge.amount_cents)}
             </div>
+            
+            <p className="mt-6 text-[11px] font-medium text-white/50 truncate">
+              Para: <span className="text-white font-bold">{profile.full_name}</span>
+            </p>
           </div>
 
-          <div className="relative mx-auto w-fit p-3 bg-white rounded-3xl mb-6 shadow-[0_0_40px_rgba(158,234,108,0.15)]">
-            <img
-              src={charge.qr_code_image}
-              alt="QR Code PIX"
-              className="h-56 w-56 sm:h-64 sm:w-64"
-            />
-            {remaining < 300 && (
-              <div className="absolute inset-0 flex items-center justify-center bg-white/90 rounded-3xl opacity-0 hover:opacity-100 transition-opacity">
-                 <p className="text-xs font-bold text-black">Aproxime o celular</p>
-              </div>
-            )}
-          </div>
-
-          <div className="flex items-center justify-center gap-3 py-3 border-t border-white/5">
-            <Clock size={16} className="text-amber-400" />
-            <span className="text-sm font-heading font-bold text-white/80">
-              Expira em <span className="text-amber-400">{mm}:{ss}</span>
-            </span>
+          <div className="shrink-0 flex flex-col items-center gap-3">
+            <div className="p-2 bg-white rounded-2xl shadow-lg">
+              <img src={charge.qr_code_image} alt="QR Code" className="h-28 w-28 sm:h-32 sm:w-32" />
+            </div>
           </div>
         </div>
 
-        {/* Botão Copiar */}
-        <button
-          onClick={copyPix}
-          className={`relative w-full overflow-hidden rounded-2xl py-4 transition-all active:scale-[0.98] ${
-            copied ? "bg-emerald-500" : "bg-[#9EEA6C]"
-          }`}
-        >
-          <div className="relative z-10 flex items-center justify-center gap-3">
-            {copied ? (
-              <>
-                <CheckCircle size={20} weight="bold" className="text-white" />
-                <span className="font-heading font-extrabold text-white">Código Copiado!</span>
-              </>
-            ) : (
-              <>
-                <CopySimple size={20} weight="bold" className="text-[#0a0a0a]" />
-                <span className="font-heading font-extrabold text-[#0a0a0a]">Copiar Código PIX</span>
-              </>
-            )}
+        <div className="mt-8 pt-6 border-t border-white/5 flex items-center justify-between">
+          <div className="flex items-center gap-2 text-amber-400">
+            <Clock size={16} weight="bold" />
+            <span className="text-xs font-heading font-black uppercase tracking-widest">{mm}:{ss}</span>
           </div>
-        </button>
+          <p className="text-[10px] font-heading font-extrabold uppercase tracking-[0.15em] text-white/20">CloudePay Network</p>
+        </div>
+      </div>
 
-        <p className="text-center text-[11px] text-white/30 px-6 leading-relaxed">
-          Após o pagamento, esta página será atualizada automaticamente com seu comprovante.
+      {/* BOTÃO COPIAR - ESTILO CARD */}
+      <button
+        onClick={copyPix}
+        className={`w-full rounded-2xl py-4 flex items-center justify-center gap-3 transition-all active:scale-[0.98] shadow-lg ${
+          copied ? "bg-emerald-500" : "bg-[#9EEA6C]"
+        }`}
+      >
+        {copied ? (
+          <>
+            <CheckCircle size={20} weight="bold" className="text-white" />
+            <span className="font-heading font-black text-white uppercase tracking-wider text-xs">Copiado com Sucesso</span>
+          </>
+        ) : (
+          <>
+            <CopySimple size={20} weight="bold" className="text-[#0a0a0a]" />
+            <span className="font-heading font-black text-[#0a0a0a] uppercase tracking-wider text-xs">Copiar Código PIX</span>
+          </>
+        )}
+      </button>
+
+      <div className="text-center">
+        <p className="text-[10px] text-white/20 uppercase tracking-[0.2em] font-heading font-bold">
+          Aguardando Confirmação Automática...
         </p>
-
-        {/* Demonstração */}
-        <div className="mt-8 pt-8 border-t border-white/5 text-center">
-          <p className="text-[10px] font-heading font-extrabold uppercase tracking-widest text-white/20 mb-4">Modo Teste</p>
-          <button 
-            onClick={simulate}
-            className="text-[11px] font-bold text-[#9EEA6C]/60 hover:text-[#9EEA6C] transition-colors underline decoration-[#9EEA6C]/20 underline-offset-4"
-          >
-            Simular confirmação de pagamento
-          </button>
-        </div>
-      </main>
-
-      <footer className="mt-12 text-center">
-        <p className="text-[10px] text-white/20 font-heading font-bold uppercase tracking-widest">Powered by CloudePay</p>
-      </footer>
+        
+        <button onClick={simulate} className="mt-8 text-[9px] font-heading font-extrabold text-white/10 uppercase tracking-widest hover:text-[#9EEA6C]/40 transition-colors">
+          Simular Pagamento (Demo)
+        </button>
+      </div>
     </motion.div>
   );
 }
@@ -275,45 +236,26 @@ function PixStage({
 function SuccessStage({ charge, profile }: { charge: Charge; profile: Profile }) {
   return (
     <motion.div 
-      initial={{ opacity: 0, scale: 0.95 }}
-      animate={{ opacity: 1, scale: 1 }}
-      className="mx-auto max-w-md flex flex-col min-h-screen px-5 py-8"
+      initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }}
+      className="w-full max-w-[400px] text-center"
     >
-      <header className="flex flex-col items-center mb-10">
-        <Logo size="sm" variant="white" />
-      </header>
-
-      <main className="flex-1">
-        <div className="relative overflow-hidden rounded-[40px] bg-white p-8 text-center text-[#0a0a0a] shadow-2xl">
-          <div className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-emerald-500">
-            <CheckCircle size={44} weight="fill" className="text-white" />
-          </div>
-          
-          <h1 className="text-3xl font-heading font-black tracking-tight">Sucesso!</h1>
-          <p className="mt-2 text-sm font-body text-neutral-500">Pagamento confirmado.</p>
-          
-          <div className="my-8 h-px bg-neutral-100" />
-          
-          <div className="space-y-4">
-            <ReceiptRow label="Valor" value={formatBRL(charge.amount_cents)} />
-            <ReceiptRow label="Para" value={profile.full_name} />
-            <ReceiptRow label="Serviço" value={charge.service_name} />
-            <ReceiptRow label="Protocolo" value={charge.receipt_number?.slice(0, 8) ?? "—"} />
-          </div>
-
-          <button 
-            onClick={() => window.print()}
-            className="mt-10 w-full rounded-2xl border border-neutral-200 py-4 text-xs font-heading font-extrabold uppercase tracking-widest hover:bg-neutral-50 transition-colors"
-          >
-            Imprimir Comprovante
-          </button>
+      <div className="mb-8">
+        <div className="mx-auto w-20 h-20 rounded-full bg-[#9EEA6C] flex items-center justify-center mb-6 shadow-[0_0_40px_rgba(158,234,108,0.3)]">
+          <CheckCircle size={44} weight="bold" className="text-[#0a0a0a]" />
         </div>
+        <h1 className="text-3xl font-heading font-black mb-2 uppercase tracking-tight text-white">Pago!</h1>
+        <p className="text-white/40 text-sm font-medium">Obrigado pelo seu pagamento.</p>
+      </div>
 
-        <p className="mt-10 text-center text-[11px] text-white/30 leading-relaxed">
-          Um comprovante detalhado foi enviado para <br/>
-          <span className="text-white/60 font-bold">{charge.payer_email}</span>
-        </p>
-      </main>
+      <div className="rounded-[32px] bg-white/5 border border-white/10 p-6 space-y-4">
+        <ReceiptRow label="Valor" value={formatBRL(charge.amount_cents)} />
+        <ReceiptRow label="Para" value={profile.full_name} />
+        <ReceiptRow label="Serviço" value={charge.service_name} />
+      </div>
+
+      <p className="mt-8 text-[10px] text-white/20 uppercase tracking-[0.2em] font-heading font-bold">
+        Comprovante enviado para seu e-mail.
+      </p>
     </motion.div>
   );
 }
@@ -321,8 +263,8 @@ function SuccessStage({ charge, profile }: { charge: Charge; profile: Profile })
 function ReceiptRow({ label, value }: { label: string; value: string }) {
   return (
     <div className="flex items-center justify-between gap-4">
-      <span className="text-[11px] font-heading font-extrabold uppercase tracking-widest text-neutral-400">{label}</span>
-      <span className="text-sm font-heading font-extrabold text-[#0a0a0a]">{value}</span>
+      <span className="text-[10px] font-heading font-extrabold uppercase tracking-widest text-white/30">{label}</span>
+      <span className="text-sm font-heading font-bold text-white">{value}</span>
     </div>
   );
 }
