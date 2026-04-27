@@ -217,25 +217,23 @@ export async function getCharge(id: string): Promise<Charge | null> {
 }
 
 export async function getChargeBySlugAndId(slug: string, chargeId: string): Promise<Charge | null> {
-  // Primeiro buscamos a cobrança
-  const { data: charge, error: chargeError } = await supabase
+  // Buscamos a cobrança e o slug do perfil em uma única chamada eficiente
+  const { data, error } = await supabase
     .from('charges')
-    .select('*')
+    .select('*, profiles(slug)')
     .eq('id', chargeId)
     .single();
 
-  if (chargeError || !charge) return null;
+  if (error || !data) return null;
 
-  // Depois verificamos se o perfil dessa cobrança bate com o slug do link
-  const { data: profile, error: profileError } = await supabase
-    .from('profiles')
-    .select('slug')
-    .eq('id', charge.profile_id)
-    .single();
+  // Verificamos se o slug do perfil bate com o slug da URL
+  // (Usamos uma verificação mais flexível para evitar erros de case-sensitive)
+  const profileSlug = (data as any).profiles?.slug;
+  if (!profileSlug || profileSlug.toLowerCase() !== slug.toLowerCase()) {
+    return null;
+  }
 
-  if (profileError || !profile || profile.slug !== slug) return null;
-
-  return charge as Charge;
+  return data as Charge;
 }
 
 export async function listChargesByProfile(profile_id: string): Promise<Charge[]> {
