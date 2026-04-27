@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import Shell from "../components/Shell";
 import { useAuth } from "../context/AuthContext";
 import * as api from "../lib/api";
-import type { Product } from "../lib/types";
+import type { Charge, Product } from "../lib/api";
 import { formatBRL, maskBRLInput, parseBRLToCents, formatDateTime } from "../lib/format";
 import { sanitizeText } from "../lib/validators";
 import PaymentShareCard from "../components/PaymentShareCard";

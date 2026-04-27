@@ -35,7 +35,7 @@ export type ChargeType = "avulsa" | "qr_code_fixo";
 export interface Charge {
   id: string;
   profile_id: string;
-  slug: string;                 // slug do profissional
+  slug?: string;                 // slug do profissional (opcional na cobrança direta)
   gateway_id: string;
   amount_cents: number;
   fee_cents: number;            // 2%
