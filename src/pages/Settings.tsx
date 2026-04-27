@@ -393,9 +393,9 @@ export default function Settings() {
               <dt className="text-[11px] font-bold uppercase tracking-widest text-neutral-400 dark:text-white/20">Nome Titular</dt>
               <dd className="mt-1 font-heading font-bold text-neutral-900 dark:text-white">{profile?.full_name}</dd>
             </div>
-            <div className="rounded-2xl bg-neutral-50 dark:bg-white/[0.02] p-4 border border-neutral-100 dark:border-white/[0.03]">
+            <div className="rounded-2xl bg-neutral-50 dark:bg-white/[0.02] p-4 border border-neutral-100 dark:border-white/[0.03] overflow-hidden">
               <dt className="text-[11px] font-bold uppercase tracking-widest text-neutral-400 dark:text-white/20">E-mail de Acesso</dt>
-              <dd className="mt-1 font-heading font-bold text-neutral-900 dark:text-white">{profile?.email}</dd>
+              <dd className="mt-1 font-heading font-bold text-neutral-900 dark:text-white break-all">{profile?.email}</dd>
             </div>
           </div>
         </section>

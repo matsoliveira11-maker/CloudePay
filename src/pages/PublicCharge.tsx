@@ -23,23 +23,28 @@ export default function PublicCharge() {
 
   useEffect(() => {
     async function load() {
-      if (!slug || !chargeId) { setStage("notfound"); return; }
-      const [p, c] = await Promise.all([
-        api.getProfileBySlug(slug),
-        api.getChargeBySlugAndId(slug, chargeId),
-      ]);
-      
-      if (!p || !c) { setStage("notfound"); return; }
-      
-      setProfile(p);
-      setCharge(c);
-      
-      if (c.status === "paid") {
-        setStage("success");
-      } else if (c.status === "expired") {
-        setStage("notfound"); // Podemos criar um stage "expired" depois se quiser
-      } else {
-        setStage("paying");
+      try {
+        if (!slug || !chargeId) { setStage("notfound"); return; }
+        const [p, c] = await Promise.all([
+          api.getProfileBySlug(slug),
+          api.getChargeBySlugAndId(slug, chargeId),
+        ]);
+        
+        if (!p || !c) { setStage("notfound"); return; }
+        
+        setProfile(p);
+        setCharge(c);
+        
+        if (c.status === "paid") {
+          setStage("success");
+        } else if (c.status === "expired") {
+          setStage("notfound");
+        } else {
+          setStage("paying");
+        }
+      } catch (err) {
+        console.error("Erro ao carregar cobrança:", err);
+        setStage("notfound");
       }
     }
     load();
@@ -48,13 +53,15 @@ export default function PublicCharge() {
   // Not found
   if (stage === "notfound") {
     return (
-      <div className="flex min-h-screen flex-col items-center justify-center bg-neutral-50 px-5 text-center">
-        <Logo />
-        <h1 className="mt-8 text-2xl font-bold text-neutral-900">Cobrança não encontrada</h1>
-        <p className="mt-2 max-w-sm text-sm text-neutral-600">
-          Esse link de pagamento não existe, já expirou ou já foi pago.
+      <div className="flex min-h-screen flex-col items-center justify-center bg-white px-5 text-center">
+        <Logo variant="black" />
+        <h1 className="mt-8 text-2xl font-heading font-extrabold text-neutral-900">Link indisponível</h1>
+        <p className="mt-2 max-w-sm text-sm text-neutral-500 font-body">
+          Esta cobrança não foi encontrada, já foi paga ou o link expirou.
         </p>
-        <Button onClick={() => nav("/")} className="mt-6">Ir para o início</Button>
+        <Button onClick={() => nav("/")} className="mt-8 px-8 py-3 bg-neutral-900 text-white rounded-xl font-bold">
+          Voltar ao início
+        </Button>
       </div>
     );
   }
@@ -148,7 +155,7 @@ function PixStage({
     <div className="min-h-screen bg-neutral-50">
       <header className="border-b border-neutral-200 bg-white">
         <div className="mx-auto flex max-w-md items-center justify-center px-5 py-4">
-          <Logo size="sm" />
+          <Logo size="sm" variant="black" />
         </div>
       </header>
 
@@ -233,7 +240,7 @@ function SuccessStage({ charge, profile }: { charge: Charge; profile: Profile })
     <div className="min-h-screen bg-neutral-50">
       <header className="border-b border-neutral-200 bg-white">
         <div className="mx-auto flex max-w-md items-center justify-center px-5 py-4">
-          <Logo size="sm" />
+          <Logo size="sm" variant="black" />
         </div>
       </header>
 

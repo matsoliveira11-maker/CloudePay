@@ -217,16 +217,25 @@ export async function getCharge(id: string): Promise<Charge | null> {
 }
 
 export async function getChargeBySlugAndId(slug: string, chargeId: string): Promise<Charge | null> {
-  // Nota: O slug pertence ao perfil. No banco real, verificamos se a cobrança pertence a um perfil com esse slug.
-  const { data, error } = await supabase
+  // Primeiro buscamos a cobrança
+  const { data: charge, error: chargeError } = await supabase
     .from('charges')
-    .select('*, profiles!inner(slug)')
+    .select('*')
     .eq('id', chargeId)
-    .eq('profiles.slug', slug)
     .single();
 
-  if (error || !data) return null;
-  return data as Charge;
+  if (chargeError || !charge) return null;
+
+  // Depois verificamos se o perfil dessa cobrança bate com o slug do link
+  const { data: profile, error: profileError } = await supabase
+    .from('profiles')
+    .select('slug')
+    .eq('id', charge.profile_id)
+    .single();
+
+  if (profileError || !profile || profile.slug !== slug) return null;
+
+  return charge as Charge;
 }
 
 export async function listChargesByProfile(profile_id: string): Promise<Charge[]> {

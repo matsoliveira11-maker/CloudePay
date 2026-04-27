@@ -50,37 +50,22 @@ export default function PaymentShareCard({ charge, paymentUrl }: PaymentShareCar
     if (!cardRef.current) return;
 
     try {
-      // Capture the element as canvas
       const canvas = await html2canvas(cardRef.current, {
-        scale: 3, // Even higher resolution for premium feel
+        scale: 3,
         useCORS: true,
         allowTaint: true,
-        backgroundColor: null, // Transparent background to allow card rounded corners
+        backgroundColor: null,
         logging: false,
-        onclone: (clonedDoc) => {
-          // You can modify the cloned element here if needed for download
-          const el = clonedDoc.querySelector('.download-card-target') as HTMLElement;
-          if (el) {
-            el.style.borderRadius = '24px';
-          }
-        }
       });
 
-      // Convert to blob and download
-      canvas.toBlob((blob) => {
-        if (!blob) return;
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `cloudepay-cobranca-${charge.id}.png`;
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        URL.revokeObjectURL(url);
-      }, 'image/png', 1.0);
+      const dataUrl = canvas.toDataURL("image/png", 1.0);
+      const link = document.createElement("a");
+      link.download = `cloudepay-cobranca-${charge.id.slice(0, 8)}.png`;
+      link.href = dataUrl;
+      link.click();
     } catch (err) {
       console.error('Erro ao baixar imagem do card:', err);
-      // Better SVG fallback if html2canvas fails
+      // Fallback SVG
       const svg = `<?xml version="1.0" encoding="UTF-8"?>
 <svg xmlns="http://www.w3.org/2000/svg" width="800" height="450" viewBox="0 0 800 450">
   <defs>
@@ -90,40 +75,31 @@ export default function PaymentShareCard({ charge, paymentUrl }: PaymentShareCar
     </linearGradient>
   </defs>
   <rect width="800" height="450" rx="24" ry="24" fill="url(#cardGrad)" stroke="rgba(255,255,255,0.1)" stroke-width="1"/>
-  
   <g transform="translate(50, 50)">
     <text fill="#ffffff" font-size="28" font-family="Arial, sans-serif" font-weight="900">CloudePay</text>
-    
     <g transform="translate(0, 80)">
       <text fill="rgba(255,255,255,0.35)" font-size="12" font-family="Arial, sans-serif" font-weight="700" letter-spacing="2">PAYMENT REQUEST</text>
       <text y="40" fill="#ffffff" font-size="32" font-family="Arial, sans-serif" font-weight="800">${charge.service_name}</text>
     </g>
-    
     <g transform="translate(0, 180)">
       <text fill="rgba(255,255,255,0.35)" font-size="12" font-family="Arial, sans-serif" font-weight="700" letter-spacing="2">AMOUNT DUE</text>
       <text y="55" fill="#ffffff" font-size="52" font-family="Arial, sans-serif" font-weight="900">${formatBRL(charge.amount_cents)}</text>
     </g>
-    
-    ${charge.payer_name ? `<text y="280" fill="rgba(255,255,255,0.7)" font-size="16" font-family="Arial, sans-serif">Cliente: ${charge.payer_name}</text>` : ''}
-    
     <g transform="translate(0, 320)">
       <rect width="450" height="40" rx="8" fill="rgba(0,0,0,0.2)" />
-      <text x="15" y="25" fill="rgba(255,255,255,0.4)" font-size="14" font-family="monospace">${window.location.origin}/${profile.slug}/pagar</text>
+      <text x="15" y="25" fill="rgba(255,255,255,0.4)" font-size="12" font-family="monospace">${paymentUrl}</text>
     </g>
   </g>
-  
   <g transform="translate(520, 80)">
     <rect width="230" height="230" rx="24" fill="#ffffff" />
     <image href="${charge.qr_code_image}" x="15" y="15" width="200" height="200" />
   </g>
 </svg>`;
-
       const blob = new Blob([svg], { type: "image/svg+xml;charset=utf-8" });
       const url = URL.createObjectURL(blob);
-
       const a = document.createElement("a");
       a.href = url;
-      a.download = `cloudepay-cobranca-${charge.id}.svg`;
+      a.download = `cloudepay-cobranca-${charge.id.slice(0, 8)}.svg`;
       a.click();
       URL.revokeObjectURL(url);
     }
