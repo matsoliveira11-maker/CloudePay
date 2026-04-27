@@ -17,12 +17,11 @@ export default function Settings() {
   const [loading, setLoading] = useState(false);
 
   const handleConnectMP = () => {
-    const clientId = import.meta.env.VITE_MP_CLIENT_ID;
-    const redirectUri = encodeURIComponent(import.meta.env.VITE_REDIRECT_URI);
+    const clientId = "234353031012842";
+    const redirectUri = encodeURIComponent("https://cloudepay.vercel.app/auth/callback");
     
-    // URL de autorização do Mercado Pago
-    // state: passamos o ID do perfil para saber quem está conectando no retorno
-    const authUrl = `https://auth.mercadopago.com.br/authorization?client_id=${clientId}&response_type=code&platform_id=mp&redirect_uri=${redirectUri}&state=${profile?.id}`;
+    // URL simplificada
+    const authUrl = `https://auth.mercadopago.com.br/authorization?client_id=${clientId}&response_type=code&redirect_uri=${redirectUri}&state=${profile?.id}`;
     
     window.location.href = authUrl;
   };
