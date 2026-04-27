@@ -9,7 +9,11 @@ import {
   QrCode,
   CopySimple,
   CheckCircle,
+  Clock,
+  ShieldCheck,
+  Warning,
 } from "phosphor-react";
+import { motion, AnimatePresence } from "framer-motion";
 
 type Stage = "loading" | "paying" | "success" | "notfound";
 
@@ -50,45 +54,62 @@ export default function PublicCharge() {
     load();
   }, [slug, chargeId]);
 
-  // Not found
-  if (stage === "notfound") {
-    return (
-      <div className="flex min-h-screen flex-col items-center justify-center bg-white px-5 text-center">
-        <Logo variant="black" />
-        <h1 className="mt-8 text-2xl font-heading font-extrabold text-neutral-900">Link indisponível</h1>
-        <p className="mt-2 max-w-sm text-sm text-neutral-500 font-body">
-          Esta cobrança não foi encontrada, já foi paga ou o link expirou.
-        </p>
-        <Button onClick={() => nav("/")} className="mt-8 px-8 py-3 bg-neutral-900 text-white rounded-xl font-bold">
-          Voltar ao início
-        </Button>
-      </div>
-    );
-  }
+  // Renderers
+  return (
+    <div className="min-h-screen bg-[#0a0a0a] text-white selection:bg-[#9EEA6C]/30">
+      <AnimatePresence mode="wait">
+        {stage === "loading" && (
+          <motion.div 
+            key="loading"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="flex min-h-screen items-center justify-center"
+          >
+            <div className="h-10 w-10 animate-spin rounded-full border-[3px] border-white/5 border-t-[#9EEA6C]" />
+          </motion.div>
+        )}
 
-  // Loading
-  if (stage === "loading" || !profile || !charge) {
-    return (
-      <div className="flex min-h-screen items-center justify-center bg-neutral-50">
-        <div className="h-8 w-8 animate-spin rounded-full border-4 border-brand-200 border-t-brand-600" />
-      </div>
-    );
-  }
+        {stage === "notfound" && (
+          <motion.div 
+            key="notfound"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="flex min-h-screen flex-col items-center justify-center px-6 text-center"
+          >
+            <div className="mb-8 p-4 bg-white/5 rounded-full">
+              <Warning size={40} weight="duotone" className="text-amber-400" />
+            </div>
+            <Logo variant="white" />
+            <h1 className="mt-8 text-2xl font-heading font-extrabold">Link indisponível</h1>
+            <p className="mt-3 max-w-xs text-sm text-white/40 font-body leading-relaxed">
+              Esta cobrança não foi encontrada, já foi paga ou o link expirou.
+            </p>
+            <button 
+              onClick={() => nav("/")} 
+              className="mt-10 rounded-2xl bg-white px-8 py-4 text-sm font-heading font-extrabold text-[#0a0a0a] active:scale-95 transition-transform"
+            >
+              Voltar ao início
+            </button>
+          </motion.div>
+        )}
 
-  // Paying
-  if (stage === "paying") {
-    return (
-      <PixStage
-        charge={charge}
-        profile={profile}
-        onPaid={(c) => { setCharge(c); setStage("success"); }}
-        onExpired={() => setStage("notfound")}
-      />
-    );
-  }
+        {stage === "paying" && charge && profile && (
+          <PixStage
+            key="paying"
+            charge={charge}
+            profile={profile}
+            onPaid={(c) => { setCharge(c); setStage("success"); }}
+            onExpired={() => setStage("notfound")}
+          />
+        )}
 
-  // Success
-  return <SuccessStage charge={charge} profile={profile} />;
+        {stage === "success" && charge && profile && (
+          <SuccessStage key="success" charge={charge} profile={profile} />
+        )}
+      </AnimatePresence>
+    </div>
+  );
 }
 
 // ---------- PIX (pagando) ----------
@@ -106,13 +127,11 @@ function PixStage({
   const [now, setNow] = useState(Date.now());
   const intervalRef = useRef<number | null>(null);
 
-  // Tick para o contador
   useEffect(() => {
     const t = window.setInterval(() => setNow(Date.now()), 1000);
     return () => clearInterval(t);
   }, []);
 
-  // Polling a cada 5s
   useEffect(() => {
     intervalRef.current = window.setInterval(async () => {
       const c = await api.getCharge(charge.id);
@@ -128,8 +147,7 @@ function PixStage({
       }
     }, 5000);
     return () => { if (intervalRef.current) clearInterval(intervalRef.current); };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [charge.id]);
+  }, [charge.id, onPaid, onExpired]);
 
   const remaining = useMemo(() => {
     const ms = new Date(charge.expires_at).getTime() - now;
@@ -152,84 +170,103 @@ function PixStage({
   }
 
   return (
-    <div className="min-h-screen bg-neutral-50">
-      <header className="border-b border-neutral-200 bg-white">
-        <div className="mx-auto flex max-w-md items-center justify-center px-5 py-4">
-          <Logo size="sm" variant="black" />
+    <motion.div 
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      className="mx-auto max-w-md flex flex-col min-h-screen px-5 py-8"
+    >
+      <header className="flex flex-col items-center mb-8">
+        <Logo size="sm" variant="white" />
+        <div className="mt-6 flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/5 border border-white/10">
+          <ShieldCheck size={14} className="text-[#9EEA6C]" weight="fill" />
+          <span className="text-[10px] font-heading font-extrabold uppercase tracking-widest text-white/60">Pagamento Seguro</span>
         </div>
       </header>
 
-      <main className="mx-auto max-w-md px-5 py-6 sm:py-8 space-y-5">
-        {/* Info do profissional */}
-        <div className="rounded-2xl border border-neutral-200 bg-white p-5 text-center shadow-sm">
-          <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-brand-50">
-            <QrCode size={28} weight="duotone" className="text-brand-600" />
-          </div>
-          <h1 className="mt-3 text-lg font-bold text-neutral-900">{profile.full_name}</h1>
-          <p className="text-sm font-medium text-brand-700">{charge.service_name}</p>
-          {charge.description && <p className="mt-1 text-sm text-neutral-500">{charge.description}</p>}
-          {charge.payer_name && (
-            <p className="mt-1 text-xs text-neutral-400">Para: {charge.payer_name}</p>
-          )}
-        </div>
-
-        {/* Valor + status */}
-        <div className="rounded-2xl border border-neutral-200 bg-white p-5 text-center shadow-sm">
-          <div className="text-3xl font-bold text-neutral-900">{formatBRL(charge.amount_cents)}</div>
-          <div className="mt-3 inline-flex items-center gap-2 rounded-full bg-amber-50 px-3 py-1 text-xs font-semibold text-amber-700">
-            <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-amber-500" />
-            Aguardando pagamento • {mm}:{ss}
+      <main className="flex-1 space-y-6">
+        {/* Card do Vendedor */}
+        <div className="relative overflow-hidden rounded-[32px] bg-white/5 border border-white/10 p-6 text-center">
+          <div className="absolute -top-12 -right-12 h-32 w-32 bg-[#9EEA6C]/10 blur-3xl rounded-full" />
+          
+          <p className="text-[10px] font-heading font-extrabold uppercase tracking-[0.15em] text-white/30 mb-2">Você está pagando para</p>
+          <h1 className="text-xl font-heading font-extrabold text-white">{profile.full_name}</h1>
+          <div className="mt-4 inline-block px-4 py-2 rounded-2xl bg-[#9EEA6C]/10 border border-[#9EEA6C]/20">
+            <span className="text-sm font-medium text-[#9EEA6C]">{charge.service_name}</span>
           </div>
         </div>
 
-        {/* QR + copia-e-cola */}
-        <div className="rounded-2xl border border-neutral-200 bg-white p-5 shadow-sm">
-          <ol className="mb-4 space-y-2 text-sm text-neutral-700">
-            <li><span className="font-semibold">1.</span> Abra o app do seu banco</li>
-            <li><span className="font-semibold">2.</span> Escaneie o QR ou cole o código</li>
-            <li><span className="font-semibold">3.</span> Confirme o pagamento</li>
-          </ol>
+        {/* Card do Valor + QR */}
+        <div className="rounded-[32px] bg-white/5 border border-white/10 p-6">
+          <div className="text-center mb-6">
+            <p className="text-[10px] font-heading font-extrabold uppercase tracking-[0.15em] text-white/30 mb-1">Total a pagar</p>
+            <div className="text-4xl font-heading font-black text-white tracking-tight">
+              {formatBRL(charge.amount_cents)}
+            </div>
+          </div>
 
-          <div className="flex justify-center">
+          <div className="relative mx-auto w-fit p-3 bg-white rounded-3xl mb-6 shadow-[0_0_40px_rgba(158,234,108,0.15)]">
             <img
               src={charge.qr_code_image}
               alt="QR Code PIX"
-              className="h-64 w-64 rounded-xl border border-neutral-200"
+              className="h-56 w-56 sm:h-64 sm:w-64"
             />
+            {remaining < 300 && (
+              <div className="absolute inset-0 flex items-center justify-center bg-white/90 rounded-3xl opacity-0 hover:opacity-100 transition-opacity">
+                 <p className="text-xs font-bold text-black">Aproxime o celular</p>
+              </div>
+            )}
           </div>
 
-          <div className="mt-5">
-            <div className="text-xs font-semibold uppercase tracking-wide text-neutral-500">
-              Código PIX copia-e-cola
-            </div>
-            <div className="mt-2 break-all rounded-xl bg-neutral-50 p-3 font-mono text-[11px] text-neutral-700">
-              {charge.pix_code}
-            </div>
-            <Button onClick={copyPix} size="lg" className="mt-3 w-full inline-flex items-center justify-center gap-2">
-              <CopySimple size={18} weight="duotone" />
-              {copied ? "Copiado!" : "Copiar código PIX"}
-            </Button>
-          </div>
-
-          <div className="mt-4 text-center text-xs text-neutral-500">
-            Verificando o pagamento automaticamente a cada 5 segundos…
+          <div className="flex items-center justify-center gap-3 py-3 border-t border-white/5">
+            <Clock size={16} className="text-amber-400" />
+            <span className="text-sm font-heading font-bold text-white/80">
+              Expira em <span className="text-amber-400">{mm}:{ss}</span>
+            </span>
           </div>
         </div>
 
-        {/* Painel de teste */}
-        <div className="rounded-2xl border border-dashed border-neutral-300 bg-white/60 p-4 text-center">
-          <div className="text-[11px] font-semibold uppercase tracking-wide text-neutral-500">
-            Modo demonstração
+        {/* Botão Copiar */}
+        <button
+          onClick={copyPix}
+          className={`relative w-full overflow-hidden rounded-2xl py-4 transition-all active:scale-[0.98] ${
+            copied ? "bg-emerald-500" : "bg-[#9EEA6C]"
+          }`}
+        >
+          <div className="relative z-10 flex items-center justify-center gap-3">
+            {copied ? (
+              <>
+                <CheckCircle size={20} weight="bold" className="text-white" />
+                <span className="font-heading font-extrabold text-white">Código Copiado!</span>
+              </>
+            ) : (
+              <>
+                <CopySimple size={20} weight="bold" className="text-[#0a0a0a]" />
+                <span className="font-heading font-extrabold text-[#0a0a0a]">Copiar Código PIX</span>
+              </>
+            )}
           </div>
-          <p className="mt-1 text-xs text-neutral-600">
-            O gateway real ainda não está conectado.
-          </p>
-          <Button onClick={simulate} variant="secondary" className="mt-3">
-            Simular pagamento confirmado
-          </Button>
+        </button>
+
+        <p className="text-center text-[11px] text-white/30 px-6 leading-relaxed">
+          Após o pagamento, esta página será atualizada automaticamente com seu comprovante.
+        </p>
+
+        {/* Demonstração */}
+        <div className="mt-8 pt-8 border-t border-white/5 text-center">
+          <p className="text-[10px] font-heading font-extrabold uppercase tracking-widest text-white/20 mb-4">Modo Teste</p>
+          <button 
+            onClick={simulate}
+            className="text-[11px] font-bold text-[#9EEA6C]/60 hover:text-[#9EEA6C] transition-colors underline decoration-[#9EEA6C]/20 underline-offset-4"
+          >
+            Simular confirmação de pagamento
+          </button>
         </div>
       </main>
-    </div>
+
+      <footer className="mt-12 text-center">
+        <p className="text-[10px] text-white/20 font-heading font-bold uppercase tracking-widest">Powered by CloudePay</p>
+      </footer>
+    </motion.div>
   );
 }
 
@@ -237,51 +274,55 @@ function PixStage({
 
 function SuccessStage({ charge, profile }: { charge: Charge; profile: Profile }) {
   return (
-    <div className="min-h-screen bg-neutral-50">
-      <header className="border-b border-neutral-200 bg-white">
-        <div className="mx-auto flex max-w-md items-center justify-center px-5 py-4">
-          <Logo size="sm" variant="black" />
-        </div>
+    <motion.div 
+      initial={{ opacity: 0, scale: 0.95 }}
+      animate={{ opacity: 1, scale: 1 }}
+      className="mx-auto max-w-md flex flex-col min-h-screen px-5 py-8"
+    >
+      <header className="flex flex-col items-center mb-10">
+        <Logo size="sm" variant="white" />
       </header>
 
-      <main className="mx-auto max-w-md px-5 py-6 sm:py-8 space-y-5">
-        <div className="rounded-2xl border border-brand-200 bg-white p-6 text-center shadow-sm">
-          <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-brand-600">
-            <CheckCircle size={36} weight="duotone" className="text-white" />
+      <main className="flex-1">
+        <div className="relative overflow-hidden rounded-[40px] bg-white p-8 text-center text-[#0a0a0a] shadow-2xl">
+          <div className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-emerald-500">
+            <CheckCircle size={44} weight="fill" className="text-white" />
           </div>
-        <h1 className="mt-4 text-2xl font-heading font-bold text-neutral-900">Pagamento confirmado!</h1>
-        <p className="mt-1 text-sm text-neutral-600 font-body">
-            Enviamos um comprovante para <span className="font-medium text-neutral-900">{charge.payer_email}</span>.
-          </p>
+          
+          <h1 className="text-3xl font-heading font-black tracking-tight">Sucesso!</h1>
+          <p className="mt-2 text-sm font-body text-neutral-500">Pagamento confirmado.</p>
+          
+          <div className="my-8 h-px bg-neutral-100" />
+          
+          <div className="space-y-4">
+            <ReceiptRow label="Valor" value={formatBRL(charge.amount_cents)} />
+            <ReceiptRow label="Para" value={profile.full_name} />
+            <ReceiptRow label="Serviço" value={charge.service_name} />
+            <ReceiptRow label="Protocolo" value={charge.receipt_number?.slice(0, 8) ?? "—"} />
+          </div>
+
+          <button 
+            onClick={() => window.print()}
+            className="mt-10 w-full rounded-2xl border border-neutral-200 py-4 text-xs font-heading font-extrabold uppercase tracking-widest hover:bg-neutral-50 transition-colors"
+          >
+            Imprimir Comprovante
+          </button>
         </div>
 
-        <div className="rounded-2xl border border-neutral-200 bg-white p-5 shadow-sm">
-          <Row label="Comprovante nº" value={charge.receipt_number ?? "—"} mono />
-          <Row label="Valor" value={formatBRL(charge.amount_cents)} />
-          <Row label="Pago para" value={profile.full_name} />
-          <Row label="Serviço" value={charge.service_name} />
-          <Row
-            label="Data"
-            value={charge.paid_at ? new Date(charge.paid_at).toLocaleString("pt-BR") : "—"}
-          />
-          {charge.notes && <Row label="Obs" value={charge.notes} />}
-        </div>
-
-        <p className="text-center text-xs text-neutral-500">
-          Você já pode fechar esta página com segurança.
+        <p className="mt-10 text-center text-[11px] text-white/30 leading-relaxed">
+          Um comprovante detalhado foi enviado para <br/>
+          <span className="text-white/60 font-bold">{charge.payer_email}</span>
         </p>
       </main>
-    </div>
+    </motion.div>
   );
 }
 
-function Row({ label, value, mono }: { label: string; value: string; mono?: boolean }) {
+function ReceiptRow({ label, value }: { label: string; value: string }) {
   return (
-    <div className="flex items-center justify-between gap-3 border-b border-neutral-100 py-2.5 last:border-0">
-      <span className="text-sm text-neutral-500">{label}</span>
-      <span className={`text-right text-sm font-semibold text-neutral-900 ${mono ? "font-mono" : ""}`}>
-        {value}
-      </span>
+    <div className="flex items-center justify-between gap-4">
+      <span className="text-[11px] font-heading font-extrabold uppercase tracking-widest text-neutral-400">{label}</span>
+      <span className="text-sm font-heading font-extrabold text-[#0a0a0a]">{value}</span>
     </div>
   );
 }

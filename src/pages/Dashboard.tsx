@@ -414,9 +414,9 @@ function CreateChargeFlowModal({
   }, [createdCharge]);
 
   const chargeUrl = useMemo(() => {
-    if (!createdCharge) return "";
-    return `${window.location.origin}/${createdCharge.slug}/${createdCharge.id}`;
-  }, [createdCharge]);
+    if (!createdCharge || !profile?.slug) return "";
+    return `${window.location.origin}/${profile.slug}/${createdCharge.id}`;
+  }, [createdCharge, profile?.slug]);
 
   async function createFromProduct() {
     console.log("[createFromProduct] Iniciando...", { slug: profile?.slug, selectedProductId, profileId: profile?.id });
