@@ -164,37 +164,37 @@ function PixStage({
       </div>
 
       {/* O CARD PREMIUM */}
-      <div className="relative overflow-hidden rounded-[32px] bg-gradient-to-br from-[#121212] to-[#080808] border border-white/10 p-6 sm:p-8 shadow-2xl">
+      <div className="relative overflow-hidden rounded-[32px] bg-gradient-to-br from-[#121212] to-[#080808] border border-white/10 p-5 sm:p-7 shadow-2xl">
         <div className="absolute top-0 right-0 h-32 w-32 bg-[#9EEA6C]/5 blur-3xl rounded-full" />
         
-        <div className="flex justify-between items-start gap-4">
-          <div className="flex-1 min-w-0">
-            <p className="text-[10px] font-heading font-extrabold uppercase tracking-[0.2em] text-white/30 mb-2">Payment Request</p>
-            <h1 className="text-[24px] sm:text-[28px] font-heading font-black leading-[1.1] truncate mb-4">{charge.service_name}</h1>
+        <div className="grid grid-cols-[1fr_auto] items-start gap-4">
+          <div className="min-w-0 flex flex-col justify-center h-full">
+            <p className="text-[9px] font-heading font-extrabold uppercase tracking-[0.2em] text-white/30 mb-2">Payment Request</p>
+            <h1 className="text-[20px] sm:text-[24px] font-heading font-black leading-tight break-words mb-3">{charge.service_name}</h1>
             
-            <p className="text-[10px] font-heading font-extrabold uppercase tracking-[0.2em] text-white/30 mb-1">Amount Due</p>
-            <div className="text-[38px] sm:text-[44px] font-heading font-black text-white leading-none tracking-tight">
+            <p className="text-[9px] font-heading font-extrabold uppercase tracking-[0.2em] text-white/30 mb-1">Amount Due</p>
+            <div className="text-[32px] sm:text-[40px] font-heading font-black text-white leading-none tracking-tight break-all">
               {formatBRL(charge.amount_cents)}
             </div>
             
-            <p className="mt-6 text-[11px] font-medium text-white/50 truncate">
+            <p className="mt-4 text-[10px] font-medium text-white/50 truncate">
               Para: <span className="text-white font-bold">{profile.full_name}</span>
             </p>
           </div>
 
-          <div className="shrink-0 flex flex-col items-center gap-3">
+          <div className="shrink-0">
             <div className="p-2 bg-white rounded-2xl shadow-lg">
-              <img src={charge.qr_code_image} alt="QR Code" className="h-28 w-28 sm:h-32 sm:w-32" />
+              <img src={charge.qr_code_image} alt="QR Code" className="h-24 w-24 sm:h-28 sm:w-28" />
             </div>
           </div>
         </div>
 
-        <div className="mt-8 pt-6 border-t border-white/5 flex items-center justify-between">
+        <div className="mt-6 pt-5 border-t border-white/5 flex items-center justify-between">
           <div className="flex items-center gap-2 text-amber-400">
-            <Clock size={16} weight="bold" />
-            <span className="text-xs font-heading font-black uppercase tracking-widest">{mm}:{ss}</span>
+            <Clock size={14} weight="bold" />
+            <span className="text-[11px] font-heading font-black uppercase tracking-widest">{mm}:{ss}</span>
           </div>
-          <p className="text-[10px] font-heading font-extrabold uppercase tracking-[0.15em] text-white/20">CloudePay Network</p>
+          <p className="text-[9px] font-heading font-extrabold uppercase tracking-[0.15em] text-white/20">CloudePay Network</p>
         </div>
       </div>
 
