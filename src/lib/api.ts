@@ -248,17 +248,22 @@ export async function listChargesByProfile(profile_id: string): Promise<Charge[]
 }
 
 export async function simulatePayment(charge_id: string) {
-  const { data: c } = await supabase.from('charges').select('*').eq('id', charge_id).single();
-  if (!c || c.status !== "pending") return;
+  const { data: c, error: selectError } = await supabase.from('charges').select('status').eq('id', charge_id).single();
+  if (selectError || !c || c.status !== "pending") return;
 
-  await supabase
+  const { error: updateError } = await supabase
     .from('charges')
     .update({ 
       status: 'paid',
       paid_at: new Date().toISOString(),
-      receipt_number: "LP" + Date.now().toString().slice(-8)
+      receipt_number: "CP" + Date.now().toString().slice(-8)
     })
     .eq('id', charge_id);
+
+  if (updateError) {
+    console.error("[api] Erro na simulação:", updateError);
+    throw updateError;
+  }
 }
 
 export async function getMonthTotalCents(profile_id: string): Promise<number> {
