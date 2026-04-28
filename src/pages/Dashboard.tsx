@@ -24,6 +24,19 @@ import {
   X,
 } from "phosphor-react";
 
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip as ChartTooltip,
+  ResponsiveContainer,
+  Cell,
+  PieChart,
+  Pie
+} from "recharts";
+
 export default function Dashboard() {
   const { profile } = useAuth();
   const [charges, setCharges] = useState<Charge[]>([]);
@@ -67,7 +80,34 @@ export default function Dashboard() {
   const paidCharges = charges.filter((c) => c.status === "paid");
   const pendingCharges = charges.filter((c) => c.status === "pending");
 
+  // Dados para o gráfico de barras (últimos 7 dias)
+  const chartData = useMemo(() => {
+    const last7Days = Array.from({ length: 7 }).map((_, i) => {
+      const date = new Date();
+      date.setDate(date.getDate() - (6 - i));
+      return date.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' });
+    });
+
+    return last7Days.map(day => {
+      const dayCharges = charges.filter(c => 
+        new Date(c.created_at).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' }) === day
+      );
+      const total = dayCharges.reduce((acc, curr) => acc + curr.amount_cents, 0) / 100;
+      return { name: day, total };
+    });
+  }, [charges]);
+
+  // Dados para o gráfico de pizza (Distribuição)
+  const pieData = useMemo(() => [
+    { name: 'Pago', value: charges.filter(c => c.status === 'paid').length, color: '#9EEA6C' },
+    { name: 'Pendente', value: charges.filter(c => c.status === 'pending').length, color: '#fbbf24' },
+    { name: 'Expirado', value: charges.filter(c => c.status === 'expired').length, color: '#404040' },
+  ], [charges]);
+
   const tabs = ["Hoje", "Esse mês", "Últimos 30 dias", "Últimos 90 dias", "Todo o período"];
+
+  // Líquido real do mês (já subtraindo a taxa de 2%)
+  const monthNetTotal = monthTotal * 0.98;
 
   return (
     <Shell onNewCharge={openCreate}>
@@ -97,8 +137,9 @@ export default function Dashboard() {
       <section className="grid gap-2 sm:gap-3 sm:grid-cols-3 mb-3 sm:mb-5">
         <StatCard
           label="Recebido no mês"
-          value={formatBRL(monthTotal)}
+          value={formatBRL(monthNetTotal)}
           subValue="Líquido após taxa de 2%"
+          info="Valor total líquido que já caiu na sua conta após todas as taxas (CloudePay + Mercado Pago)."
           icon={Receipt}
           iconColor="text-emerald-500"
           bgColor="bg-emerald-500/10 dark:bg-emerald-500/5"
@@ -107,14 +148,16 @@ export default function Dashboard() {
           label="Total de cobranças"
           value={charges.length.toString()}
           subValue={`${pendingCharges.length} pendente(s)`}
+          info="Número total de links de pagamento que você gerou neste período."
           icon={List}
           iconColor="text-blue-500"
           bgColor="bg-blue-500/10 dark:bg-blue-500/5"
         />
         <StatCard
           label="Ticket médio"
-          value={formatBRL(paidCharges.length > 0 ? monthTotal / paidCharges.length : 0)}
+          value={formatBRL(paidCharges.length > 0 ? (monthTotal / paidCharges.length) : 0)}
           subValue="Somente pagamentos confirmados"
+          info="A média de valor das suas vendas que foram efetivamente pagas."
           icon={TrendUp}
           iconColor="text-[#0a0a0a]"
           bgColor="bg-[#9EEA6C]"
@@ -153,7 +196,7 @@ export default function Dashboard() {
               <List size={15} weight="bold" className="text-[#0a0a0a] dark:text-white" />
               <h3 className="font-heading font-extrabold text-[#0a0a0a] dark:text-white text-[15px] sm:text-[16px] leading-tight">Métodos de pagamento</h3>
             </div>
-            <Info size={16} className="text-neutral-300 dark:text-white/10" />
+            <InfoButton text="Aqui você vê o volume total transacionado por cada método de pagamento." />
           </div>
 
           <div className="space-y-2 sm:space-y-3 flex-1">
@@ -169,7 +212,7 @@ export default function Dashboard() {
           <div className="pt-3 sm:pt-4 border-t border-neutral-100 dark:border-white/5 flex items-center justify-between mt-auto">
             <div className="flex items-center gap-2">
               <div className="h-2 w-2 rounded-full bg-emerald-500" />
-              <span className="text-[13px] sm:text-[15px] font-heading font-extrabold text-[#0a0a0a] dark:text-white">Total</span>
+              <span className="text-[13px] sm:text-[15px] font-heading font-extrabold text-[#0a0a0a] dark:text-white">Total Bruto</span>
             </div>
             <span className="text-[15px] sm:text-[17px] font-heading font-extrabold text-[#0a0a0a] dark:text-white">{formatBRL(monthTotal)}</span>
           </div>
@@ -177,8 +220,103 @@ export default function Dashboard() {
       </div>
 
       <div className="grid gap-2 sm:gap-3 lg:grid-cols-2 mb-3 sm:mb-5">
-        <ChartPlaceholder title="Desempenho de cobranças" icon={ChartLineUp} />
-        <ChartPlaceholder title="Distribuição por status" icon={ChartPieSlice} />
+        <div className="rounded-2xl sm:rounded-[28px] border border-neutral-200 dark:border-white/5 bg-white dark:bg-[#121212] p-4 sm:p-5 shadow-sm">
+          <div className="flex items-center justify-between mb-3 sm:mb-4">
+            <div className="flex items-center gap-2">
+              <ChartLineUp size={16} weight="bold" className="text-neutral-300 dark:text-white/10" />
+              <h3 className="font-heading font-extrabold text-[#0a0a0a] dark:text-white text-[14px] sm:text-[15px]">Desempenho (últimos 7 dias)</h3>
+            </div>
+            <InfoButton text="Gráfico do volume total de cobranças geradas em cada um dos últimos 7 dias." />
+          </div>
+          <div className="h-[200px] w-full">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={chartData}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#ffffff05" vertical={false} />
+                <XAxis 
+                  dataKey="name" 
+                  axisLine={false} 
+                  tickLine={false} 
+                  tick={{ fill: '#888', fontSize: 10, fontWeight: 'bold' }} 
+                  dy={10}
+                />
+                <YAxis hide />
+                <ChartTooltip 
+                  cursor={{ fill: 'rgba(255,255,255,0.02)' }}
+                  content={({ active, payload }) => {
+                    if (active && payload && payload.length) {
+                      return (
+                        <div className="bg-[#0a0a0a] border border-white/10 p-2 rounded-lg shadow-xl">
+                          <p className="text-[10px] font-heading font-black text-[#9EEA6C] uppercase tracking-wider">{payload[0].payload.name}</p>
+                          <p className="text-[14px] font-heading font-black text-white">{formatBRL(payload[0].value as number * 100)}</p>
+                        </div>
+                      );
+                    }
+                    return null;
+                  }}
+                />
+                <Bar dataKey="total" radius={[4, 4, 0, 0]}>
+                  {chartData.map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={index === chartData.length - 1 ? '#9EEA6C' : '#ffffff10'} />
+                  ))}
+                </Bar>
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+          <div className="mt-3 sm:mt-4 flex items-baseline gap-2">
+            <span className="text-[18px] sm:text-[20px] font-heading font-extrabold text-[#0a0a0a] dark:text-white">{formatBRL(monthTotal)}</span>
+            <span className="text-[8px] sm:text-[9px] font-bold text-neutral-400 dark:text-white/20 uppercase tracking-wide">Volume total criado</span>
+          </div>
+        </div>
+
+        <div className="rounded-2xl sm:rounded-[28px] border border-neutral-200 dark:border-white/5 bg-white dark:bg-[#121212] p-4 sm:p-5 shadow-sm">
+          <div className="flex items-center justify-between mb-3 sm:mb-4">
+            <div className="flex items-center gap-2">
+              <ChartPieSlice size={16} weight="bold" className="text-neutral-300 dark:text-white/10" />
+              <h3 className="font-heading font-extrabold text-[#0a0a0a] dark:text-white text-[14px] sm:text-[15px]">Distribuição por status</h3>
+            </div>
+            <InfoButton text="Proporção entre cobranças Pagas, Pendentes e Expiradas." />
+          </div>
+          <div className="h-[200px] w-full flex items-center justify-center">
+            <ResponsiveContainer width="100%" height="100%">
+              <PieChart>
+                <Pie
+                  data={pieData}
+                  cx="50%"
+                  cy="50%"
+                  innerRadius={60}
+                  outerRadius={80}
+                  paddingAngle={5}
+                  dataKey="value"
+                >
+                  {pieData.map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={entry.color} />
+                  ))}
+                </Pie>
+                <ChartTooltip 
+                  content={({ active, payload }) => {
+                    if (active && payload && payload.length) {
+                      return (
+                        <div className="bg-[#0a0a0a] border border-white/10 p-2 rounded-lg shadow-xl">
+                          <p className="text-[10px] font-heading font-black text-white uppercase tracking-wider">{payload[0].name}</p>
+                          <p className="text-[14px] font-heading font-black text-[#9EEA6C]">{payload[0].value} cobranças</p>
+                        </div>
+                      );
+                    }
+                    return null;
+                  }}
+                />
+              </PieChart>
+            </ResponsiveContainer>
+          </div>
+          <div className="mt-3 sm:mt-4 grid grid-cols-3 gap-2">
+            {pieData.map(item => (
+              <div key={item.name} className="text-center">
+                <div className={`text-[12px] font-heading font-black text-[#0a0a0a] dark:text-white`}>{item.value}</div>
+                <div className="text-[8px] font-bold text-neutral-400 dark:text-white/20 uppercase tracking-wide">{item.name}</div>
+              </div>
+            ))}
+          </div>
+        </div>
       </div>
 
       <span id="historico" className="block h-0" />
@@ -294,40 +432,42 @@ export default function Dashboard() {
   );
 }
 
-function StatCard({ label, value, subValue, icon: Icon, iconColor, bgColor }: any) {
+function InfoButton({ text }: { text: string }) {
+  const [show, setShow] = useState(false);
+
+  return (
+    <div className="relative">
+      <button 
+        onClick={() => setShow(!show)}
+        onBlur={() => setTimeout(() => setShow(false), 200)}
+        className="text-neutral-300 dark:text-white/10 hover:text-[#9EEA6C] transition-colors"
+      >
+        <Info size={16} />
+      </button>
+      {show && (
+        <div className="absolute right-0 top-6 z-50 w-48 bg-[#0a0a0a] border border-white/10 rounded-xl p-3 shadow-2xl animate-in fade-in slide-in-from-top-1">
+          <p className="text-[10px] text-white/70 font-medium leading-relaxed">{text}</p>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function StatCard({ label, value, subValue, info, icon: Icon, iconColor, bgColor }: any) {
   return (
     <div className="rounded-2xl border border-neutral-200 dark:border-white/5 bg-white dark:bg-[#121212] p-4 sm:p-5 shadow-sm hover:shadow-md transition-shadow">
       <div className="flex items-start justify-between gap-2">
         <div>
-          <p className="text-[9px] sm:text-[10px] font-heading font-extrabold text-neutral-400 dark:text-white/20 uppercase tracking-[0.06em] mb-1.5">{label}</p>
+          <div className="flex items-center gap-1.5 mb-1.5">
+            <p className="text-[9px] sm:text-[10px] font-heading font-extrabold text-neutral-400 dark:text-white/20 uppercase tracking-[0.06em]">{label}</p>
+            <InfoButton text={info} />
+          </div>
           <h3 className="text-[20px] sm:text-[22px] leading-none font-heading font-extrabold text-[#0a0a0a] dark:text-white tracking-tight">{value}</h3>
           <p className="text-[9px] sm:text-[10px] text-neutral-400 dark:text-white/20 font-bold mt-1 uppercase tracking-wide">{subValue}</p>
         </div>
         <div className={`h-9 w-9 sm:h-10 sm:w-10 flex items-center justify-center rounded-lg sm:rounded-xl ${bgColor} ${iconColor} shadow-inner`}>
           <Icon size={18} weight="bold" />
         </div>
-      </div>
-    </div>
-  );
-}
-
-function ChartPlaceholder({ title, icon: Icon }: any) {
-  return (
-    <div className="rounded-2xl sm:rounded-[28px] border border-neutral-200 dark:border-white/5 bg-white dark:bg-[#121212] p-4 sm:p-5 shadow-sm">
-      <div className="flex items-center justify-between mb-3 sm:mb-4">
-        <div className="flex items-center gap-2">
-          <Icon size={16} weight="bold" className="text-neutral-300 dark:text-white/10" />
-          <h3 className="font-heading font-extrabold text-[#0a0a0a] dark:text-white text-[14px] sm:text-[15px]">{title}</h3>
-        </div>
-        <Info size={14} className="text-neutral-300 dark:text-white/10" />
-      </div>
-      <div className="aspect-[16/9] w-full rounded-xl sm:rounded-2xl border border-dashed border-neutral-100 dark:border-white/5 bg-neutral-50/50 dark:bg-white/[0.01] flex flex-col items-center justify-center gap-2">
-        <span className="text-[8px] sm:text-[9px] font-heading font-extrabold text-[#9EEA6C] uppercase tracking-wide bg-[#9EEA6C]/10 px-2.5 sm:px-3 py-1 rounded-full">tempo real</span>
-        <div className="h-px w-1/2 bg-gradient-to-r from-transparent via-neutral-200/50 dark:via-white/5 to-transparent mt-2" />
-      </div>
-      <div className="mt-3 sm:mt-4 flex items-baseline gap-2">
-        <span className="text-[18px] sm:text-[20px] font-heading font-extrabold text-[#0a0a0a] dark:text-white">R$ 0,00</span>
-        <span className="text-[8px] sm:text-[9px] font-bold text-neutral-400 dark:text-white/20 uppercase tracking-wide">Volume total criado no período</span>
       </div>
     </div>
   );
