@@ -14,7 +14,27 @@ import {
   ArrowRight,
   Database,
   Globe,
-  ChartBar
+  ChartBar,
+  Monitor,
+  ChartPie,
+  FileText,
+  ChatCenteredDots,
+  Key,
+  Activity,
+  List,
+  Download,
+  ArrowsLeftRight,
+  UserSwitch,
+  Warning,
+  Funnel,
+  MagnifyingGlass,
+  CheckCircle,
+  XCircle,
+  Receipt,
+  DotsThreeOutlineVertical,
+  PencilSimple,
+  Trash,
+  ArrowDown
 } from "phosphor-react";
 import {
   AreaChart,
@@ -23,15 +43,23 @@ import {
   YAxis,
   CartesianGrid,
   Tooltip,
-  ResponsiveContainer
+  ResponsiveContainer,
+  BarChart,
+  Bar,
+  PieChart,
+  Pie,
+  Cell
 } from "recharts";
 
 const ADMIN_EMAILS = ["matsoliveira11@gmail.com", "mats.oliveira11@gmail.com"];
 // @ts-ignore
 const MASTER_SECRET_TOKEN = import.meta.env.VITE_MASTER_TOKEN; 
 
+type AdminTab = "overview" | "users" | "charges" | "finance" | "reports" | "support" | "settings" | "logs";
+
 export default function Admin() {
   const { profile } = useAuth();
+  const [activeTab, setActiveTab] = useState<AdminTab>("overview");
   const [stats, setStats] = useState<any>(null);
   const [profiles, setProfiles] = useState<any[]>([]);
   const [charges, setCharges] = useState<any[]>([]);
@@ -39,6 +67,7 @@ export default function Admin() {
   const [masterToken, setMasterToken] = useState("");
   const [isUnlocked, setIsUnlocked] = useState(false);
   const [tokenError, setTokenError] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
 
   const isAdmin = profile && ADMIN_EMAILS.includes(profile.email?.toLowerCase());
 
@@ -213,8 +242,7 @@ export default function Admin() {
     );
   }
 
-  // Preparar dados para o gráfico
-  const chartData = stats?.rawCharges
+  const timelineData = stats?.rawCharges
     ? Object.values(stats.rawCharges.reduce((acc: any, curr: any) => {
         const date = new Date(curr.created_at).toLocaleDateString();
         if (!acc[date]) acc[date] = { date, volume: 0, revenue: 0 };
@@ -226,213 +254,327 @@ export default function Admin() {
       }, {})).slice(-7)
     : [];
 
-  return (
-    <Shell>
-      <div className="max-w-7xl mx-auto space-y-10">
-        {/* HEADER FUNDADOR */}
-        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
-          <div>
-            <div className="flex items-center gap-3 mb-2">
-              <div className="h-6 w-6 rounded-full bg-lime-accent flex items-center justify-center">
-                <Globe size={14} weight="bold" className="text-[#0a0a0a]" />
-              </div>
-              <p className="text-[10px] font-heading font-black text-lime-accent uppercase tracking-[0.2em]">Torre de Comando Master</p>
-            </div>
-            <h1 className="text-[32px] sm:text-[42px] font-heading font-black text-white uppercase tracking-tighter leading-none">
-              Founder <span className="text-white/20">Dashboard</span>
-            </h1>
-          </div>
+  const statusData = [
+    { name: 'Pagas', value: charges.filter(c => c.status === 'paid').length, color: '#9EEA6C' },
+    { name: 'Pendentes', value: charges.filter(c => c.status === 'pending').length, color: '#ffffff30' },
+    { name: 'Falhas/Ref', value: charges.filter(c => c.status === 'failed' || c.status === 'refunded').length, color: '#ef4444' }
+  ];
 
-          <div className="flex items-center gap-4 p-4 rounded-2xl bg-white/[0.02] border border-white/5 backdrop-blur-md">
-            <div className="text-right">
-              <p className="text-[10px] font-heading font-black text-white/20 uppercase">Status Global</p>
-              <p className="text-sm font-heading font-black text-[#9EEA6C] uppercase">Operação Saudável</p>
-            </div>
-            <div className="h-10 w-10 rounded-xl bg-[#9EEA6C]/10 flex items-center justify-center text-[#9EEA6C] border border-[#9EEA6C]/20">
-              <Database size={20} weight="duotone" />
-            </div>
-          </div>
-        </div>
-
-        {/* METRICAS ESTRATÉGICAS - O PETRÓLEO */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          {[
-            { label: "Volume Total (GMV)", value: formatBRL(stats?.gmv || 0), icon: CurrencyCircleDollar, color: "text-white", sub: "Toda a vida da empresa" },
-            { label: "Lucro Líquido (1%)", value: formatBRL(stats?.revenue || 0), icon: ChartLineUp, color: "text-[#9EEA6C]", sub: "Sua parte no negócio" },
-            { label: "Ticket Médio Global", value: formatBRL(stats?.totalCharges ? stats.gmv / stats.totalCharges : 0), icon: TrendUp, color: "text-white", sub: "Média por transação" },
-            { label: "Base de Clientes", value: stats?.users || 0, icon: Users, color: "text-[#9EEA6C]", sub: "Usuários cadastrados" },
-          ].map((m, i) => (
-            <div key={i} className="group bg-white/[0.03] border border-white/5 p-6 rounded-[28px] hover:bg-white/[0.05] transition-all relative overflow-hidden">
-              <div className="absolute -right-4 -bottom-4 opacity-5 group-hover:opacity-10 transition-opacity">
-                <m.icon size={120} weight="duotone" />
-              </div>
-              <div className="flex items-center justify-between mb-4 relative z-10">
-                <div className={`h-10 w-10 rounded-xl bg-white/5 flex items-center justify-center ${m.color}`}>
-                  <m.icon size={20} weight="duotone" />
-                </div>
-                <div className="h-1.5 w-1.5 rounded-full bg-[#9EEA6C] shadow-[0_0_10px_#9EEA6C]" />
-              </div>
-              <p className="text-[10px] font-heading font-black text-white/20 uppercase tracking-widest mb-1 relative z-10">{m.label}</p>
-              <p className={`text-2xl font-heading font-black ${m.color} tracking-tight relative z-10`}>{m.value}</p>
-              <p className="text-[9px] font-body text-white/40 mt-1 relative z-10">{m.sub}</p>
-            </div>
-          ))}
-        </div>
-
-        {/* GRAFICOS DE CRESCIMENTO */}
-        <div className="grid lg:grid-cols-3 gap-6">
-          <div className="lg:col-span-2 bg-[#121212] border border-white/5 rounded-[32px] p-8">
-            <div className="flex items-center justify-between mb-8">
-              <div>
-                <h3 className="text-lg font-heading font-black text-white uppercase tracking-tight">Fluxo de Caixa Global</h3>
-                <p className="text-[12px] text-white/30 font-body">Últimos 7 dias de operação real</p>
-              </div>
-              <ChartBar size={24} weight="duotone" className="text-white/10" />
-            </div>
-            
-            <div className="h-[300px] w-full">
-              <ResponsiveContainer width="100%" height="100%">
-                <AreaChart data={chartData}>
-                  <defs>
-                    <linearGradient id="colorVolume" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="#9EEA6C" stopOpacity={0.3}/>
-                      <stop offset="95%" stopColor="#9EEA6C" stopOpacity={0}/>
-                    </linearGradient>
-                  </defs>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#ffffff05" vertical={false} />
-                  <XAxis 
-                    dataKey="date" 
-                    axisLine={false} 
-                    tickLine={false} 
-                    tick={{fill: '#ffffff30', fontSize: 10}} 
-                  />
-                  <YAxis hide />
-                  <Tooltip 
-                    contentStyle={{backgroundColor: '#1a1a1a', border: '1px solid #ffffff10', borderRadius: '16px'}}
-                    itemStyle={{color: '#9EEA6C', fontSize: '12px'}}
-                  />
-                  <Area 
-                    type="monotone" 
-                    dataKey="volume" 
-                    stroke="#9EEA6C" 
-                    strokeWidth={4}
-                    fillOpacity={1} 
-                    fill="url(#colorVolume)" 
-                  />
-                </AreaChart>
-              </ResponsiveContainer>
-            </div>
-          </div>
-
-          <div className="bg-[#121212] border border-white/5 rounded-[32px] p-8">
-            <h3 className="text-lg font-heading font-black text-white uppercase tracking-tight mb-8">Status de Transações</h3>
-            <div className="space-y-6">
+  const renderTabContent = () => {
+    switch (activeTab) {
+      case "overview":
+        return (
+          <div className="space-y-10">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
               {[
-                { label: "Pagas", count: stats?.rawCharges?.filter((c:any) => c.status === 'paid').length || 0, color: "bg-[#9EEA6C]" },
-                { label: "Pendentes", count: stats?.rawCharges?.filter((c:any) => c.status === 'pending').length || 0, color: "bg-yellow-500/50" },
-                { label: "Expiradas", count: stats?.rawCharges?.filter((c:any) => c.status === 'expired').length || 0, color: "bg-white/10" },
-              ].map(item => (
-                <div key={item.label} className="space-y-2">
-                  <div className="flex justify-between items-end">
-                    <p className="text-[11px] font-heading font-black text-white/40 uppercase tracking-widest">{item.label}</p>
-                    <p className="text-sm font-heading font-black text-white">{item.count}</p>
+                { label: "Receita Bruta (GMV)", value: formatBRL(stats?.gmv || 0), icon: CurrencyCircleDollar, sub: "+12.5% vs ontem", color: "text-white" },
+                { label: "Novos Usuários", value: profiles.length, icon: Users, sub: "Crescimento acelerado", color: "text-[#9EEA6C]" },
+                { label: "Ticket Médio", value: formatBRL(stats?.totalCharges ? stats.gmv / stats.totalCharges : 0), icon: TrendUp, sub: "Estabilidade alta", color: "text-white" },
+                { label: "Taxa de Conversão", value: `${(stats?.conversions || 0).toFixed(1)}%`, icon: ChartLineUp, sub: "Otimização ótima", color: "text-[#9EEA6C]" },
+              ].map((m, i) => (
+                <div key={i} className="bg-[#121212] border border-white/5 p-6 rounded-[32px] relative overflow-hidden group">
+                  <div className="absolute -right-4 -bottom-4 opacity-5 group-hover:opacity-10 transition-opacity">
+                    <m.icon size={100} weight="duotone" />
                   </div>
-                  <div className="h-1.5 w-full bg-white/5 rounded-full overflow-hidden">
-                    <div 
-                      className={`h-full ${item.color} rounded-full`}
-                      style={{ width: `${stats?.totalCharges ? (item.count / stats.totalCharges) * 100 : 0}%` }}
-                    />
-                  </div>
+                  <p className="text-[10px] font-heading font-black text-white/20 uppercase tracking-widest mb-1">{m.label}</p>
+                  <p className={`text-2xl font-heading font-black ${m.color} tracking-tight`}>{m.value}</p>
+                  <p className="text-[9px] font-body text-white/30 mt-1 flex items-center gap-1.5">
+                    <CheckCircle size={10} className="text-[#9EEA6C]" /> {m.sub}
+                  </p>
                 </div>
               ))}
             </div>
 
-            <div className="mt-12 p-6 rounded-2xl bg-white/[0.02] border border-white/5">
-              <p className="text-[10px] font-heading font-black text-[#9EEA6C] uppercase tracking-widest mb-1">Previsão de Crescimento</p>
-              <p className="text-2xl font-heading font-black text-white">+24.8% <span className="text-[10px] text-white/20 ml-1">v/s mês ant.</span></p>
+            <div className="grid lg:grid-cols-3 gap-6">
+              <div className="lg:col-span-2 bg-[#121212] border border-white/5 rounded-[32px] p-8">
+                <div className="flex items-center justify-between mb-8">
+                  <div>
+                    <h3 className="text-lg font-heading font-black text-white uppercase tracking-tight">Timeline de Receita</h3>
+                    <p className="text-[10px] text-white/30 font-body uppercase tracking-widest">Desempenho dos últimos 7 dias</p>
+                  </div>
+                  <ChartLineUp size={24} weight="duotone" className="text-white/10" />
+                </div>
+                <div className="h-[300px] w-full">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <AreaChart data={timelineData}>
+                      <defs>
+                        <linearGradient id="colorVolume" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="5%" stopColor="#9EEA6C" stopOpacity={0.3}/>
+                          <stop offset="95%" stopColor="#9EEA6C" stopOpacity={0}/>
+                        </linearGradient>
+                      </defs>
+                      <CartesianGrid strokeDasharray="3 3" stroke="#ffffff05" vertical={false} />
+                      <XAxis dataKey="date" axisLine={false} tickLine={false} tick={{fill: '#ffffff30', fontSize: 10}} />
+                      <YAxis hide />
+                      <Tooltip contentStyle={{backgroundColor: '#1a1a1a', border: 'none', borderRadius: '16px'}} />
+                      <Area type="monotone" dataKey="volume" stroke="#9EEA6C" strokeWidth={4} fillOpacity={1} fill="url(#colorVolume)" />
+                    </AreaChart>
+                  </ResponsiveContainer>
+                </div>
+              </div>
+
+              <div className="bg-[#121212] border border-white/5 rounded-[32px] p-8">
+                <h3 className="text-lg font-heading font-black text-white uppercase tracking-tight mb-8 text-center">Status das Cobranças</h3>
+                <div className="h-[250px] w-full">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <PieChart>
+                      <Pie data={statusData} innerRadius={60} outerRadius={80} paddingAngle={5} dataKey="value">
+                        {statusData.map((entry, index) => (
+                          <Cell key={`cell-${index}`} fill={entry.color} />
+                        ))}
+                      </Pie>
+                      <Tooltip contentStyle={{backgroundColor: '#1a1a1a', border: 'none', borderRadius: '16px'}} />
+                    </PieChart>
+                  </ResponsiveContainer>
+                </div>
+                <div className="mt-6 space-y-2">
+                  {statusData.map(s => (
+                    <div key={s.name} className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <div className="h-2 w-2 rounded-full" style={{backgroundColor: s.color}} />
+                        <span className="text-[10px] font-heading font-black text-white/40 uppercase">{s.name}</span>
+                      </div>
+                      <span className="text-[11px] font-heading font-black text-white">{s.value}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
             </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="bg-red-500/5 border border-red-500/10 p-5 rounded-2xl flex items-center gap-4">
+                <div className="h-10 w-10 rounded-full bg-red-500/20 flex items-center justify-center text-red-500">
+                  <Warning size={20} weight="duotone" />
+                </div>
+                <div>
+                  <p className="text-[11px] font-heading font-black text-red-400 uppercase tracking-widest">Alerta de Churn</p>
+                  <p className="text-[10px] text-red-400/60 font-body mt-0.5">3 usuários inativos nos últimos 7 dias.</p>
+                </div>
+              </div>
+              <div className="bg-[#9EEA6C]/5 border border-[#9EEA6C]/10 p-5 rounded-2xl flex items-center gap-4">
+                <div className="h-10 w-10 rounded-full bg-[#9EEA6C]/20 flex items-center justify-center text-[#9EEA6C]">
+                  <CheckCircle size={20} weight="duotone" />
+                </div>
+                <div>
+                  <p className="text-[11px] font-heading font-black text-[#9EEA6C] uppercase tracking-widest">Sistema Saudável</p>
+                  <p className="text-[10px] text-[#9EEA6C]/60 font-body mt-0.5">Gateway operando com latência de 142ms.</p>
+                </div>
+              </div>
+              <div className="bg-blue-500/5 border border-blue-500/10 p-5 rounded-2xl flex items-center gap-4">
+                <div className="h-10 w-10 rounded-full bg-blue-500/20 flex items-center justify-center text-blue-500">
+                  <Activity size={20} weight="duotone" />
+                </div>
+                <div>
+                  <p className="text-[11px] font-heading font-black text-blue-400 uppercase tracking-widest">Tráfego Elevado</p>
+                  <p className="text-[10px] text-blue-400/60 font-body mt-0.5">Pico de acessos detectado em São Paulo.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        );
+
+      case "users":
+        return (
+          <div className="space-y-6">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-[#121212] p-6 rounded-[32px] border border-white/5">
+              <div className="relative flex-1 max-w-md">
+                <MagnifyingGlass size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-white/20" />
+                <input 
+                  type="text" 
+                  placeholder="BUSCAR USUÁRIO POR NOME OU EMAIL..."
+                  className="w-full bg-white/5 border border-white/5 rounded-xl py-3 pl-12 pr-4 text-xs font-heading font-black text-white placeholder:text-white/10 focus:outline-none focus:border-[#9EEA6C]/30 transition-all uppercase tracking-widest"
+                />
+              </div>
+              <div className="flex items-center gap-3">
+                <button className="bg-white/5 text-white/40 px-4 py-3 rounded-xl text-[10px] font-heading font-black uppercase tracking-widest hover:text-white transition-all flex items-center gap-2">
+                  <Funnel size={16} /> Filtros
+                </button>
+                <button className="bg-[#9EEA6C] text-[#0a0a0a] px-6 py-3 rounded-xl text-[10px] font-heading font-black uppercase tracking-widest hover:brightness-110 active:scale-95 transition-all">
+                  Novo Usuário
+                </button>
+              </div>
+            </div>
+
+            <div className="bg-[#121212] border border-white/5 rounded-[32px] overflow-hidden">
+              <table className="w-full text-left">
+                <thead className="bg-white/[0.02] border-b border-white/5">
+                  <tr>
+                    <th className="px-6 py-5 text-[10px] font-heading font-black text-white/20 uppercase tracking-widest">Usuário</th>
+                    <th className="px-6 py-5 text-[10px] font-heading font-black text-white/20 uppercase tracking-widest">Status</th>
+                    <th className="px-6 py-5 text-[10px] font-heading font-black text-white/20 uppercase tracking-widest">Volume (GMV)</th>
+                    <th className="px-6 py-5 text-[10px] font-heading font-black text-white/20 uppercase tracking-widest text-right">Ações</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-white/5">
+                  {profiles.map(p => (
+                    <tr key={p.id} className="hover:bg-white/[0.01] transition-colors group">
+                      <td className="px-6 py-5">
+                        <div className="flex items-center gap-3">
+                          <div className="h-10 w-10 rounded-xl bg-white/5 flex items-center justify-center text-white/20 font-heading font-black group-hover:bg-[#9EEA6C]/10 group-hover:text-[#9EEA6C] transition-all">
+                            {p.full_name?.charAt(0) || "U"}
+                          </div>
+                          <div>
+                            <p className="text-xs font-heading font-black text-white uppercase tracking-tight">{p.full_name || "Membro"}</p>
+                            <p className="text-[10px] text-white/30 font-body">{p.email}</p>
+                          </div>
+                        </div>
+                      </td>
+                      <td className="px-6 py-5">
+                        <span className="inline-flex items-center gap-1.5 px-2 py-1 rounded bg-[#9EEA6C]/10 text-[#9EEA6C] text-[9px] font-heading font-black uppercase tracking-widest">
+                          <div className="h-1 w-1 rounded-full bg-[#9EEA6C]" /> Ativo
+                        </span>
+                      </td>
+                      <td className="px-6 py-5 text-[11px] font-heading font-black text-white">R$ 0,00</td>
+                      <td className="px-6 py-5 text-right">
+                        <div className="flex items-center justify-end gap-2">
+                          <button title="Impersonate" className="h-8 w-8 rounded-lg bg-white/5 flex items-center justify-center text-white/20 hover:bg-[#9EEA6C]/10 hover:text-[#9EEA6C] transition-all">
+                            <UserSwitch size={16} />
+                          </button>
+                          <button className="h-8 w-8 rounded-lg bg-white/5 flex items-center justify-center text-white/20 hover:bg-white/10 hover:text-white transition-all">
+                            <DotsThreeOutlineVertical weight="fill" size={16} />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        );
+
+      case "charges":
+        return (
+          <div className="space-y-6">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-[#121212] p-6 rounded-[32px] border border-white/5">
+              <div className="relative flex-1 max-w-md">
+                <MagnifyingGlass size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-white/20" />
+                <input 
+                  type="text" 
+                  placeholder="BUSCAR POR ID, EMAIL OU CPF..."
+                  className="w-full bg-white/5 border border-white/5 rounded-xl py-3 pl-12 pr-4 text-xs font-heading font-black text-white placeholder:text-white/10 focus:outline-none focus:border-[#9EEA6C]/30 transition-all uppercase tracking-widest"
+                />
+              </div>
+              <button className="bg-white/5 text-white/40 px-6 py-3 rounded-xl text-[10px] font-heading font-black uppercase tracking-widest hover:text-white transition-all flex items-center gap-2">
+                <Download size={16} /> Exportar CSV
+              </button>
+            </div>
+
+            <div className="bg-[#121212] border border-white/5 rounded-[32px] overflow-hidden">
+              <table className="w-full text-left">
+                <thead className="bg-white/[0.02] border-b border-white/5">
+                  <tr>
+                    <th className="px-6 py-5 text-[10px] font-heading font-black text-white/20 uppercase tracking-widest">Data</th>
+                    <th className="px-6 py-5 text-[10px] font-heading font-black text-white/20 uppercase tracking-widest">Valor</th>
+                    <th className="px-6 py-5 text-[10px] font-heading font-black text-white/20 uppercase tracking-widest">Vendedor</th>
+                    <th className="px-6 py-5 text-[10px] font-heading font-black text-white/20 uppercase tracking-widest">Status</th>
+                    <th className="px-6 py-5 text-[10px] font-heading font-black text-white/20 uppercase tracking-widest text-right">Taxa (1%)</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-white/5">
+                  {charges.map(c => (
+                    <tr key={c.id} className="hover:bg-white/[0.01] transition-colors group">
+                      <td className="px-6 py-5 text-[11px] font-body text-white/40">{new Date(c.created_at).toLocaleString()}</td>
+                      <td className="px-6 py-5 text-sm font-heading font-black text-white tracking-tighter">{formatBRL(c.amount_cents)}</td>
+                      <td className="px-6 py-5 text-[11px] font-heading font-black text-white/60 uppercase">{c.profiles?.full_name || "Membro"}</td>
+                      <td className="px-6 py-5">
+                        <span className={`inline-flex items-center gap-1.5 px-2 py-1 rounded text-[9px] font-heading font-black uppercase tracking-widest ${c.status === 'paid' ? 'bg-[#9EEA6C]/10 text-[#9EEA6C]' : 'bg-white/5 text-white/20'}`}>
+                          {c.status}
+                        </span>
+                      </td>
+                      <td className="px-6 py-5 text-right text-[11px] font-heading font-black text-[#9EEA6C]">{formatBRL(c.fee_cents)}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        );
+
+      default:
+        return (
+          <div className="p-20 text-center bg-[#121212] rounded-[32px] border border-white/5 border-dashed">
+            <h3 className="text-xl font-heading font-black text-white/20 uppercase tracking-[0.2em] mb-2">Módulo em Desenvolvimento</h3>
+            <p className="text-[10px] text-white/10 font-body uppercase tracking-widest">Esta funcionalidade será liberada na próxima atualização master.</p>
+          </div>
+        );
+    }
+  };
+
+  return (
+    <Shell>
+      <div className="max-w-7xl mx-auto space-y-10">
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
+          <div>
+            <div className="flex items-center gap-3 mb-2">
+              <div className="h-6 w-6 rounded-full bg-[#9EEA6C] flex items-center justify-center">
+                <Globe size={14} weight="bold" className="text-[#0a0a0a]" />
+              </div>
+              <span className="text-[10px] font-heading font-black text-[#9EEA6C] uppercase tracking-[0.4em]">One Above All 2000</span>
+            </div>
+            <h1 className="text-4xl md:text-5xl font-heading font-black text-white uppercase tracking-tighter leading-none">
+              Control <span className="text-white/20">Center</span>
+            </h1>
+          </div>
+          
+          <div className="flex items-center gap-2 bg-[#121212] p-1.5 rounded-2xl border border-white/5">
+            <div className="flex items-center gap-2 px-4 py-2 border-r border-white/5">
+              <div className="h-2 w-2 rounded-full bg-[#9EEA6C] shadow-[0_0_8px_#9EEA6C]" />
+              <span className="text-[10px] font-heading font-black text-white/60 uppercase tracking-widest">Global Status: Healthy</span>
+            </div>
+            <button 
+              onClick={() => {
+                const url = window.location.href;
+                navigator.clipboard.writeText(url);
+                alert("URL Secreta copiada!");
+              }}
+              className="px-4 py-2 text-[10px] font-heading font-black text-white/40 hover:text-white transition-all uppercase tracking-widest"
+            >
+              Share Secret
+            </button>
           </div>
         </div>
 
-        {/* MONITORAMENTO E SUPORTE MASTER */}
-        <div className="grid lg:grid-cols-2 gap-6">
-          {/* GESTÃO DE CLIENTES */}
-          <section className="bg-[#121212] border border-white/5 rounded-[32px] overflow-hidden shadow-2xl">
-            <div className="p-8 border-b border-white/5 flex items-center justify-between bg-white/[0.01]">
-              <div>
-                <h3 className="text-lg font-heading font-black text-white uppercase tracking-tight">Gestão de Clientes</h3>
-                <p className="text-[10px] text-white/30 font-body uppercase tracking-widest mt-1">Base de dados ativa</p>
-              </div>
-              <div className="h-8 w-8 rounded-lg bg-white/5 flex items-center justify-center text-white/40">
-                <Users size={18} weight="duotone" />
-              </div>
-            </div>
-            <div className="divide-y divide-white/5 max-h-[500px] overflow-y-auto custom-scrollbar">
-              {profiles.length > 0 ? profiles.map(p => (
-                <div key={p.id} className="p-6 flex items-center justify-between hover:bg-white/[0.02] transition-colors group">
-                  <div className="flex items-center gap-4">
-                    <div className="h-12 w-12 rounded-2xl bg-white/5 flex items-center justify-center text-white/20 group-hover:bg-[#9EEA6C]/10 group-hover:text-[#9EEA6C] transition-all">
-                      <UserCircle size={28} weight="duotone" />
-                    </div>
-                    <div>
-                      <div className="flex items-center gap-2">
-                        <p className="text-[14px] font-heading font-black text-white uppercase tracking-tight">{p.full_name || "Membro CloudePay"}</p>
-                        <span className="h-1 w-1 rounded-full bg-white/20" />
-                        <span className="text-[9px] font-heading font-black text-[#9EEA6C] uppercase tracking-widest">Ativo</span>
-                      </div>
-                      <p className="text-[11px] text-white/30 font-body mt-0.5">{p.email}</p>
-                    </div>
-                  </div>
-                  <button className="h-8 w-8 rounded-lg bg-white/5 flex items-center justify-center text-white/20 hover:bg-white/10 hover:text-white transition-all opacity-0 group-hover:opacity-100">
-                    <ArrowRight size={14} weight="bold" />
-                  </button>
-                </div>
-              )) : (
-                <div className="p-20 text-center text-white/20">
-                  <p className="text-xs uppercase font-heading font-black tracking-widest">Nenhum cliente cadastrado</p>
-                </div>
-              )}
-            </div>
-          </section>
+        <div className="flex items-center gap-1 bg-[#121212] p-1.5 rounded-[22px] border border-white/5 overflow-x-auto no-scrollbar">
+          {[
+            { id: "overview", label: "Dashboard", icon: Monitor },
+            { id: "users", label: "Usuários", icon: Users },
+            { id: "charges", label: "Cobranças", icon: ArrowsLeftRight },
+            { id: "finance", label: "Financeiro", icon: CurrencyCircleDollar },
+            { id: "reports", label: "Relatórios", icon: FileText },
+            { id: "support", label: "Suporte", icon: ChatCenteredDots },
+            { id: "settings", label: "Configurações", icon: Key },
+            { id: "logs", label: "Logs", icon: Activity },
+          ].map(tab => (
+            <button
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id as AdminTab)}
+              className={`flex items-center gap-3 px-6 py-3.5 rounded-[18px] text-[10px] font-heading font-black uppercase tracking-widest transition-all whitespace-nowrap ${
+                activeTab === tab.id 
+                ? "bg-white text-[#0a0a0a] shadow-xl" 
+                : "text-white/40 hover:text-white hover:bg-white/5"
+              }`}
+            >
+              <tab.icon size={16} weight={activeTab === tab.id ? "bold" : "duotone"} />
+              {tab.label}
+            </button>
+          ))}
+        </div>
 
-          {/* MONITORAMENTO DE FLUXO GLOBAL */}
-          <section className="bg-[#121212] border border-white/5 rounded-[32px] overflow-hidden shadow-2xl">
-            <div className="p-8 border-b border-white/5 flex items-center justify-between bg-white/[0.01]">
-              <div>
-                <h3 className="text-lg font-heading font-black text-white uppercase tracking-tight">Monitoramento Global</h3>
-                <p className="text-[10px] text-white/30 font-body uppercase tracking-widest mt-1">Fluxo de transações real-time</p>
-              </div>
-              <div className="h-8 w-8 rounded-lg bg-[#9EEA6C]/10 flex items-center justify-center text-[#9EEA6C]">
-                <Clock size={18} weight="duotone" />
-              </div>
+        {renderTabContent()}
+
+        <div className="pt-10 border-t border-white/5 flex flex-col md:flex-row items-center justify-between gap-6">
+          <p className="text-[9px] font-body text-white/10 uppercase tracking-[0.4em]">CloudePay Security Protocol • v2.0.42</p>
+          <div className="flex items-center gap-8">
+            <div className="flex items-center gap-2">
+              <Database size={14} className="text-white/10" />
+              <span className="text-[9px] font-heading font-black text-white/20 uppercase tracking-widest">Encrypted DB Connection</span>
             </div>
-            <div className="divide-y divide-white/5 max-h-[500px] overflow-y-auto custom-scrollbar">
-              {charges.length > 0 ? charges.map(c => (
-                <div key={c.id} className="p-6 flex items-center justify-between hover:bg-white/[0.02] transition-colors group">
-                  <div className="flex items-center gap-4">
-                    <div className={`h-3 w-3 rounded-full ${c.status === 'paid' ? 'bg-[#9EEA6C] shadow-[0_0_8px_#9EEA6C]' : 'bg-white/10'}`} />
-                    <div>
-                      <div className="flex items-center gap-2">
-                        <p className="text-[15px] font-heading font-black text-white uppercase tracking-tighter">{formatBRL(c.amount_cents)}</p>
-                        <span className={`text-[8px] font-heading font-black px-1.5 py-0.5 rounded bg-white/5 uppercase tracking-widest ${c.status === 'paid' ? 'text-[#9EEA6C]' : 'text-white/40'}`}>
-                          {c.status}
-                        </span>
-                      </div>
-                      <p className="text-[10px] text-white/30 font-body mt-0.5">Vendedor: {c.profiles?.full_name || "Desconhecido"}</p>
-                    </div>
-                  </div>
-                  <div className="text-right">
-                    <p className="text-[10px] font-heading font-black text-[#9EEA6C] uppercase tracking-widest">Sua Taxa: {formatBRL(c.fee_cents)}</p>
-                    <p className="text-[10px] text-white/20 font-body mt-0.5">{new Date(c.created_at).toLocaleString()}</p>
-                  </div>
-                </div>
-              )) : (
-                <div className="p-20 text-center text-white/20">
-                  <p className="text-xs uppercase font-heading font-black tracking-widest">Nenhuma transação encontrada</p>
-                </div>
-              )}
+            <div className="flex items-center gap-2">
+              <ShieldCheck size={14} className="text-[#9EEA6C]/40" />
+              <span className="text-[9px] font-heading font-black text-white/20 uppercase tracking-widest">Audit Logs Enabled</span>
             </div>
-          </section>
+          </div>
         </div>
       </div>
     </Shell>

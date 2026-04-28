@@ -132,8 +132,7 @@ export default function Shell({ children, onNewCharge }: ShellProps) {
 
       {/* --- MAIN CONTENT --- */}
       <div className={`flex-1 flex flex-col min-w-0 h-screen overflow-y-auto relative ${isAdminPath ? 'dark' : ''}`}>
-        {/* Top Header */}
-        <header className={`sticky top-0 z-40 backdrop-blur-xl px-4 sm:px-6 lg:px-8 py-3 sm:py-4 ${isAdminPath ? 'bg-[#060606]/80' : 'bg-[#f8fafc]/80 dark:bg-[#060606]/80'}`}>
+        <header className={`sticky top-0 z-40 backdrop-blur-xl px-4 sm:px-6 lg:px-8 py-3 sm:py-4 ${isAdminPath ? 'bg-[#060606]/80 border-b border-white/5' : 'bg-[#f8fafc]/80 dark:bg-[#060606]/80'}`}>
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4 sm:gap-6">
               <div className="lg:hidden">
@@ -142,28 +141,49 @@ export default function Shell({ children, onNewCharge }: ShellProps) {
               <div className="hidden lg:flex h-8 w-8 items-center justify-center">
                 <Logo size="sm" variant={isAdminPath || theme === "dark" ? "white" : "black"} iconOnly />
               </div>
+              {isAdminPath && (
+                <div className="flex items-center gap-2">
+                  <div className="h-2 w-2 rounded-full bg-[#9EEA6C] animate-pulse shadow-[0_0_8px_#9EEA6C]" />
+                  <span className="text-[10px] font-heading font-black text-white uppercase tracking-[0.2em]">Sistemas Operacionais</span>
+                </div>
+              )}
             </div>
 
-            <div className="flex items-center gap-2 sm:gap-3">
-              <button 
-                onClick={onNewCharge}
-                className="hidden sm:flex h-10 items-center gap-2 rounded-xl bg-[#9EEA6C] px-4 text-[12px] font-heading font-extrabold text-[#0a0a0a] hover:brightness-110 transition-all shadow-sm"
-              >
-                Nova cobrança
-              </button>
-              <button onClick={toggleTheme} className="flex h-10 w-10 items-center justify-center rounded-xl bg-white dark:bg-white/5 border border-neutral-200 dark:border-white/10 text-neutral-500 dark:text-white/60 shadow-sm hover:border-[#9EEA6C]/30 transition-all">
-                {theme === "light" ? <Moon size={18} weight="bold" /> : <Sun size={18} weight="bold" />}
-              </button>
-              <button className="flex h-10 w-10 items-center justify-center rounded-xl bg-white dark:bg-white/5 border border-neutral-200 dark:border-white/10 text-neutral-500 dark:text-white/60 shadow-sm">
-                <Bell size={18} weight="bold" />
-              </button>
-              <button
-                onClick={openTutorial}
-                title="Ver tutorial"
-                className="flex h-10 w-10 items-center justify-center rounded-xl bg-white dark:bg-white/5 border border-neutral-200 dark:border-white/10 text-neutral-500 dark:text-white/60 shadow-sm hover:border-[#9EEA6C]/30 transition-all"
-              >
-                <Question size={18} weight="bold" />
-              </button>
+            <div className="flex items-center gap-2 sm:gap-4">
+              {!isAdminPath && (
+                <>
+                  <button 
+                    onClick={onNewCharge}
+                    className="flex items-center gap-2 rounded-xl bg-[#9EEA6C] px-3 sm:px-5 py-2 sm:py-2.5 text-[11px] sm:text-[12px] font-heading font-extrabold text-[#0a0a0a] shadow-lg shadow-[#9EEA6C]/10 active:scale-95 transition-all"
+                  >
+                    <Plus size={16} weight="bold" />
+                    <span className="hidden xs:inline">Nova cobrança</span>
+                  </button>
+
+                  <div className="flex items-center bg-white dark:bg-white/5 p-1 rounded-xl border border-neutral-200 dark:border-white/10">
+                    <button 
+                      onClick={toggleTheme}
+                      className="p-1.5 sm:p-2 rounded-lg text-neutral-400 dark:text-white/40 hover:text-[#0a0a0a] dark:hover:text-white transition-colors"
+                    >
+                      {theme === "light" ? <Moon size={18} weight="duotone" /> : <Sun size={18} weight="duotone" />}
+                    </button>
+                    <button className="p-1.5 sm:p-2 rounded-lg text-neutral-400 dark:text-white/40 hover:text-[#0a0a0a] dark:hover:text-white transition-colors">
+                      <Bell size={18} weight="duotone" />
+                    </button>
+                    <div className="w-px h-4 bg-neutral-200 dark:bg-white/10 mx-1" />
+                    <button className="p-1.5 sm:p-2 rounded-lg text-neutral-400 dark:text-white/40 hover:text-[#0a0a0a] dark:hover:text-white transition-colors">
+                      <Gear size={18} weight="duotone" />
+                    </button>
+                  </div>
+                </>
+              )}
+              
+              {isAdminPath && (
+                <div className="flex items-center gap-3 px-4 py-2 bg-white/5 border border-white/10 rounded-2xl">
+                  <ShieldCheck size={18} weight="duotone" className="text-[#9EEA6C]" />
+                  <span className="text-[10px] font-heading font-black text-white/60 uppercase tracking-widest">Acesso de Fundador</span>
+                </div>
+              )}
             </div>
           </div>
         </header>
