@@ -18,6 +18,7 @@ import {
   Envelope,
   List,
   X,
+  Plus,
 } from "phosphor-react";
 
 export default function Landing() {
