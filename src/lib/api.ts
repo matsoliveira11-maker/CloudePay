@@ -1,7 +1,5 @@
 import { supabase } from "./supabase";
-import * as mock from "./mockBackend";
 import type { Profile, Charge, Product, ChargeStatus, ChargeType } from "./mockBackend";
-import QRCode from "qrcode";
 
 // Re-export types
 export type { Profile, Charge, Product, ChargeStatus, ChargeType };
@@ -44,7 +42,7 @@ export async function signUp(input: {
 }
 
 export async function signIn(email: string, password: string) {
-  const { data, error } = await supabase.auth.signInWithPassword({
+  const { data: _d, error } = await supabase.auth.signInWithPassword({
     email,
     password,
   });
@@ -157,7 +155,7 @@ export async function createCharge(input: {
   const expires_at = new Date(Date.now() + 30 * 60 * 1000).toISOString();
   
   // 1. BUSCAR TOKEN DO VENDEDOR
-  const { data: profile, error: profileError } = await supabase
+  const { data: profile } = await supabase
     .from('profiles')
     .select('mp_access_token')
     .eq('id', input.profile_id)

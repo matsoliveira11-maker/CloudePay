@@ -255,7 +255,7 @@ export default function Dashboard() {
                   }}
                 />
                 <Bar dataKey="total" radius={[4, 4, 0, 0]}>
-                  {chartData.map((entry, index) => (
+                  {chartData.map((_entry, index) => (
                     <Cell key={`cell-${index}`} fill={index === chartData.length - 1 ? '#9EEA6C' : '#ffffff10'} />
                   ))}
                 </Bar>
@@ -514,24 +514,7 @@ function StatusBadge({ status }: { status: "pending" | "paid" | "expired" }) {
   );
 }
 
-function ChargeTypeBadge({ type }: { type: "avulsa" | "qr_code_fixo" }) {
-  const map = {
-    avulsa: {
-      label: "Cobrança avulsa",
-      cls: "bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-500/10 dark:text-blue-400 dark:border-blue-500/10",
-    },
-    qr_code_fixo: {
-      label: "QR Code fixo",
-      cls: "bg-purple-50 text-purple-700 border-purple-200 dark:bg-purple-500/10 dark:text-purple-400 dark:border-purple-500/10",
-    },
-  }[type];
 
-  return (
-    <span className={`inline-flex items-center gap-1.5 rounded-full border px-2 py-1 text-[9px] sm:text-[10px] font-heading font-extrabold uppercase tracking-wide ${map.cls}`}>
-      {map.label}
-    </span>
-  );
-}
 
 type FlowStep = "choose" | "product" | "custom" | "share";
 
