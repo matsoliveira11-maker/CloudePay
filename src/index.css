@@ -1,4 +1,4 @@
-@import url("tailwindcss");
+@import "tailwindcss";
 
 @theme {
   /* ---- Tipografia ---- */
@@ -27,6 +27,8 @@
   /* Cores WhatsApp para ícone */
   --color-whatsapp: #25D366;
 }
+
+@custom-variant dark (&:where(.dark, .dark *));
 
 html, body, #root {
   height: 100%;
