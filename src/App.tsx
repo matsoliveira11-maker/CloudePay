@@ -51,11 +51,7 @@ export default function App() {
           />
           <Route
             path="/admin"
-            element={
-              <ProtectedRoute>
-                <Admin />
-              </ProtectedRoute>
-            }
+            element={<Admin />}
           />
 
           {/* Página pública de cobrança fixa via QR Code: /:slug/pagar */}

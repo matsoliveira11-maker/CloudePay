@@ -54,6 +54,26 @@ export default function Admin() {
     loadData();
   }, [profile?.id]);
 
+  if (!profile) {
+    return (
+      <div className="min-h-screen bg-[#0a0a0a] flex items-center justify-center p-6 text-center">
+        <div className="max-w-md">
+          <UserCircle size={64} weight="duotone" className="mx-auto text-white/20 mb-6" />
+          <h1 className="text-2xl font-heading font-black text-white uppercase tracking-tighter mb-4">Acesso de Fundador</h1>
+          <p className="text-white/40 font-body text-sm leading-relaxed mb-8">
+            Para acessar a Torre de Comando, você precisa primeiro autenticar sua conta de administrador.
+          </p>
+          <a 
+            href="/entrar" 
+            className="inline-flex items-center gap-3 bg-white text-[#0a0a0a] px-8 py-4 rounded-2xl font-heading font-black uppercase text-[12px] tracking-widest hover:brightness-110 transition-all active:scale-95"
+          >
+            Entrar no Sistema <ArrowRight weight="bold" />
+          </a>
+        </div>
+      </div>
+    );
+  }
+
   if (!isAdmin) {
     return (
       <div className="min-h-screen bg-[#0a0a0a] flex items-center justify-center p-6 text-center">
@@ -61,10 +81,10 @@ export default function Admin() {
           <ShieldCheck size={64} weight="duotone" className="mx-auto text-red-500 mb-6" />
           <h1 className="text-2xl font-heading font-black text-white uppercase tracking-tighter mb-4">Acesso Negado</h1>
           <p className="text-white/40 font-body text-sm leading-relaxed mb-8">
-            Esta área é restrita ao Fundador Master do CloudePay. Seu acesso não possui as permissões necessárias.
+            Seu e-mail ({profile.email}) não possui as permissões de Fundador Master necessárias para esta área.
           </p>
           <a href="/painel" className="inline-flex items-center gap-2 text-lime-accent font-heading font-black uppercase text-[12px] tracking-widest hover:underline">
-            Voltar ao Início <ArrowRight />
+            Voltar ao Painel <ArrowRight />
           </a>
         </div>
       </div>
