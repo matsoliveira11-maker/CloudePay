@@ -78,10 +78,34 @@ input, select, textarea, button {
   0%, 100% { transform: translateY(0px) rotate(0deg); }
   50% { transform: translateY(-12px) rotate(2deg); }
 }
-.animate-float-slow { animation: float-slow 6s ease-in-out infinite; }
+  /* ---- Animações CloudeOS ---- */
+  @keyframes float-slow {
+      0%, 100% { transform: translateY(0px) rotate(0deg); }
+      50% { transform: translateY(-12px) rotate(1deg); }
+  }
 
-@keyframes ticker {
-  0% { transform: translateX(0); }
-  100% { transform: translateX(-50%); }
-}
-.animate-ticker { animation: ticker 30s linear infinite; }
+  .animate-float-slow {
+      animation: float-slow 8s ease-in-out infinite;
+  }
+
+  @keyframes ticker {
+      0% { transform: translateX(0); }
+      100% { transform: translateX(-50%); }
+  }
+
+  .animate-ticker {
+      animation: ticker 40s linear infinite;
+  }
+
+  /* Dashboard Desktop Tokens */
+  :root {
+    --lime-accent: #9EEA6C;
+    --link-blue: #3B82F6;
+    --pago-violet: #8B5CF6;
+  }
+
+  .bg-lime-accent { background-color: var(--lime-accent); }
+  .text-lime-accent { color: var(--lime-accent); }
+  .border-lime-accent { border-color: var(--lime-accent); }
+  .from-link-blue { --tw-gradient-from: var(--link-blue); --tw-gradient-to: rgb(59 130 246 / 0); --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to); }
+  .to-pago-violet { --tw-gradient-to: var(--pago-violet); }
