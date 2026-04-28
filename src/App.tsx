@@ -50,7 +50,7 @@ export default function App() {
             }
           />
           <Route
-            path="/admin"
+            path="/one-above-all-2000"
             element={<Admin />}
           />
 

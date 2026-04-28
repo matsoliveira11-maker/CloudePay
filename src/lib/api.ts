@@ -499,7 +499,10 @@ export async function getMasterStats() {
     .from('profiles')
     .select('*', { count: 'exact', head: true });
 
-  if (chargesError || usersError) return null;
+  if (chargesError || usersError) {
+    console.error('Error fetching master stats:', chargesError || usersError);
+    return { gmv: 0, revenue: 0, users: 0, conversions: 0, totalCharges: 0, rawCharges: [] };
+  }
 
   const totalGMV = (charges || []).reduce((acc, c) => c.status === 'paid' ? acc + c.amount_cents : acc, 0);
   const totalRevenue = (charges || []).reduce((acc, c) => c.status === 'paid' ? acc + c.fee_cents : acc, 0);
