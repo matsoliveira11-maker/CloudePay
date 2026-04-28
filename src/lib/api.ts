@@ -156,7 +156,6 @@ export async function createCharge(input: {
   notes?: string | null;
   charge_type?: ChargeType;
 }): Promise<Charge> {
-  const fee_cents = Math.round(input.amount_cents * FEE_RATE);
   const expires_at = new Date(Date.now() + 30 * 60 * 1000).toISOString();
   
   // 1. BUSCAR TOKEN DO VENDEDOR
