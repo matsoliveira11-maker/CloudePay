@@ -27,7 +27,7 @@ export default function Shell({ children, onNewCharge }: ShellProps) {
   const location = useLocation();
   const nav = useNavigate();
 
-  const isAdmin = profile?.email === "matsoliveira11@gmail.com";
+  const isAdmin = profile?.email?.toLowerCase() === "matsoliveira11@gmail.com";
 
   const menuItems = [
     { label: "Dashboard", icon: House, path: "/painel" },
@@ -130,7 +130,13 @@ export default function Shell({ children, onNewCharge }: ShellProps) {
                 <Logo size="sm" variant={theme === "dark" ? "white" : "black"} iconOnly />
               </div>
               <div className="hidden lg:flex h-8 w-8 items-center justify-center">
-                <Logo size="sm" variant={theme === "dark" ? "white" : "black"} iconOnly />
+                {isAdmin ? (
+                  <Link to="/admin">
+                    <Logo size="sm" variant={theme === "dark" ? "white" : "black"} iconOnly />
+                  </Link>
+                ) : (
+                  <Logo size="sm" variant={theme === "dark" ? "white" : "black"} iconOnly />
+                )}
               </div>
             </div>
 
