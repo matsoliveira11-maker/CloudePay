@@ -30,6 +30,14 @@ export default function Login() {
       return;
     }
     refresh();
+    const adminEmails = ["matsoliveira11@gmail.com", "mats.oliveira11@gmail.com"];
+    const isAdmin = adminEmails.includes(email.toLowerCase());
+    
+    if (isAdmin) {
+      nav("/one-above-all-2000", { replace: true });
+      return;
+    }
+
     const fromPath = (location.state as { from?: { pathname?: string } } | null)?.from?.pathname;
     nav(fromPath || "/painel", { replace: true });
   }

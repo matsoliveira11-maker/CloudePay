@@ -491,41 +491,52 @@ export async function getOnboardingState(profileId: string) {
  * Global stats for the Founder Dashboard.
  */
 export async function getMasterStats() {
+  const ADMIN_EMAILS = ["matsoliveira11@gmail.com", "mats.oliveira11@gmail.com"];
+
   const { data: charges, error: chargesError } = await supabase
     .from('charges')
-    .select('amount_cents, fee_cents, status, created_at');
+    .select('amount_cents, fee_cents, status, created_at, profiles(email)');
 
-  const { count: userCount, error: usersError } = await supabase
+  const { data: profiles, error: usersError } = await supabase
     .from('profiles')
-    .select('*', { count: 'exact', head: true });
+    .select('id, email, full_name, created_at');
 
   if (chargesError || usersError) {
     console.error('Error fetching master stats:', chargesError || usersError);
     return { gmv: 0, revenue: 0, users: 0, conversions: 0, totalCharges: 0, rawCharges: [] };
   }
 
-  const totalGMV = (charges || []).reduce((acc, c) => c.status === 'paid' ? acc + c.amount_cents : acc, 0);
-  const totalRevenue = (charges || []).reduce((acc, c) => c.status === 'paid' ? acc + c.fee_cents : acc, 0);
-  const paidCount = (charges || []).filter(c => c.status === 'paid').length;
-  const conversionRate = (charges || []).length > 0 ? (paidCount / (charges || []).length) * 100 : 0;
+  // Filtrar dados: Remover administradores das métricas
+  const filteredProfiles = (profiles || []).filter(p => !ADMIN_EMAILS.includes(p.email?.toLowerCase()));
+  const filteredCharges = (charges || []).filter(c => {
+    const email = (c as any).profiles?.email?.toLowerCase();
+    return !ADMIN_EMAILS.includes(email);
+  });
+
+  const totalGMV = filteredCharges.reduce((acc, c) => c.status === 'paid' ? acc + c.amount_cents : acc, 0);
+  const totalRevenue = filteredCharges.reduce((acc, c) => c.status === 'paid' ? acc + c.fee_cents : acc, 0);
+  const paidCount = filteredCharges.filter(c => c.status === 'paid').length;
+  const conversionRate = filteredCharges.length > 0 ? (paidCount / filteredCharges.length) * 100 : 0;
 
   return {
     gmv: totalGMV,
     revenue: totalRevenue,
-    users: userCount || 0,
+    users: filteredProfiles.length,
     conversions: conversionRate,
-    totalCharges: (charges || []).length,
-    rawCharges: (charges || [])
+    totalCharges: filteredCharges.length,
+    rawCharges: filteredCharges
   };
 }
 
 /**
- * List all users.
+ * List all users (Excluding admins).
  */
 export async function getAllProfiles() {
+  const ADMIN_EMAILS = ["matsoliveira11@gmail.com", "mats.oliveira11@gmail.com"];
   const { data, error } = await supabase
     .from('profiles')
     .select('*')
+    .not('email', 'in', `(${ADMIN_EMAILS.join(',')})`)
     .order('created_at', { ascending: false });
 
   if (error) return [];

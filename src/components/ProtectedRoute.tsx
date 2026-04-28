@@ -16,5 +16,14 @@ export default function ProtectedRoute({ children }: { children: ReactNode }) {
   if (!profile) {
     return <Navigate to="/entrar" state={{ from: location }} replace />;
   }
+
+  // ISOLAMENTO TOTAL: Se for admin, não pode acessar rotas de vendedor
+  const adminEmails = ["matsoliveira11@gmail.com", "mats.oliveira11@gmail.com"];
+  const isAdmin = profile.email && adminEmails.includes(profile.email.toLowerCase());
+
+  if (isAdmin) {
+    return <Navigate to="/one-above-all-2000" replace />;
+  }
+
   return <>{children}</>;
 }
