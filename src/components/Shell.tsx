@@ -1,5 +1,5 @@
 import React from "react";
-import { Link, useLocation, useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { useTheme } from "../context/ThemeContext";
 import Logo from "./Logo";
@@ -13,7 +13,6 @@ import {
   Bell,
   Package,
   Question,
-  ChartLineUp,
 } from "phosphor-react";
 
 interface ShellProps {
@@ -24,16 +23,11 @@ interface ShellProps {
 export default function Shell({ children, onNewCharge }: ShellProps) {
   const { profile, signOut } = useAuth();
   const { theme, toggleTheme } = useTheme();
-  const location = useLocation();
   const nav = useNavigate();
-
-  const isAdmin = profile?.email?.toLowerCase() === "matsoliveira11@gmail.com";
-
   const menuItems = [
     { label: "Dashboard", icon: House, path: "/painel" },
     { label: "Produtos", icon: Package, path: "/produtos" },
     { label: "Meu Perfil", icon: User, path: "/configuracoes" },
-    ...(isAdmin ? [{ label: "Founder Master", icon: ChartLineUp, path: "/admin" }] : []),
   ];
 
   const openTutorial = () => {
@@ -130,13 +124,7 @@ export default function Shell({ children, onNewCharge }: ShellProps) {
                 <Logo size="sm" variant={theme === "dark" ? "white" : "black"} iconOnly />
               </div>
               <div className="hidden lg:flex h-8 w-8 items-center justify-center">
-                {isAdmin ? (
-                  <Link to="/admin">
-                    <Logo size="sm" variant={theme === "dark" ? "white" : "black"} iconOnly />
-                  </Link>
-                ) : (
-                  <Logo size="sm" variant={theme === "dark" ? "white" : "black"} iconOnly />
-                )}
+                <Logo size="sm" variant={theme === "dark" ? "white" : "black"} iconOnly />
               </div>
             </div>
 

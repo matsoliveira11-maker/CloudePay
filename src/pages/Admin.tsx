@@ -17,15 +17,6 @@ import {
   Globe,
   ChartBar
 } from "phosphor-react";
-import {
-  AreaChart,
-  Area,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  ResponsiveContainer
-} from "recharts";
 
 const ADMIN_EMAILS = ["matsoliveira11@gmail.com"];
 const MASTER_SECRET_TOKEN = (import.meta as any).env.VITE_MASTER_TOKEN; 
@@ -209,10 +200,10 @@ export default function Admin() {
         {/* METRICAS CHAVE */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           {[
-            { label: "Volume Total (GMV)", value: formatBRL(stats.gmv), icon: CurrencyCircleDollar, color: "text-white" },
-            { label: "Receita CloudePay (1%)", value: formatBRL(stats.revenue), icon: ChartLineUp, color: "text-[#9EEA6C]" },
-            { label: "Base de Usuários", value: stats.users, icon: Users, color: "text-white" },
-            { label: "Taxa de Conversão", value: `${stats.conversions.toFixed(1)}%`, icon: TrendUp, color: "text-[#9EEA6C]" },
+            { label: "Volume Total (GMV)", value: formatBRL(stats?.gmv || 0), icon: CurrencyCircleDollar, color: "text-white" },
+            { label: "Receita CloudePay (1%)", value: formatBRL(stats?.revenue || 0), icon: ChartLineUp, color: "text-[#9EEA6C]" },
+            { label: "Base de Usuários", value: stats?.users || 0, icon: Users, color: "text-white" },
+            { label: "Taxa de Conversão", value: `${(stats?.conversions || 0).toFixed(1)}%`, icon: TrendUp, color: "text-[#9EEA6C]" },
           ].map((m, i) => (
             <div key={i} className="group bg-white/[0.03] border border-white/5 p-6 rounded-[28px] hover:bg-white/[0.05] transition-all">
               <div className="flex items-center justify-between mb-4">
@@ -238,37 +229,8 @@ export default function Admin() {
               <ChartBar size={24} weight="duotone" className="text-white/10" />
             </div>
             
-            <div className="h-[300px] w-full">
-              <ResponsiveContainer width="100%" height="100%">
-                <AreaChart data={chartData}>
-                  <defs>
-                    <linearGradient id="colorVolume" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="#9EEA6C" stopOpacity={0.3}/>
-                      <stop offset="95%" stopColor="#9EEA6C" stopOpacity={0}/>
-                    </linearGradient>
-                  </defs>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#ffffff05" vertical={false} />
-                  <XAxis 
-                    dataKey="date" 
-                    axisLine={false} 
-                    tickLine={false} 
-                    tick={{fill: '#ffffff30', fontSize: 10}} 
-                  />
-                  <YAxis hide />
-                  <Tooltip 
-                    contentStyle={{backgroundColor: '#1a1a1a', border: '1px solid #ffffff10', borderRadius: '16px'}}
-                    itemStyle={{color: '#9EEA6C', fontSize: '12px'}}
-                  />
-                  <Area 
-                    type="monotone" 
-                    dataKey="volume" 
-                    stroke="#9EEA6C" 
-                    strokeWidth={4}
-                    fillOpacity={1} 
-                    fill="url(#colorVolume)" 
-                  />
-                </AreaChart>
-              </ResponsiveContainer>
+            <div className="h-[300px] w-full flex items-center justify-center bg-white/[0.02] rounded-2xl border border-white/5">
+              <p className="text-[10px] font-heading font-black text-white/20 uppercase tracking-[0.2em]">Aguardando dados para gerar gráfico...</p>
             </div>
           </div>
 
@@ -276,9 +238,9 @@ export default function Admin() {
             <h3 className="text-lg font-heading font-black text-white uppercase tracking-tight mb-8">Status de Transações</h3>
             <div className="space-y-6">
               {[
-                { label: "Pagas", count: stats.rawCharges.filter((c:any) => c.status === 'paid').length, color: "bg-[#9EEA6C]" },
-                { label: "Pendentes", count: stats.rawCharges.filter((c:any) => c.status === 'pending').length, color: "bg-yellow-500/50" },
-                { label: "Expiradas", count: stats.rawCharges.filter((c:any) => c.status === 'expired').length, color: "bg-white/10" },
+                { label: "Pagas", count: stats?.rawCharges?.filter((c:any) => c.status === 'paid').length || 0, color: "bg-[#9EEA6C]" },
+                { label: "Pendentes", count: stats?.rawCharges?.filter((c:any) => c.status === 'pending').length || 0, color: "bg-yellow-500/50" },
+                { label: "Expiradas", count: stats?.rawCharges?.filter((c:any) => c.status === 'expired').length || 0, color: "bg-white/10" },
               ].map(item => (
                 <div key={item.label} className="space-y-2">
                   <div className="flex justify-between items-end">
@@ -288,7 +250,7 @@ export default function Admin() {
                   <div className="h-1.5 w-full bg-white/5 rounded-full overflow-hidden">
                     <div 
                       className={`h-full ${item.color} rounded-full`}
-                      style={{ width: `${(item.count / stats.totalCharges) * 100}%` }}
+                      style={{ width: `${stats?.totalCharges ? (item.count / stats.totalCharges) * 100 : 0}%` }}
                     />
                   </div>
                 </div>
