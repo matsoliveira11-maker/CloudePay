@@ -446,7 +446,7 @@ function Taskbar({
                         }`}
                 >
                     <div className={startActive ? "brightness-0" : ""}>
-                        <Logo size="xs" variant="white" hideText />
+                        <Logo size="sm" variant="white" iconOnly />
                     </div>
                 </button>
                 <div className="mx-1 hidden h-7 w-px bg-white/[0.08] sm:block" />
