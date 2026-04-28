@@ -37,6 +37,7 @@ import {
 } from "phosphor-react";
 import Logo from "../components/Logo";
 import { useAuth } from "../context/AuthContext";
+import { signIn } from "../lib/api";
 import {
     adminAlerts,
     adminCharges,
@@ -110,6 +111,12 @@ export default function Admin() {
     const [showStart, setShowStart] = useState(false);
     const [now, setNow] = useState(new Date());
 
+    // Admin Login State
+    const [adminEmail, setAdminEmail] = useState("");
+    const [adminPassword, setAdminPassword] = useState("");
+    const [loginError, setLoginError] = useState("");
+    const [isLoggingIn, setIsLoggingIn] = useState(false);
+
     const isAdmin = profile && ADMIN_EMAILS.includes(profile.email?.toLowerCase());
 
     useEffect(() => {
@@ -140,16 +147,96 @@ export default function Admin() {
         }
     };
 
+    const handleAdminLogin = async () => {
+        if (!adminEmail || !adminPassword) {
+            setLoginError("Preencha todos os campos.");
+            return;
+        }
+
+        setIsLoggingIn(true);
+        setLoginError("");
+        try {
+            const res = await signIn(adminEmail, adminPassword);
+            if (!res.ok) {
+                setLoginError(res.error || "Credenciais inválidas.");
+            } else {
+                if (!ADMIN_EMAILS.includes(res.profile?.email?.toLowerCase() || "")) {
+                    setLoginError("Este usuário não tem permissão de fundadores.");
+                }
+            }
+        } catch (err) {
+            setLoginError("Ocorreu um erro ao tentar acessar.");
+        } finally {
+            setIsLoggingIn(false);
+        }
+    };
+
     if (!isAdmin) {
         return (
-            <div className="min-h-screen flex items-center justify-center bg-[#0a0a0a] p-6 text-center">
-                <div className="max-w-md">
-                    <WarningCircle size={48} weight="duotone" className="mx-auto text-red-500 mb-4" />
-                    <h1 className="text-2xl font-heading font-black text-white mb-2">Acesso Negado</h1>
-                    <p className="text-neutral-400 mb-6">Este terminal é restrito a fundadores autorizados.</p>
-                    <Link to="/painel" className="inline-flex items-center gap-2 text-sm text-[#9EEA6C] hover:underline">
-                        Voltar ao painel
-                    </Link>
+            <div className="min-h-screen flex items-center justify-center bg-[#0a0a0a] p-6">
+                <div className="w-full max-w-sm">
+                    <div className="mb-12 text-center animate-in fade-in slide-in-from-top-8 duration-700">
+                        <div className="mx-auto w-16 h-16 rounded-2xl bg-white/[0.03] border border-white/10 flex items-center justify-center mb-6">
+                            <Logo size="md" variant="white" iconOnly />
+                        </div>
+                        <h1 className="text-3xl font-heading font-black text-white mb-2 tracking-tight">Cofre de Fundadores</h1>
+                        <p className="text-neutral-500 text-sm">Autenticação de nível 01 requerida para prosseguir.</p>
+                    </div>
+
+                    <div className="bg-neutral-900/50 border border-white/10 rounded-3xl p-8 backdrop-blur-xl shadow-2xl animate-in fade-in zoom-in-95 duration-500">
+                        <div className="space-y-4">
+                            <div className="space-y-1.5">
+                                <label className="text-[10px] font-bold uppercase tracking-widest text-white/40 ml-1">Email de Acesso</label>
+                                <input
+                                    type="email"
+                                    value={adminEmail}
+                                    onChange={(e) => setAdminEmail(e.target.value)}
+                                    placeholder="email@fundador.com"
+                                    className="w-full h-14 bg-white/5 border border-white/10 rounded-2xl px-6 text-white placeholder:text-white/20 focus:outline-none focus:border-[#9EEA6C] transition-all"
+                                />
+                            </div>
+                            
+                            <div className="space-y-1.5">
+                                <label className="text-[10px] font-bold uppercase tracking-widest text-white/40 ml-1">Senha Mestra</label>
+                                <input
+                                    type="password"
+                                    value={adminPassword}
+                                    onChange={(e) => setAdminPassword(e.target.value)}
+                                    onKeyDown={(e) => e.key === 'Enter' && handleAdminLogin()}
+                                    placeholder="••••••••"
+                                    className="w-full h-14 bg-white/5 border border-white/10 rounded-2xl px-6 text-white placeholder:text-white/20 focus:outline-none focus:border-[#9EEA6C] transition-all"
+                                />
+                            </div>
+
+                            {loginError && (
+                                <div className="flex items-center gap-2 px-4 py-3 rounded-xl bg-red-500/10 border border-red-500/20 text-red-400 text-xs font-medium">
+                                    <WarningCircle size={16} />
+                                    {loginError}
+                                </div>
+                            )}
+
+                            <button 
+                                onClick={handleAdminLogin}
+                                disabled={isLoggingIn}
+                                className="w-full h-14 bg-[#9EEA6C] hover:bg-[#8CD95B] disabled:opacity-50 disabled:cursor-not-allowed text-[#0a0a0a] rounded-2xl font-heading font-black uppercase tracking-widest text-xs transition-all active:scale-[0.98] mt-4 flex items-center justify-center gap-2"
+                            >
+                                {isLoggingIn ? (
+                                    <div className="h-4 w-4 border-2 border-[#0a0a0a]/30 border-t-[#0a0a0a] rounded-full animate-spin" />
+                                ) : (
+                                    <>
+                                        Acessar Cofre
+                                        <ArrowUp size={16} weight="bold" className="rotate-90" />
+                                    </>
+                                )}
+                            </button>
+                        </div>
+                    </div>
+
+                    <p className="mt-8 text-center">
+                        <Link to="/painel" className="text-xs text-neutral-500 hover:text-[#9EEA6C] transition-colors">
+                            Voltar para o Painel Principal
+                        </Link>
+                    </p>
                 </div>
             </div>
         );
