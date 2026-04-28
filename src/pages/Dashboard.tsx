@@ -214,9 +214,10 @@ export default function Dashboard() {
               <thead>
                 <tr className="border-b border-neutral-50 dark:border-white/[0.02] text-[9px] sm:text-[10px] font-heading font-extrabold uppercase tracking-[0.08em] text-neutral-400 dark:text-white/20">
                   <th className="px-3 sm:px-4 py-2.5 sm:py-3">Serviço / Cliente</th>
-                  <th className="px-3 sm:px-4 py-2.5 sm:py-3">Tipo</th>
                   <th className="px-3 sm:px-4 py-2.5 sm:py-3">Status</th>
-                  <th className="px-3 sm:px-4 py-2.5 sm:py-3 text-right">Valor</th>
+                  <th className="px-3 sm:px-4 py-2.5 sm:py-3 text-right">Bruto</th>
+                  <th className="px-3 sm:px-4 py-2.5 sm:py-3 text-right text-red-400/50">Taxa (2%)</th>
+                  <th className="px-3 sm:px-4 py-2.5 sm:py-3 text-right text-[#9EEA6C]">Líquido</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-neutral-50 dark:divide-white/[0.02]">
@@ -229,13 +230,16 @@ export default function Dashboard() {
                       </div>
                     </td>
                     <td className="px-3 sm:px-4 py-3 sm:py-3.5">
-                      <ChargeTypeBadge type={c.charge_type || "avulsa"} />
-                    </td>
-                    <td className="px-3 sm:px-4 py-3 sm:py-3.5">
                       <StatusBadge status={c.status} />
                     </td>
-                    <td className="px-3 sm:px-4 py-3 sm:py-3.5 text-right font-heading font-extrabold text-[#0a0a0a] dark:text-white text-[12px] sm:text-[13px]">
+                    <td className="px-3 sm:px-4 py-3 sm:py-3.5 text-right font-heading font-bold text-neutral-400 dark:text-white/30 text-[11px] sm:text-[12px]">
                       {formatBRL(c.amount_cents)}
+                    </td>
+                    <td className="px-3 sm:px-4 py-3 sm:py-3.5 text-right font-heading font-bold text-red-500/40 text-[11px] sm:text-[12px]">
+                      -{formatBRL(c.fee_cents)}
+                    </td>
+                    <td className="px-3 sm:px-4 py-3 sm:py-3.5 text-right font-heading font-extrabold text-[#0a0a0a] dark:text-white text-[12px] sm:text-[13px]">
+                      {formatBRL(c.net_amount_cents)}
                     </td>
                   </tr>
                 ))}
@@ -244,21 +248,30 @@ export default function Dashboard() {
           </div>
           <div className="divide-y divide-neutral-100 dark:divide-white/5 md:hidden">
             {charges.map((c) => (
-              <div key={c.id} className="px-3 py-3">
-                <div className="flex items-start justify-between gap-2">
+              <div key={c.id} className="px-3 py-4">
+                <div className="flex items-start justify-between gap-2 mb-3">
                   <div className="min-w-0">
-                    <div className="truncate font-heading font-extrabold text-[#0a0a0a] dark:text-white text-[13px]">{c.service_name}</div>
-                    <div className="mt-1 text-[11px] text-neutral-400 dark:text-white/30 font-body">
-                      {formatDateTime(c.created_at)} · {c.payer_name || "Cliente Final"}
+                    <div className="truncate font-heading font-extrabold text-[#0a0a0a] dark:text-white text-[14px]">{c.service_name}</div>
+                    <div className="mt-0.5 text-[11px] text-neutral-400 dark:text-white/30 font-body">
+                      {formatDateTime(c.created_at)}
                     </div>
                   </div>
-                  <div className="text-right shrink-0">
-                    <div className="font-heading font-extrabold text-[#0a0a0a] dark:text-white text-[13px]">{formatBRL(c.amount_cents)}</div>
-                  </div>
-                </div>
-                <div className="mt-2 flex items-center justify-between gap-2">
-                  <ChargeTypeBadge type={c.charge_type || "avulsa"} />
                   <StatusBadge status={c.status} />
+                </div>
+                
+                <div className="bg-neutral-50 dark:bg-white/[0.02] rounded-xl p-3 grid grid-cols-3 gap-2">
+                  <div className="text-center">
+                    <div className="text-[9px] uppercase font-black text-neutral-400 dark:text-white/20 tracking-tighter">Bruto</div>
+                    <div className="text-[11px] font-bold text-neutral-500 dark:text-white/40">{formatBRL(c.amount_cents)}</div>
+                  </div>
+                  <div className="text-center border-x border-neutral-100 dark:border-white/5">
+                    <div className="text-[9px] uppercase font-black text-red-400 dark:text-red-500/30 tracking-tighter">Taxas</div>
+                    <div className="text-[11px] font-bold text-red-400/50">-{formatBRL(c.fee_cents)}</div>
+                  </div>
+                  <div className="text-center">
+                    <div className="text-[9px] uppercase font-black text-[#9EEA6C] tracking-tighter">Líquido</div>
+                    <div className="text-[12px] font-black text-[#0a0a0a] dark:text-white">{formatBRL(c.net_amount_cents)}</div>
+                  </div>
                 </div>
               </div>
             ))}
