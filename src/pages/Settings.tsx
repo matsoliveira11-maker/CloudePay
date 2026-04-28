@@ -99,7 +99,7 @@ export default function Settings() {
               {!isConnected ? (
                 <div className="space-y-6 sm:space-y-8">
                   <div className="bg-amber-500/5 border border-amber-500/10 rounded-2xl p-4 sm:p-5 flex gap-4">
-                    <div className="h-10 w-10 sm:h-12 sm:w-12 rounded-xl bg-amber-500/10 flex items-center justify-center shrink-0">
+                    <div className="h-10 w-10 sm:h-12 sm:h-12 rounded-xl bg-amber-500/10 flex items-center justify-center shrink-0">
                       <Warning size={20} weight="fill" className="text-amber-500" />
                     </div>
                     <div>
