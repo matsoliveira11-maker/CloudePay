@@ -16,7 +16,6 @@ import {
     Funnel,
     GearSix,
     Headset,
-    House,
     Lightning,
     ListChecks,
     Lock,
@@ -723,7 +722,7 @@ function UsersApp() {
     const [search, setSearch] = useState("");
     const [selected, setSelected] = useState<AdminUser | null>(null);
 
-    const filtered = adminUsers.filter((u) => {
+    const filtered = adminUsers.filter((u: AdminUser) => {
         if (filterPlan !== "all" && u.plan !== filterPlan) return false;
         if (filterStatus !== "all" && u.status !== filterStatus) return false;
         if (search && !`${u.name} ${u.email} ${u.service}`.toLowerCase().includes(search.toLowerCase())) return false;
@@ -741,13 +740,13 @@ function UsersApp() {
                 </div>
                 <DataTable
                     headers={["Usuário", "Plano", "Status", "Recebido", "Cobranças", "Cidade"]}
-                    rows={filtered.map((u) => ({
+                    rows={filtered.map((u: AdminUser) => ({
                         key: u.id,
                         onClick: () => setSelected(u),
                         cells: [
                             <div className="flex items-center gap-2.5">
                                 <div className="flex h-8 w-8 items-center justify-center rounded-full bg-lime-accent/15 font-heading text-xs font-bold text-lime-accent">
-                                    {u.name.split(" ").map((n) => n[0]).slice(0, 2).join("")}
+                                    {u.name.split(" ").map((n: string) => n[0]).slice(0, 2).join("")}
                                 </div>
                                 <div className="min-w-0">
                                     <p className="truncate font-heading text-sm font-bold text-white">{u.name}</p>
@@ -825,7 +824,7 @@ function ChargesApp() {
     const [type, setType] = useState<string>("all");
     const [selected, setSelected] = useState<AdminCharge | null>(null);
 
-    const filtered = adminCharges.filter((c) => {
+    const filtered = adminCharges.filter((c: AdminCharge) => {
         if (status !== "all" && c.status !== status) return false;
         if (method !== "all" && c.method !== method) return false;
         if (type !== "all" && c.type !== type) return false;
@@ -846,7 +845,7 @@ function ChargesApp() {
 
                 <DataTable
                     headers={["ID", "Cliente", "Vendedor", "Método", "Valor", "Status", "Data"]}
-                    rows={filtered.map((c) => ({
+                    rows={filtered.map((c: AdminCharge) => ({
                         key: c.id,
                         onClick: () => setSelected(c),
                         cells: [

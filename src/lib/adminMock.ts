@@ -1,5 +1,4 @@
-// Mock data para o admin dashboard inspirado no Arena.ai
-// Adaptado para CloudePay
+// Mock data completo para o CloudeOS Admin Dashboard
 
 export interface AdminUser {
     id: string;
@@ -32,6 +31,19 @@ export interface AdminCharge {
     paidAt: string | null;
     service: string;
 }
+
+export const adminUsers: AdminUser[] = [
+    { id: "usr_1001", name: "Marina Costa", email: "marina@email.com", cpf: "123.456.789-00", plan: "Business", status: "Ativo", service: "Aulas de Piano", joinedAt: "2024-01-10T10:00:00Z", totalReceived: 12500, chargesCount: 45, city: "São Paulo, SP" },
+    { id: "usr_1002", name: "Lucas Pereira", email: "lucas@email.com", cpf: "234.567.890-11", plan: "Pro", status: "Ativo", service: "Personal Trainer", joinedAt: "2024-02-15T14:30:00Z", totalReceived: 8200, chargesCount: 32, city: "Rio de Janeiro, RJ" },
+    { id: "usr_1003", name: "Ana Ribeiro", email: "ana@email.com", cpf: "345.678.901-22", plan: "Free", status: "Inativo", service: "Artesanato", joinedAt: "2024-03-05T09:15:00Z", totalReceived: 1500, chargesCount: 8, city: "Belo Horizonte, MG" },
+    { id: "usr_1004", name: "Diego Mendes", email: "diego@email.com", cpf: "456.789.012-33", plan: "Business", status: "Bloqueado", service: "Consultoria TI", joinedAt: "2024-01-20T11:45:00Z", totalReceived: 21000, chargesCount: 12, city: "Curitiba, PR" },
+];
+
+export const adminCharges: AdminCharge[] = [
+    { id: "chg_5001", userId: "usr_1001", userName: "Marina Costa", payerName: "Bruno Carvalho", payerEmail: "bruno@cliente.com", payerCpf: "111.222.333-44", amount: 25000, fee: 500, net: 24500, method: "PIX", type: "Cobrança", status: "Paga", createdAt: "2024-04-20T10:30:00Z", paidAt: "2024-04-20T10:31:00Z", service: "Aulas de Piano" },
+    { id: "chg_5002", userId: "usr_1002", userName: "Lucas Pereira", payerName: "Carla Souza", payerEmail: "carla@cliente.com", payerCpf: "222.333.444-55", amount: 15000, fee: 300, net: 14700, method: "PIX QR", type: "Cobrança", status: "Pendente", createdAt: "2024-04-21T15:20:00Z", paidAt: null, service: "Personal Trainer" },
+    { id: "chg_5003", userId: "usr_1001", userName: "Marina Costa", payerName: "Daniel Lima", payerEmail: "daniel@cliente.com", payerCpf: "333.444.555-66", amount: 45000, fee: 900, net: 44100, method: "Boleto", type: "Assinatura", status: "Expirada", createdAt: "2024-04-10T09:00:00Z", paidAt: null, service: "Aulas de Piano" },
+];
 
 export const adminAlerts = [
     { id: "a1", level: "high", title: "Taxa de churn elevada", description: "Churn de 8.4% nos últimos 30 dias supera meta de 5%.", at: new Date().toISOString() },
@@ -80,13 +92,27 @@ export const chargeStatusBreakdown = [
     { label: "Fraude", value: 1, color: "#EF4444" },
 ];
 
-export const adminTickets = [
+export interface AdminTicket {
+    id: string;
+    user: string;
+    email: string;
+    subject: string;
+    preview: string;
+    unread: boolean;
+    lastAt: string;
+    messages: { who: "user" | "admin"; text: string; at: string }[];
+}
+
+export const adminTickets: AdminTicket[] = [
     {
         id: "t1", user: "Marina Costa", email: "marina@email.com",
         subject: "Não recebi o comprovante",
         preview: "Oi, gerei o link mas o cliente disse que pagou...",
         unread: true, lastAt: new Date().toISOString(),
-        messages: [{ who: "user", text: "Oi, gerei o link mas o cliente disse que pagou.", at: new Date().toISOString() }],
+        messages: [
+            { who: "user", text: "Oi, gerei o link mas o cliente disse que pagou.", at: new Date().toISOString() },
+            { who: "admin", text: "Olá Marina! Vou verificar agora mesmo o status dessa transação no gateway.", at: new Date().toISOString() }
+        ],
     }
 ];
 
