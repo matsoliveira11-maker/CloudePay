@@ -27,7 +27,8 @@ import {
   ResponsiveContainer
 } from "recharts";
 
-const ADMIN_EMAILS = ["matsoliveira11@gmail.com"]; // AJUSTE SEU EMAIL AQUI SE PRECISAR
+const ADMIN_EMAILS = ["matsoliveira11@gmail.com"];
+const MASTER_SECRET_TOKEN = (import.meta as any).env.VITE_MASTER_TOKEN; 
 
 export default function Admin() {
   const { profile } = useAuth();
@@ -35,11 +36,15 @@ export default function Admin() {
   const [profiles, setProfiles] = useState<any[]>([]);
   const [charges, setCharges] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [masterToken, setMasterToken] = useState("");
+  const [isUnlocked, setIsUnlocked] = useState(false);
+  const [tokenError, setTokenError] = useState(false);
 
-  const isAdmin = profile && ADMIN_EMAILS.includes(profile.email);
+  const isAdmin = profile && ADMIN_EMAILS.includes(profile.email?.toLowerCase());
 
   async function loadData() {
-    if (!isAdmin) return;
+    if (!isAdmin || !isUnlocked) return;
+    setLoading(true);
     const [s, p, c] = await Promise.all([
       api.getMasterStats(),
       api.getAllProfiles(),
@@ -52,8 +57,20 @@ export default function Admin() {
   }
 
   useEffect(() => {
-    loadData();
-  }, [profile?.id]);
+    if (isUnlocked) {
+      loadData();
+    }
+  }, [profile?.id, isUnlocked]);
+
+  const handleUnlock = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (masterToken === MASTER_SECRET_TOKEN) {
+      setIsUnlocked(true);
+      setTokenError(false);
+    } else {
+      setTokenError(true);
+    }
+  };
 
   if (!profile) {
     return (
@@ -88,6 +105,47 @@ export default function Admin() {
           <a href="/painel" className="inline-flex items-center gap-2 text-lime-accent font-heading font-black uppercase text-[12px] tracking-widest hover:underline">
             Voltar ao Painel <ArrowRight />
           </a>
+        </div>
+      </div>
+    );
+  }
+
+  if (!isUnlocked) {
+    return (
+      <div className="min-h-screen bg-[#060606] flex items-center justify-center p-6">
+        <div className="w-full max-w-sm">
+          <div className="text-center mb-10">
+            <div className="inline-flex h-16 w-16 items-center justify-center rounded-full bg-lime-accent/5 border border-lime-accent/20 text-lime-accent mb-6 animate-pulse">
+              <ShieldCheck size={32} weight="duotone" />
+            </div>
+            <h1 className="text-2xl font-heading font-black text-white uppercase tracking-tighter mb-2">Cofre Master</h1>
+            <p className="text-white/40 font-body text-xs uppercase tracking-widest">Insira o Token Extra para Desbloquear</p>
+          </div>
+
+          <form onSubmit={handleUnlock} className="space-y-4">
+            <div className="space-y-1.5">
+              <input
+                type="password"
+                placeholder="TOKEN-EXTRA-AQUI"
+                className={`w-full rounded-2xl border ${tokenError ? 'border-red-500/50' : 'border-white/5'} bg-white/[0.03] py-4 px-6 text-center text-sm font-heading font-black text-white placeholder:text-white/10 focus:border-lime-accent/30 focus:outline-none transition-all tracking-[0.3em]`}
+                value={masterToken}
+                onChange={(e) => setMasterToken(e.target.value)}
+                autoFocus
+              />
+              {tokenError && (
+                <p className="text-center text-[10px] font-heading font-black text-red-500 uppercase tracking-widest animate-in fade-in slide-in-from-top-1">Token Inválido</p>
+              )}
+            </div>
+
+            <button
+              type="submit"
+              className="w-full rounded-2xl bg-white py-4 text-[12px] font-heading font-black text-[#0a0a0a] uppercase tracking-[0.2em] hover:brightness-110 transition-all active:scale-95"
+            >
+              Desbloquear Torre
+            </button>
+          </form>
+
+          <p className="mt-12 text-center text-[9px] font-body text-white/20 uppercase tracking-[0.3em]">One Above All Protocol</p>
         </div>
       </div>
     );
