@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import Shell from "../components/Shell";
 import { useAuth } from "../context/AuthContext";
 import * as api from "../lib/api";
@@ -63,12 +64,13 @@ export default function Admin() {
           <p className="text-white/40 font-body text-sm leading-relaxed mb-8">
             Para acessar a Torre de Comando, você precisa primeiro autenticar sua conta de administrador.
           </p>
-          <a 
-            href="/entrar" 
+          <Link 
+            to="/entrar" 
+            state={{ from: { pathname: '/admin' } }}
             className="inline-flex items-center gap-3 bg-white text-[#0a0a0a] px-8 py-4 rounded-2xl font-heading font-black uppercase text-[12px] tracking-widest hover:brightness-110 transition-all active:scale-95"
           >
             Entrar no Sistema <ArrowRight weight="bold" />
-          </a>
+          </Link>
         </div>
       </div>
     );
