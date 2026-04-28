@@ -73,22 +73,70 @@ export default function Admin() {
     }
   };
 
+  const [adminEmail, setAdminEmail] = useState("");
+  const [adminPassword, setAdminPassword] = useState("");
+  const [authError, setAuthError] = useState("");
+  const [authLoading, setAuthLoading] = useState(false);
+
+  const handleAdminLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setAuthError("");
+    setAuthLoading(true);
+    const res = await api.signIn(adminEmail, adminPassword);
+    setAuthLoading(false);
+    if (!res.ok) {
+      setAuthError(res.error);
+    } else {
+      // O profile será atualizado pelo AuthContext automaticamente
+      window.location.reload(); // Recarregar para garantir o estado limpo
+    }
+  };
+
   if (!profile) {
     return (
-      <div className="min-h-screen bg-[#0a0a0a] flex items-center justify-center p-6 text-center">
-        <div className="max-w-md">
-          <UserCircle size={64} weight="duotone" className="mx-auto text-white/20 mb-6" />
-          <h1 className="text-2xl font-heading font-black text-white uppercase tracking-tighter mb-4">Acesso de Fundador</h1>
-          <p className="text-white/40 font-body text-sm leading-relaxed mb-8">
-            Para acessar a Torre de Comando, você precisa primeiro autenticar sua conta de administrador.
-          </p>
-          <Link 
-            to="/entrar" 
-            state={{ from: { pathname: '/one-above-all-2000' } }}
-            className="inline-flex items-center gap-3 bg-white text-[#0a0a0a] px-8 py-4 rounded-2xl font-heading font-black uppercase text-[12px] tracking-widest hover:brightness-110 transition-all active:scale-95"
-          >
-            Entrar no Sistema <ArrowRight weight="bold" />
-          </Link>
+      <div className="min-h-screen bg-[#060606] flex items-center justify-center p-6">
+        <div className="w-full max-w-sm">
+          <div className="text-center mb-10">
+            <div className="inline-flex h-16 w-16 items-center justify-center rounded-full bg-white/5 border border-white/10 text-white mb-6">
+              <UserCircle size={32} weight="duotone" />
+            </div>
+            <h1 className="text-2xl font-heading font-black text-white uppercase tracking-tighter mb-2">Portal Founder</h1>
+            <p className="text-white/40 font-body text-xs uppercase tracking-widest">Autenticação de Nível 1</p>
+          </div>
+
+          <form onSubmit={handleAdminLogin} className="space-y-4">
+            <div className="space-y-2">
+              <input
+                type="email"
+                placeholder="E-MAIL MASTER"
+                className="w-full rounded-2xl border border-white/5 bg-white/[0.03] py-4 px-6 text-center text-sm font-heading font-black text-white placeholder:text-white/10 focus:border-white/20 focus:outline-none transition-all uppercase tracking-widest"
+                value={adminEmail}
+                onChange={(e) => setAdminEmail(e.target.value)}
+                required
+              />
+              <input
+                type="password"
+                placeholder="SENHA MASTER"
+                className="w-full rounded-2xl border border-white/5 bg-white/[0.03] py-4 px-6 text-center text-sm font-heading font-black text-white placeholder:text-white/10 focus:border-white/20 focus:outline-none transition-all uppercase tracking-widest"
+                value={adminPassword}
+                onChange={(e) => setAdminPassword(e.target.value)}
+                required
+              />
+              {authError && (
+                <p className="text-center text-[10px] font-heading font-black text-red-500 uppercase tracking-widest animate-pulse">{authError}</p>
+              )}
+            </div>
+
+            <button
+              type="submit"
+              disabled={authLoading}
+              className="w-full rounded-2xl bg-white py-4 text-[12px] font-heading font-black text-[#0a0a0a] uppercase tracking-[0.2em] hover:brightness-110 transition-all active:scale-95 disabled:opacity-50"
+            >
+              {authLoading ? "Validando..." : "Acessar Portal"}
+            </button>
+          </form>
+
+          <p className="mt-12 text-center text-[9px] font-body text-white/20 uppercase tracking-[0.3em]">Authorized Access Only</p>
         </div>
       </div>
     );
