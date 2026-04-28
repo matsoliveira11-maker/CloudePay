@@ -8,6 +8,7 @@ import Dashboard from "./pages/Dashboard";
 import Settings from "./pages/Settings";
 import AuthCallback from "./pages/AuthCallback";
 import Products from "./pages/Products";
+import Admin from "./pages/Admin";
 import PublicCharge from "./pages/PublicCharge";
 import FixedQRCode from "./pages/FixedQRCode";
 import OnboardingTour from "./components/OnboardingTour";
@@ -46,6 +47,14 @@ export default function App() {
             element={
               <ProtectedRoute>
                 <Products />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin"
+            element={
+              <ProtectedRoute>
+                <Admin />
               </ProtectedRoute>
             }
           />

@@ -484,3 +484,60 @@ export async function getOnboardingState(profileId: string) {
     needsOnboarding: !data.onboarding_completed_at,
   };
 }
+
+// ---------- MASTER ADMIN FUNCTIONS (Investor-Ready) ----------
+
+/**
+ * Global stats for the Founder Dashboard.
+ */
+export async function getMasterStats() {
+  const { data: charges, error: chargesError } = await supabase
+    .from('charges')
+    .select('amount_cents, fee_cents, status, created_at');
+
+  const { count: userCount, error: usersError } = await supabase
+    .from('profiles')
+    .select('*', { count: 'exact', head: true });
+
+  if (chargesError || usersError) return null;
+
+  const totalGMV = (charges || []).reduce((acc, c) => c.status === 'paid' ? acc + c.amount_cents : acc, 0);
+  const totalRevenue = (charges || []).reduce((acc, c) => c.status === 'paid' ? acc + c.fee_cents : acc, 0);
+  const paidCount = (charges || []).filter(c => c.status === 'paid').length;
+  const conversionRate = (charges || []).length > 0 ? (paidCount / (charges || []).length) * 100 : 0;
+
+  return {
+    gmv: totalGMV,
+    revenue: totalRevenue,
+    users: userCount || 0,
+    conversions: conversionRate,
+    totalCharges: (charges || []).length,
+    rawCharges: (charges || [])
+  };
+}
+
+/**
+ * List all users.
+ */
+export async function getAllProfiles() {
+  const { data, error } = await supabase
+    .from('profiles')
+    .select('*')
+    .order('created_at', { ascending: false });
+
+  if (error) return [];
+  return data;
+}
+
+/**
+ * List all transactions with profile details.
+ */
+export async function getAllCharges() {
+  const { data, error } = await supabase
+    .from('charges')
+    .select('*, profiles(full_name, email)')
+    .order('created_at', { ascending: false });
+
+  if (error) return [];
+  return data as any[];
+}
