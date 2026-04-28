@@ -109,3 +109,29 @@ input, select, textarea, button {
   .border-lime-accent { border-color: var(--lime-accent); }
   .from-link-blue { --tw-gradient-from: var(--link-blue); --tw-gradient-to: rgb(59 130 246 / 0); --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to); }
   .to-pago-violet { --tw-gradient-to: var(--pago-violet); }
+
+  /* ---- Custom Scrollbar CloudeOS ---- */
+  .custom-scrollbar::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+    transition: background 0.2s ease;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: rgba(158, 234, 108, 0.3); /* Brilho Lime no hover */
+  }
+
+  /* Esconde a scrollbar quando não estiver em uso em alguns navegadores */
+  .custom-scrollbar {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(255, 255, 255, 0.1) transparent;
+  }

@@ -325,7 +325,7 @@ function AppWindow({
             </header>
 
             {/* Body — scrollable per window */}
-            <div className="flex-1 overflow-y-auto p-4 sm:p-6 custom-scrollbar">
+            <div className="flex-1 overflow-y-auto p-4 sm:p-6 custom-scrollbar flex flex-col">
                 {appId === "dashboard" && <DashboardApp />}
                 {appId === "users" && <UsersApp />}
                 {appId === "charges" && <ChargesApp />}
@@ -721,37 +721,39 @@ function UsersApp() {
     });
 
     return (
-        <div className="grid gap-4 lg:grid-cols-[1fr_360px]">
-            <div>
+        <div className="grid gap-4 lg:grid-cols-[1fr_360px] h-full items-start">
+            <div className="flex flex-col h-full">
                 <div className="mb-3 flex flex-wrap items-center gap-2">
                     <SearchBox value={search} onChange={setSearch} placeholder="Buscar por nome, email, serviço..." />
                     <Pill options={["all", "Free", "Pro", "Business"]} value={filterPlan} onChange={(v) => setFilterPlan(v as any)} icon={Funnel} />
                     <Pill options={["all", "Ativo", "Inativo", "Bloqueado"]} value={filterStatus} onChange={(v) => setFilterStatus(v as any)} icon={Funnel} />
                     <span className="ml-auto font-body text-xs text-white/40">{filtered.length} usuários</span>
                 </div>
-                <DataTable
-                    headers={["Usuário", "Plano", "Status", "Recebido", "Cobranças", "Cidade"]}
-                    rows={filtered.map((u: AdminUser) => ({
-                        key: u.id,
-                        onClick: () => setSelected(u),
-                        cells: [
-                            <div className="flex items-center gap-2.5">
-                                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-lime-accent/15 font-heading text-xs font-bold text-lime-accent">
-                                    {u.name.split(" ").map((n: string) => n[0]).slice(0, 2).join("")}
-                                </div>
-                                <div className="min-w-0">
-                                    <p className="truncate font-heading text-sm font-bold text-white">{u.name}</p>
-                                    <p className="truncate font-body text-[11px] text-white/45">{u.email}</p>
-                                </div>
-                            </div>,
-                            <Tag>{u.plan}</Tag>,
-                            <StatusDot status={u.status} />,
-                            <span className="font-mono text-xs text-white/85">{fmtBRL(u.totalReceived * 100)}</span>,
-                            <span className="font-mono text-xs text-white/65">{u.chargesCount}</span>,
-                            <span className="font-body text-xs text-white/55">{u.city}</span>,
-                        ],
-                    }))}
-                />
+                <div className="flex-1">
+                    <DataTable
+                        headers={["Usuário", "Plano", "Status", "Recebido", "Cobranças", "Cidade"]}
+                        rows={filtered.map((u: AdminUser) => ({
+                            key: u.id,
+                            onClick: () => setSelected(u),
+                            cells: [
+                                <div className="flex items-center gap-2.5">
+                                    <div className="flex h-8 w-8 items-center justify-center rounded-full bg-lime-accent/15 font-heading text-xs font-bold text-lime-accent">
+                                        {u.name.split(" ").map((n: string) => n[0]).slice(0, 2).join("")}
+                                    </div>
+                                    <div className="min-w-0">
+                                        <p className="truncate font-heading text-sm font-bold text-white">{u.name}</p>
+                                        <p className="truncate font-body text-[11px] text-white/45">{u.email}</p>
+                                    </div>
+                                </div>,
+                                <Tag>{u.plan}</Tag>,
+                                <StatusDot status={u.status} />,
+                                <span className="font-mono text-xs text-white/85">{fmtBRL(u.totalReceived * 100)}</span>,
+                                <span className="font-mono text-xs text-white/65">{u.chargesCount}</span>,
+                                <span className="font-body text-xs text-white/55">{u.city}</span>,
+                            ],
+                        }))}
+                    />
+                </div>
             </div>
 
             {selected && <UserDrawer user={selected} onClose={() => setSelected(null)} />}
@@ -824,8 +826,8 @@ function ChargesApp() {
     });
 
     return (
-        <div className="grid gap-4 lg:grid-cols-[1fr_360px]">
-            <div>
+        <div className="grid gap-4 lg:grid-cols-[1fr_360px] h-full items-start">
+            <div className="flex flex-col h-full">
                 <div className="mb-3 flex flex-wrap items-center gap-2">
                     <SearchBox value={search} onChange={setSearch} placeholder="Buscar por ID, email, CPF..." />
                     <Pill options={["all", "Paga", "Pendente", "Expirada", "Reembolsada", "Fraude"]} value={status} onChange={setStatus} icon={Funnel} />
@@ -834,25 +836,27 @@ function ChargesApp() {
                     <span className="ml-auto font-body text-xs text-white/40">{filtered.length} transações</span>
                 </div>
 
-                <DataTable
-                    headers={["ID", "Cliente", "Vendedor", "Método", "Valor", "Status", "Data"]}
-                    rows={filtered.map((c: AdminCharge) => ({
-                        key: c.id,
-                        onClick: () => setSelected(c),
-                        cells: [
-                            <span className="font-mono text-[11px] text-white/55">{c.id}</span>,
-                            <div>
-                                <p className="font-heading text-xs font-semibold text-white">{c.payerName}</p>
-                                <p className="font-body text-[10px] text-white/40">{c.payerEmail}</p>
-                            </div>,
-                            <span className="font-body text-xs text-white/65">{c.userName}</span>,
-                            <Tag>{c.method}</Tag>,
-                            <span className="font-mono text-xs text-white/85">{fmtBRL(c.amount)}</span>,
-                            <ChargeStatus status={c.status} />,
-                            <span className="font-mono text-[10px] text-white/45">{fmtDateTime(c.createdAt)}</span>,
-                        ],
-                    }))}
-                />
+                <div className="flex-1">
+                    <DataTable
+                        headers={["ID", "Cliente", "Vendedor", "Método", "Valor", "Status", "Data"]}
+                        rows={filtered.map((c: AdminCharge) => ({
+                            key: c.id,
+                            onClick: () => setSelected(c),
+                            cells: [
+                                <span className="font-mono text-[11px] text-white/55">{c.id}</span>,
+                                <div>
+                                    <p className="font-heading text-xs font-semibold text-white">{c.payerName}</p>
+                                    <p className="font-body text-[10px] text-white/40">{c.payerEmail}</p>
+                                </div>,
+                                <span className="font-body text-xs text-white/65">{c.userName}</span>,
+                                <Tag>{c.method}</Tag>,
+                                <span className="font-mono text-xs text-white/85">{fmtBRL(c.amount)}</span>,
+                                <ChargeStatus status={c.status} />,
+                                <span className="font-mono text-[10px] text-white/45">{fmtDateTime(c.createdAt)}</span>,
+                            ],
+                        }))}
+                    />
+                </div>
             </div>
 
             {selected && <ChargeDrawer charge={selected} onClose={() => setSelected(null)} />}
@@ -1292,7 +1296,7 @@ function DataTable({
     rows: { key: string; cells: React.ReactNode[]; onClick?: () => void }[];
 }) {
     return (
-        <div className="overflow-x-auto rounded-2xl border border-white/[0.06] animate-in fade-in duration-500">
+        <div className="overflow-x-auto rounded-2xl border border-white/[0.06] bg-white/[0.02] animate-in fade-in duration-500 custom-scrollbar h-full min-h-[400px]">
             <table className="w-full min-w-[640px]">
                 <thead>
                     <tr className="border-b border-white/[0.06] bg-white/[0.02]">
