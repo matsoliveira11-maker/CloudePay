@@ -10,18 +10,14 @@ import {
   TrendUp,
   ShieldCheck,
   UserCircle,
-  Clock,
   ArrowRight,
   Database,
   Globe,
-  ChartBar,
   Monitor,
-  ChartPie,
   FileText,
   ChatCenteredDots,
   Key,
   Activity,
-  List,
   Download,
   ArrowsLeftRight,
   UserSwitch,
@@ -29,12 +25,7 @@ import {
   Funnel,
   MagnifyingGlass,
   CheckCircle,
-  XCircle,
-  Receipt,
-  DotsThreeOutlineVertical,
-  PencilSimple,
-  Trash,
-  ArrowDown
+  DotsThreeOutlineVertical
 } from "phosphor-react";
 import {
   AreaChart,
@@ -44,8 +35,6 @@ import {
   CartesianGrid,
   Tooltip,
   ResponsiveContainer,
-  BarChart,
-  Bar,
   PieChart,
   Pie,
   Cell
@@ -67,7 +56,6 @@ export default function Admin() {
   const [masterToken, setMasterToken] = useState("");
   const [isUnlocked, setIsUnlocked] = useState(false);
   const [tokenError, setTokenError] = useState(false);
-  const [searchQuery, setSearchQuery] = useState("");
 
   const isAdmin = profile && ADMIN_EMAILS.includes(profile.email?.toLowerCase());
 
