@@ -16,8 +16,8 @@ import {
   ShieldCheck,
   ChartBar,
   Envelope,
-  Megaphone,
-  Plus,
+  List,
+  X,
 } from "phosphor-react";
 
 export default function Landing() {
@@ -99,43 +99,62 @@ function Header({ authed }: { authed: boolean }) {
     <header className="relative z-50">
       <div className="mx-auto flex max-w-[1200px] items-center justify-between px-4 sm:px-6 py-3 sm:py-5">
         <Logo variant="white" />
+
+        {/* Desktop nav */}
         <nav className="hidden items-center gap-8 text-[15px] text-white/70 font-body md:flex">
           <a href="#integracoes" className="hover:text-white transition-colors">Integrações</a>
           <a href="#taxas" className="hover:text-white transition-colors">Taxas</a>
           <a href="#depoimentos" className="hover:text-white transition-colors">Depoimentos</a>
           <a href="#faq" className="hover:text-white transition-colors">FAQ</a>
         </nav>
-        <div className="flex items-center gap-3">
+
+        <div className="flex items-center gap-2 sm:gap-3">
+          {/* CTA — hidden on mobile, visible on sm+ */}
           <Link
             to={authed ? "/painel" : "/entrar"}
-            className="rounded-full bg-lime-accent px-3.5 sm:px-5 py-2 sm:py-2.5 text-[13px] sm:text-sm font-heading font-bold text-[#0a0a0a] hover:brightness-110 transition flex items-center gap-1.5 sm:gap-2"
+            className="hidden sm:inline-flex rounded-full bg-lime-accent px-5 py-2.5 text-sm font-heading font-bold text-[#0a0a0a] hover:brightness-110 transition items-center gap-2"
           >
             Acessar Plataforma
             <ArrowRight size={14} weight="bold" />
           </Link>
+
+          {/* Hamburger — mobile only */}
           <button
-            className="ml-1 sm:ml-2 flex h-8 w-8 sm:h-9 sm:w-9 items-center justify-center rounded-lg text-white/60 hover:text-white md:hidden"
+            className="flex h-9 w-9 items-center justify-center rounded-xl border border-white/10 bg-white/[0.04] text-white/70 hover:text-white hover:bg-white/[0.08] transition md:hidden"
             onClick={() => setMobileOpen(!mobileOpen)}
+            aria-label="Menu"
           >
-            <Megaphone size={20} weight="bold" className={mobileOpen ? "hidden" : ""} />
-            <Plus size={20} weight="bold" className={mobileOpen ? "rotate-45 transition" : "hidden"} />
+            {mobileOpen
+              ? <X size={18} weight="bold" />
+              : <List size={18} weight="bold" />
+            }
           </button>
         </div>
       </div>
 
+      {/* Mobile drawer */}
       {mobileOpen && (
-        <div className="absolute left-0 right-0 top-full border-t border-white/10 bg-[#0a0a0a] px-6 py-5 md:hidden">
-          <nav className="flex flex-col gap-4 text-[15px] text-white/70 font-body">
-            <a href="#integracoes" onClick={() => setMobileOpen(false)}>Integrações</a>
-            <a href="#taxas" onClick={() => setMobileOpen(false)}>Taxas</a>
-            <a href="#depoimentos" onClick={() => setMobileOpen(false)}>Depoimentos</a>
-            <a href="#faq" onClick={() => setMobileOpen(false)}>FAQ</a>
+        <div className="absolute left-0 right-0 top-full border-t border-white/10 bg-[#0a0a0a]/95 backdrop-blur-xl px-5 py-6 md:hidden">
+          <nav className="flex flex-col gap-5 text-[15px] text-white/70 font-body mb-6">
+            <a href="#integracoes" onClick={() => setMobileOpen(false)} className="hover:text-white transition-colors">Integrações</a>
+            <a href="#taxas" onClick={() => setMobileOpen(false)} className="hover:text-white transition-colors">Taxas</a>
+            <a href="#depoimentos" onClick={() => setMobileOpen(false)} className="hover:text-white transition-colors">Depoimentos</a>
+            <a href="#faq" onClick={() => setMobileOpen(false)} className="hover:text-white transition-colors">FAQ</a>
           </nav>
+          <Link
+            to={authed ? "/painel" : "/entrar"}
+            onClick={() => setMobileOpen(false)}
+            className="flex w-full items-center justify-center gap-2 rounded-2xl bg-lime-accent py-3.5 text-[14px] font-heading font-bold text-[#0a0a0a] hover:brightness-110 transition"
+          >
+            Acessar Plataforma
+            <ArrowRight size={14} weight="bold" />
+          </Link>
         </div>
       )}
     </header>
   );
 }
+
 
 /* ------------------------------------------------------------------ */
 /* Hero                                                                */
