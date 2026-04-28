@@ -84,7 +84,7 @@ export default function Admin() {
           </p>
           <Link 
             to="/entrar" 
-            state={{ from: { pathname: '/admin' } }}
+            state={{ from: { pathname: '/one-above-all-2000' } }}
             className="inline-flex items-center gap-3 bg-white text-[#0a0a0a] px-8 py-4 rounded-2xl font-heading font-black uppercase text-[12px] tracking-widest hover:brightness-110 transition-all active:scale-95"
           >
             Entrar no Sistema <ArrowRight weight="bold" />
