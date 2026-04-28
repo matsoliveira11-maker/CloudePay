@@ -17,9 +17,19 @@ import {
   Globe,
   ChartBar
 } from "phosphor-react";
+import {
+  AreaChart,
+  Area,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer
+} from "recharts";
 
 const ADMIN_EMAILS = ["matsoliveira11@gmail.com"];
-const MASTER_SECRET_TOKEN = (import.meta as any).env.VITE_MASTER_TOKEN; 
+// @ts-ignore
+const MASTER_SECRET_TOKEN = import.meta.env.VITE_MASTER_TOKEN; 
 
 export default function Admin() {
   const { profile } = useAuth();
@@ -229,8 +239,37 @@ export default function Admin() {
               <ChartBar size={24} weight="duotone" className="text-white/10" />
             </div>
             
-            <div className="h-[300px] w-full flex items-center justify-center bg-white/[0.02] rounded-2xl border border-white/5">
-              <p className="text-[10px] font-heading font-black text-white/20 uppercase tracking-[0.2em]">Aguardando dados para gerar gráfico...</p>
+            <div className="h-[300px] w-full">
+              <ResponsiveContainer width="100%" height="100%">
+                <AreaChart data={chartData}>
+                  <defs>
+                    <linearGradient id="colorVolume" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="#9EEA6C" stopOpacity={0.3}/>
+                      <stop offset="95%" stopColor="#9EEA6C" stopOpacity={0}/>
+                    </linearGradient>
+                  </defs>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#ffffff05" vertical={false} />
+                  <XAxis 
+                    dataKey="date" 
+                    axisLine={false} 
+                    tickLine={false} 
+                    tick={{fill: '#ffffff30', fontSize: 10}} 
+                  />
+                  <YAxis hide />
+                  <Tooltip 
+                    contentStyle={{backgroundColor: '#1a1a1a', border: '1px solid #ffffff10', borderRadius: '16px'}}
+                    itemStyle={{color: '#9EEA6C', fontSize: '12px'}}
+                  />
+                  <Area 
+                    type="monotone" 
+                    dataKey="volume" 
+                    stroke="#9EEA6C" 
+                    strokeWidth={4}
+                    fillOpacity={1} 
+                    fill="url(#colorVolume)" 
+                  />
+                </AreaChart>
+              </ResponsiveContainer>
             </div>
           </div>
 
