@@ -1,5 +1,5 @@
 import React from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { useTheme } from "../context/ThemeContext";
 import Logo from "./Logo";
@@ -24,7 +24,10 @@ export default function Shell({ children, onNewCharge }: ShellProps) {
   const { profile, signOut } = useAuth();
   const { theme, toggleTheme } = useTheme();
   const nav = useNavigate();
-  const menuItems = [
+  const location = useLocation();
+  const isAdminPath = location.pathname === "/one-above-all-2000";
+
+  const menuItems = isAdminPath ? [] : [
     { label: "Dashboard", icon: House, path: "/painel" },
     { label: "Produtos", icon: Package, path: "/produtos" },
     { label: "Meu Perfil", icon: User, path: "/configuracoes" },
@@ -46,16 +49,25 @@ export default function Shell({ children, onNewCharge }: ShellProps) {
       <aside id="tour-profile" className="hidden lg:flex w-[260px] xl:w-[280px] flex-col bg-[#0a0a0a] text-white p-5 xl:p-6 shrink-0 border-l border-white/5 shadow-2xl relative z-50">
         <div className="mb-10">
           <Logo variant="white" size="sm" />
-          <p className="mt-3 text-[10px] leading-relaxed text-white/40 font-body font-medium">
-            Crie links de pagamento, receba por PIX e acompanhe tudo em tempo real.
-          </p>
-          <button 
-            onClick={onNewCharge}
-            className="mt-5 flex w-full items-center justify-center gap-2 rounded-xl bg-[#9EEA6C] py-2.5 text-[12px] font-heading font-extrabold text-[#0a0a0a] hover:brightness-110 transition-all shadow-lg shadow-[#9EEA6C]/10 active:scale-[0.98]"
-          >
-            <Plus size={16} weight="bold" />
-            Nova cobrança
-          </button>
+          {!isAdminPath && (
+            <>
+              <p className="mt-3 text-[10px] leading-relaxed text-white/40 font-body font-medium">
+                Crie links de pagamento, receba por PIX e acompanhe tudo em tempo real.
+              </p>
+              <button 
+                onClick={onNewCharge}
+                className="mt-5 flex w-full items-center justify-center gap-2 rounded-xl bg-[#9EEA6C] py-2.5 text-[12px] font-heading font-extrabold text-[#0a0a0a] hover:brightness-110 transition-all shadow-lg shadow-[#9EEA6C]/10 active:scale-[0.98]"
+              >
+                <Plus size={16} weight="bold" />
+                Nova cobrança
+              </button>
+            </>
+          )}
+          {isAdminPath && (
+            <p className="mt-3 text-[10px] leading-relaxed text-[#9EEA6C] font-heading font-black uppercase tracking-widest">
+              Modo Founder Master Ativado
+            </p>
+          )}
         </div>
 
         <nav className="flex-1 space-y-2">
