@@ -442,10 +442,12 @@ function Taskbar({
                 <button
                     onClick={onShowStart}
                     aria-label="Abrir menu"
-                    className={`group flex h-11 w-11 items-center justify-center rounded-xl transition-all active:scale-90 ${startActive ? "bg-lime-accent text-[#0a0a0a]" : "text-white/75 hover:bg-white/[0.06]"
+                    className={`group flex h-11 w-11 items-center justify-center rounded-xl transition-all active:scale-90 ${startActive ? "bg-lime-accent" : "text-white/75 hover:bg-white/[0.06]"
                         }`}
                 >
-                    <CloudIcon active={startActive} />
+                    <div className={startActive ? "brightness-0" : ""}>
+                        <Logo size="xs" variant="white" hideText />
+                    </div>
                 </button>
                 <div className="mx-1 hidden h-7 w-px bg-white/[0.08] sm:block" />
                 <div className="flex items-center gap-1 overflow-x-auto">
@@ -484,17 +486,6 @@ function Taskbar({
     );
 }
 
-function CloudIcon({ active }: { active: boolean }) {
-    const fill = active ? "#0a0a0a" : "#ffffff";
-    const accent = active ? "#0a0a0a" : "#9EEA6C";
-    return (
-        <svg width="22" height="22" viewBox="0 0 32 32" fill="none">
-            <circle cx="10" cy="20" r="8" fill={fill} />
-            <circle cx="22" cy="20" r="8" fill={fill} />
-            <circle cx="18" cy="13" r="7" fill={accent} />
-        </svg>
-    );
-}
 
 /* ================================================================== */
 /* APP 1 — DASHBOARD                                                   */
