@@ -254,23 +254,27 @@ export default function Admin() {
           </div>
         </div>
 
-        {/* METRICAS CHAVE */}
+        {/* METRICAS ESTRATÉGICAS - O PETRÓLEO */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           {[
-            { label: "Volume Total (GMV)", value: formatBRL(stats?.gmv || 0), icon: CurrencyCircleDollar, color: "text-white" },
-            { label: "Receita CloudePay (1%)", value: formatBRL(stats?.revenue || 0), icon: ChartLineUp, color: "text-[#9EEA6C]" },
-            { label: "Base de Usuários", value: stats?.users || 0, icon: Users, color: "text-white" },
-            { label: "Taxa de Conversão", value: `${(stats?.conversions || 0).toFixed(1)}%`, icon: TrendUp, color: "text-[#9EEA6C]" },
+            { label: "Volume Total (GMV)", value: formatBRL(stats?.gmv || 0), icon: CurrencyCircleDollar, color: "text-white", sub: "Toda a vida da empresa" },
+            { label: "Lucro Líquido (1%)", value: formatBRL(stats?.revenue || 0), icon: ChartLineUp, color: "text-[#9EEA6C]", sub: "Sua parte no negócio" },
+            { label: "Ticket Médio Global", value: formatBRL(stats?.totalCharges ? stats.gmv / stats.totalCharges : 0), icon: TrendUp, color: "text-white", sub: "Média por transação" },
+            { label: "Base de Clientes", value: stats?.users || 0, icon: Users, color: "text-[#9EEA6C]", sub: "Usuários cadastrados" },
           ].map((m, i) => (
-            <div key={i} className="group bg-white/[0.03] border border-white/5 p-6 rounded-[28px] hover:bg-white/[0.05] transition-all">
-              <div className="flex items-center justify-between mb-4">
+            <div key={i} className="group bg-white/[0.03] border border-white/5 p-6 rounded-[28px] hover:bg-white/[0.05] transition-all relative overflow-hidden">
+              <div className="absolute -right-4 -bottom-4 opacity-5 group-hover:opacity-10 transition-opacity">
+                <m.icon size={120} weight="duotone" />
+              </div>
+              <div className="flex items-center justify-between mb-4 relative z-10">
                 <div className={`h-10 w-10 rounded-xl bg-white/5 flex items-center justify-center ${m.color}`}>
                   <m.icon size={20} weight="duotone" />
                 </div>
                 <div className="h-1.5 w-1.5 rounded-full bg-[#9EEA6C] shadow-[0_0_10px_#9EEA6C]" />
               </div>
-              <p className="text-[10px] font-heading font-black text-white/20 uppercase tracking-widest mb-1">{m.label}</p>
-              <p className={`text-2xl font-heading font-black ${m.color} tracking-tight`}>{m.value}</p>
+              <p className="text-[10px] font-heading font-black text-white/20 uppercase tracking-widest mb-1 relative z-10">{m.label}</p>
+              <p className={`text-2xl font-heading font-black ${m.color} tracking-tight relative z-10`}>{m.value}</p>
+              <p className="text-[9px] font-body text-white/40 mt-1 relative z-10">{m.sub}</p>
             </div>
           ))}
         </div>
@@ -350,60 +354,83 @@ export default function Admin() {
           </div>
         </div>
 
-        {/* LISTA DE CLIENTES E TRANSAÇÕES */}
+        {/* MONITORAMENTO E SUPORTE MASTER */}
         <div className="grid lg:grid-cols-2 gap-6">
-          {/* CLIENTES */}
-          <section className="bg-white/[0.02] border border-white/5 rounded-[32px] overflow-hidden">
-            <div className="p-8 border-b border-white/5">
-              <h3 className="text-lg font-heading font-black text-white uppercase tracking-tight">Base de Clientes</h3>
+          {/* GESTÃO DE CLIENTES */}
+          <section className="bg-[#121212] border border-white/5 rounded-[32px] overflow-hidden shadow-2xl">
+            <div className="p-8 border-b border-white/5 flex items-center justify-between bg-white/[0.01]">
+              <div>
+                <h3 className="text-lg font-heading font-black text-white uppercase tracking-tight">Gestão de Clientes</h3>
+                <p className="text-[10px] text-white/30 font-body uppercase tracking-widest mt-1">Base de dados ativa</p>
+              </div>
+              <div className="h-8 w-8 rounded-lg bg-white/5 flex items-center justify-center text-white/40">
+                <Users size={18} weight="duotone" />
+              </div>
             </div>
-            <div className="divide-y divide-white/5">
-              {profiles.slice(0, 5).map(p => (
-                <div key={p.id} className="p-6 flex items-center justify-between hover:bg-white/[0.01] transition-colors">
+            <div className="divide-y divide-white/5 max-h-[500px] overflow-y-auto custom-scrollbar">
+              {profiles.length > 0 ? profiles.map(p => (
+                <div key={p.id} className="p-6 flex items-center justify-between hover:bg-white/[0.02] transition-colors group">
                   <div className="flex items-center gap-4">
-                    <div className="h-10 w-10 rounded-full bg-white/5 flex items-center justify-center text-white/20">
-                      <UserCircle size={24} />
+                    <div className="h-12 w-12 rounded-2xl bg-white/5 flex items-center justify-center text-white/20 group-hover:bg-[#9EEA6C]/10 group-hover:text-[#9EEA6C] transition-all">
+                      <UserCircle size={28} weight="duotone" />
                     </div>
                     <div>
-                      <p className="text-[14px] font-heading font-black text-white uppercase">{p.full_name || "Sem nome"}</p>
-                      <p className="text-[11px] text-white/30 font-body">{p.email}</p>
+                      <div className="flex items-center gap-2">
+                        <p className="text-[14px] font-heading font-black text-white uppercase tracking-tight">{p.full_name || "Membro CloudePay"}</p>
+                        <span className="h-1 w-1 rounded-full bg-white/20" />
+                        <span className="text-[9px] font-heading font-black text-[#9EEA6C] uppercase tracking-widest">Ativo</span>
+                      </div>
+                      <p className="text-[11px] text-white/30 font-body mt-0.5">{p.email}</p>
                     </div>
                   </div>
-                  <div className="text-right">
-                    <p className="text-[10px] font-heading font-black text-white/20 uppercase">Membro desde</p>
-                    <p className="text-[11px] text-white/40 font-body">{new Date(p.created_at).toLocaleDateString()}</p>
-                  </div>
+                  <button className="h-8 w-8 rounded-lg bg-white/5 flex items-center justify-center text-white/20 hover:bg-white/10 hover:text-white transition-all opacity-0 group-hover:opacity-100">
+                    <ArrowRight size={14} weight="bold" />
+                  </button>
                 </div>
-              ))}
+              )) : (
+                <div className="p-20 text-center text-white/20">
+                  <p className="text-xs uppercase font-heading font-black tracking-widest">Nenhum cliente cadastrado</p>
+                </div>
+              )}
             </div>
           </section>
 
-          {/* ÚLTIMAS TRANSAÇÕES GLOBAIS */}
-          <section className="bg-white/[0.02] border border-white/5 rounded-[32px] overflow-hidden">
-            <div className="p-8 border-b border-white/5">
-              <h3 className="text-lg font-heading font-black text-white uppercase tracking-tight">Fluxo de Caixa Master</h3>
+          {/* MONITORAMENTO DE FLUXO GLOBAL */}
+          <section className="bg-[#121212] border border-white/5 rounded-[32px] overflow-hidden shadow-2xl">
+            <div className="p-8 border-b border-white/5 flex items-center justify-between bg-white/[0.01]">
+              <div>
+                <h3 className="text-lg font-heading font-black text-white uppercase tracking-tight">Monitoramento Global</h3>
+                <p className="text-[10px] text-white/30 font-body uppercase tracking-widest mt-1">Fluxo de transações real-time</p>
+              </div>
+              <div className="h-8 w-8 rounded-lg bg-[#9EEA6C]/10 flex items-center justify-center text-[#9EEA6C]">
+                <Clock size={18} weight="duotone" />
+              </div>
             </div>
-            <div className="divide-y divide-white/5">
-              {charges.slice(0, 5).map(c => (
-                <div key={c.id} className="p-6 flex items-center justify-between hover:bg-white/[0.01] transition-colors">
+            <div className="divide-y divide-white/5 max-h-[500px] overflow-y-auto custom-scrollbar">
+              {charges.length > 0 ? charges.map(c => (
+                <div key={c.id} className="p-6 flex items-center justify-between hover:bg-white/[0.02] transition-colors group">
                   <div className="flex items-center gap-4">
-                    <div className={`h-2 w-2 rounded-full ${c.status === 'paid' ? 'bg-[#9EEA6C]' : 'bg-white/10'}`} />
+                    <div className={`h-3 w-3 rounded-full ${c.status === 'paid' ? 'bg-[#9EEA6C] shadow-[0_0_8px_#9EEA6C]' : 'bg-white/10'}`} />
                     <div>
-                      <p className="text-[13px] font-heading font-black text-white uppercase tracking-tight">{formatBRL(c.amount_cents)}</p>
-                      <p className="text-[10px] text-white/30 font-body">por {c.profiles?.full_name}</p>
+                      <div className="flex items-center gap-2">
+                        <p className="text-[15px] font-heading font-black text-white uppercase tracking-tighter">{formatBRL(c.amount_cents)}</p>
+                        <span className={`text-[8px] font-heading font-black px-1.5 py-0.5 rounded bg-white/5 uppercase tracking-widest ${c.status === 'paid' ? 'text-[#9EEA6C]' : 'text-white/40'}`}>
+                          {c.status}
+                        </span>
+                      </div>
+                      <p className="text-[10px] text-white/30 font-body mt-0.5">Vendedor: {c.profiles?.full_name || "Desconhecido"}</p>
                     </div>
                   </div>
                   <div className="text-right">
-                    <div className="flex items-center gap-1.5 justify-end text-white/30">
-                      <Clock size={12} />
-                      <p className="text-[11px] font-body">{new Date(c.created_at).toLocaleTimeString()}</p>
-                    </div>
-                    <p className="text-[10px] font-heading font-black text-lime-accent uppercase mt-1">
-                      Taxa: {formatBRL(c.fee_cents)}
-                    </p>
+                    <p className="text-[10px] font-heading font-black text-[#9EEA6C] uppercase tracking-widest">Sua Taxa: {formatBRL(c.fee_cents)}</p>
+                    <p className="text-[10px] text-white/20 font-body mt-0.5">{new Date(c.created_at).toLocaleString()}</p>
                   </div>
                 </div>
-              ))}
+              )) : (
+                <div className="p-20 text-center text-white/20">
+                  <p className="text-xs uppercase font-heading font-black tracking-widest">Nenhuma transação encontrada</p>
+                </div>
+              )}
             </div>
           </section>
         </div>

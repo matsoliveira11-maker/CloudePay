@@ -91,20 +91,24 @@ export default function Shell({ children, onNewCharge }: ShellProps) {
             );
           })}
           
-          <button
-            onClick={toggleTheme}
-            className="flex w-full items-center gap-2.5 rounded-xl px-3 py-2.5 text-[12px] font-heading font-bold text-white/50 hover:text-white hover:bg-white/5 transition-all"
-          >
-            {theme === "light" ? <Moon size={18} weight="duotone" /> : <Sun size={18} weight="duotone" />}
-            Tema escuro
-          </button>
-          <button
-            onClick={openTutorial}
-            className="flex w-full items-center gap-2.5 rounded-xl px-3 py-2.5 text-[12px] font-heading font-bold text-white/50 hover:text-white hover:bg-white/5 transition-all"
-          >
-            <Question size={18} weight="duotone" />
-            Ver tutorial
-          </button>
+          {!isAdminPath && (
+            <>
+              <button
+                onClick={toggleTheme}
+                className="flex w-full items-center gap-2.5 rounded-xl px-3 py-2.5 text-[12px] font-heading font-bold text-white/50 hover:text-white hover:bg-white/5 transition-all"
+              >
+                {theme === "light" ? <Moon size={18} weight="duotone" /> : <Sun size={18} weight="duotone" />}
+                Tema escuro
+              </button>
+              <button
+                onClick={openTutorial}
+                className="flex w-full items-center gap-2.5 rounded-xl px-3 py-2.5 text-[12px] font-heading font-bold text-white/50 hover:text-white hover:bg-white/5 transition-all"
+              >
+                <Question size={18} weight="duotone" />
+                Ver tutorial
+              </button>
+            </>
+          )}
         </nav>
 
         {/* User Card At Bottom */}
@@ -127,16 +131,16 @@ export default function Shell({ children, onNewCharge }: ShellProps) {
       </aside>
 
       {/* --- MAIN CONTENT --- */}
-      <div className="flex-1 flex flex-col min-w-0 h-screen overflow-y-auto relative">
+      <div className={`flex-1 flex flex-col min-w-0 h-screen overflow-y-auto relative ${isAdminPath ? 'dark' : ''}`}>
         {/* Top Header */}
-        <header className="sticky top-0 z-40 bg-[#f8fafc]/80 dark:bg-[#060606]/80 backdrop-blur-xl px-4 sm:px-6 lg:px-8 py-3 sm:py-4">
+        <header className={`sticky top-0 z-40 backdrop-blur-xl px-4 sm:px-6 lg:px-8 py-3 sm:py-4 ${isAdminPath ? 'bg-[#060606]/80' : 'bg-[#f8fafc]/80 dark:bg-[#060606]/80'}`}>
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4 sm:gap-6">
               <div className="lg:hidden">
-                <Logo size="sm" variant={theme === "dark" ? "white" : "black"} iconOnly />
+                <Logo size="sm" variant={isAdminPath || theme === "dark" ? "white" : "black"} iconOnly />
               </div>
               <div className="hidden lg:flex h-8 w-8 items-center justify-center">
-                <Logo size="sm" variant={theme === "dark" ? "white" : "black"} iconOnly />
+                <Logo size="sm" variant={isAdminPath || theme === "dark" ? "white" : "black"} iconOnly />
               </div>
             </div>
 
