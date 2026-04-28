@@ -142,8 +142,6 @@ export async function getProfileBySlug(slug: string): Promise<Profile | null> {
 
 // ---------- CHARGES REAL ----------
 
-const FEE_RATE = 0.02;
-
 export async function createCharge(input: {
   profile_id: string;
   slug: string;
