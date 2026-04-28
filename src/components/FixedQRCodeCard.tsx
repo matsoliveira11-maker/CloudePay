@@ -9,7 +9,6 @@ import {
   Download,
   CopySimple,
   WhatsappLogo,
-  CheckCircle,
   QrCode as QrCodeIcon,
 } from "phosphor-react";
 
@@ -74,10 +73,6 @@ export default function FixedQRCodeCard({
       link.click();
     }
   }
-
-  const totalReceivedFixed = fixedQRCodeCharges
-    .filter((c) => c.status === "paid")
-    .reduce((sum, c) => sum + c.net_amount_cents, 0);
 
   return (
     <div className="rounded-2xl sm:rounded-[28px] border border-neutral-200 dark:border-white/5 bg-white dark:bg-[#121212] shadow-sm mb-3 sm:mb-5 overflow-hidden">

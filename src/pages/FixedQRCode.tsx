@@ -5,7 +5,7 @@ import Button from "../components/Button";
 import Input from "../components/Input";
 import * as api from "../lib/api";
 import type { Charge, Profile } from "../lib/mockBackend";
-import { formatBRL, maskBRLInput, parseBRLToCents, formatCPF, maskCPFInput } from "../lib/format";
+import { formatBRL, maskBRLInput, parseBRLToCents, maskCPFInput } from "../lib/format";
 import { isValidCPF, sanitizeText } from "../lib/validators";
 import {
   QrCode,
@@ -63,7 +63,6 @@ export default function FixedQRCode() {
       <FormStage
         profile={profile}
         onSubmit={(c) => { setCharge(c); setStage("paying"); }}
-        onNotFound={() => setStage("notfound")}
       />
     );
   }
@@ -91,11 +90,10 @@ export default function FixedQRCode() {
 // ---------- FORM (entrada de dados) ----------
 
 function FormStage({
-  profile, onSubmit, onNotFound,
+  profile, onSubmit
 }: {
   profile: Profile;
   onSubmit: (c: Charge) => void;
-  onNotFound: () => void;
 }) {
   const [amount, setAmount] = useState("");
   const [payerName, setPayerName] = useState("");

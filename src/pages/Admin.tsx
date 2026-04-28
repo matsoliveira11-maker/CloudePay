@@ -3,12 +3,12 @@ import Shell from "../components/Shell";
 import { useAuth } from "../context/AuthContext";
 import * as api from "../lib/api";
 import { formatBRL } from "../lib/format";
-import { 
-  Users, 
-  CurrencyCircleDollar, 
-  ChartLineUp, 
-  TrendUp, 
-  ShieldCheck, 
+import {
+  Users,
+  CurrencyCircleDollar,
+  ChartLineUp,
+  TrendUp,
+  ShieldCheck,
   UserCircle,
   Clock,
   ArrowRight,
@@ -23,10 +23,7 @@ import {
   YAxis,
   CartesianGrid,
   Tooltip,
-  ResponsiveContainer,
-  BarChart,
-  Bar,
-  Cell
+  ResponsiveContainer
 } from "recharts";
 
 const ADMIN_EMAILS = ["matsoliveira11@gmail.com"]; // AJUSTE SEU EMAIL AQUI SE PRECISAR

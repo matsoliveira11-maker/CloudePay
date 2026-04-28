@@ -151,7 +151,7 @@ export default function OnboardingTour() {
 
     const lookup = () => {
       if (cancelled) return;
-      const el = document.getElementById(step.targetId) as HTMLElement | null;
+      const el = document.getElementById(step.targetId || "") as HTMLElement | null;
       if (el) {
         el.classList.add("tour-target-active");
         setTargetElement(el);

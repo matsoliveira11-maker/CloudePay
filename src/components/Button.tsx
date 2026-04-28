@@ -3,7 +3,7 @@ import { twMerge } from "tailwind-merge";
 
 interface Props extends ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: "primary" | "secondary" | "ghost";
-  size?: "md" | "lg";
+  size?: "sm" | "md" | "lg";
   loading?: boolean;
 }
 
@@ -14,6 +14,7 @@ const Button = forwardRef<HTMLButtonElement, Props>(function Button(
   const base =
     "inline-flex items-center justify-center gap-2 rounded-xl font-heading font-semibold transition active:scale-[.98] disabled:opacity-60 disabled:cursor-not-allowed focus:outline-none focus:ring-4 focus:ring-brand-200";
   const sizes = {
+    sm: "h-9 px-3 text-xs",
     md: "h-11 px-4 text-sm",
     lg: "h-13 px-5 text-base min-h-[52px]",
   }[size];

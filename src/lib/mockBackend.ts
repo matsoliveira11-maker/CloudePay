@@ -26,6 +26,7 @@ export interface Profile {
   onboarding_skipped_at: string | null;
   onboarding_step: number;
   fixed_qr_code: FixedQRCode | null;  // QR Code fixo gerado no onboarding
+  mp_access_token?: string | null;    // Mercado Pago integration
   created_at: string;
 }
 

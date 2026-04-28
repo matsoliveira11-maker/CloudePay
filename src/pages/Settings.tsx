@@ -1,11 +1,8 @@
-import { useState } from "react";
 import Shell from "../components/Shell";
 import { useAuth } from "../context/AuthContext";
-import * as api from "../lib/api";
 import { 
   User, 
   CreditCard, 
-  Storefront, 
   ShieldCheck, 
   CheckCircle, 
   ArrowSquareOut,
@@ -13,8 +10,7 @@ import {
 } from "phosphor-react";
 
 export default function Settings() {
-  const { profile, reloadProfile } = useAuth();
-  const [loading, setLoading] = useState(false);
+  const { profile } = useAuth();
 
   const handleConnectMP = () => {
     const clientId = "234353031012842";

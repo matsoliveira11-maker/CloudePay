@@ -7,7 +7,7 @@ import { CircleNotch, CheckCircle, XCircle } from "phosphor-react";
 export default function AuthCallback() {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
-  const { profile, reloadProfile } = useAuth();
+  const { profile, refresh } = useAuth();
   const [status, setStatus] = useState<"loading" | "success" | "error">("loading");
   const [errorMsg, setErrorMsg] = useState("");
 
@@ -23,9 +23,9 @@ export default function AuthCallback() {
       }
 
       try {
-        const client_id = import.meta.env.VITE_MP_CLIENT_ID;
-        const client_secret = import.meta.env.VITE_MP_CLIENT_SECRET;
-        const redirect_uri = import.meta.env.VITE_REDIRECT_URI;
+        const client_id = (import.meta as any).env.VITE_MP_CLIENT_ID;
+        const client_secret = (import.meta as any).env.VITE_MP_CLIENT_SECRET;
+        const redirect_uri = (import.meta as any).env.VITE_REDIRECT_URI;
 
         // Trocar o CODE pelo ACCESS_TOKEN
         const response = await fetch("https://api.mercadopago.com/oauth/token", {
@@ -70,7 +70,7 @@ export default function AuthCallback() {
         if (updateError) throw updateError;
 
         setStatus("success");
-        await reloadProfile();
+        await refresh();
         
         // Redirecionar após 2 segundos
         setTimeout(() => {
