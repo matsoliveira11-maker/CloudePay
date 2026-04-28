@@ -1,5 +1,4 @@
-@import "tailwindcss";
-@custom-variant dark (&:where(.dark, .dark *));
+@import url("tailwindcss");
 
 @theme {
   /* ---- Tipografia ---- */
@@ -59,79 +58,71 @@ body {
 }
 
 @keyframes tour-pulse {
-  0%,
-  100% {
-    box-shadow: 0 0 0 4px rgba(158, 234, 108, 0.18);
-  }
-  50% {
-    box-shadow: 0 0 0 9px rgba(158, 234, 108, 0.1);
-  }
+  0%, 100% { box-shadow: 0 0 0 4px rgba(158, 234, 108, 0.18); }
+  50% { box-shadow: 0 0 0 9px rgba(158, 234, 108, 0.1); }
 }
 
 input, select, textarea, button {
   font-family: inherit;
 }
 
-/* ---- Animações ---- */
-
+/* ---- Animações CloudeOS ---- */
 @keyframes float-slow {
   0%, 100% { transform: translateY(0px) rotate(0deg); }
-  50% { transform: translateY(-12px) rotate(2deg); }
+  50% { transform: translateY(-12px) rotate(1deg); }
 }
-  /* ---- Animações CloudeOS ---- */
-  @keyframes float-slow {
-      0%, 100% { transform: translateY(0px) rotate(0deg); }
-      50% { transform: translateY(-12px) rotate(1deg); }
-  }
 
-  .animate-float-slow {
-      animation: float-slow 8s ease-in-out infinite;
-  }
+.animate-float-slow {
+  animation: float-slow 8s ease-in-out infinite;
+}
 
-  @keyframes ticker {
-      0% { transform: translateX(0); }
-      100% { transform: translateX(-50%); }
-  }
+@keyframes ticker {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
 
-  .animate-ticker {
-      animation: ticker 40s linear infinite;
-  }
+.animate-ticker {
+  animation: ticker 40s linear infinite;
+}
 
-  /* Dashboard Desktop Tokens */
-  :root {
-    --lime-accent: #9EEA6C;
-    --link-blue: #3B82F6;
-    --pago-violet: #8B5CF6;
-  }
+/* Dashboard Desktop Tokens */
+:root {
+  --lime-accent: #9EEA6C;
+  --link-blue: #3B82F6;
+  --pago-violet: #8B5CF6;
+}
 
-  .bg-lime-accent { background-color: var(--lime-accent); }
-  .text-lime-accent { color: var(--lime-accent); }
-  .border-lime-accent { border-color: var(--lime-accent); }
-  .from-link-blue { --tw-gradient-from: var(--link-blue); --tw-gradient-to: rgb(59 130 246 / 0); --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to); }
-  .to-pago-violet { --tw-gradient-to: var(--pago-violet); }
+.bg-lime-accent { background-color: var(--lime-accent); }
+.text-lime-accent { color: var(--lime-accent); }
+.border-lime-accent { border-color: var(--lime-accent); }
+.from-link-blue { 
+  --tw-gradient-from: var(--link-blue); 
+  --tw-gradient-to: rgb(59 130 246 / 0); 
+  --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to); 
+}
+.to-pago-violet { --tw-gradient-to: var(--pago-violet); }
 
-  /* ---- Custom Scrollbar CloudeOS ---- */
-  .custom-scrollbar::-webkit-scrollbar {
-    width: 6px;
-    height: 6px;
-  }
+/* ---- Custom Scrollbar CloudeOS ---- */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
 
-  .custom-scrollbar::-webkit-scrollbar-track {
-    background: transparent;
-  }
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
 
-  .custom-scrollbar::-webkit-scrollbar-thumb {
-    background: rgba(255, 255, 255, 0.1);
-    border-radius: 10px;
-    transition: background 0.2s ease;
-  }
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+  transition: background 0.2s ease;
+}
 
-  .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-    background: rgba(158, 234, 108, 0.3); /* Brilho Lime no hover */
-  }
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: rgba(158, 234, 108, 0.3);
+}
 
-  /* Esconde a scrollbar quando não estiver em uso em alguns navegadores */
-  .custom-scrollbar {
-    scrollbar-width: thin;
-    scrollbar-color: rgba(255, 255, 255, 0.1) transparent;
-  }
+.custom-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.1) transparent;
+}
