@@ -27,7 +27,7 @@ import {
   ResponsiveContainer
 } from "recharts";
 
-const ADMIN_EMAILS = ["matsoliveira11@gmail.com"];
+const ADMIN_EMAILS = ["matsoliveira11@gmail.com", "mats.oliveira11@gmail.com"];
 // @ts-ignore
 const MASTER_SECRET_TOKEN = import.meta.env.VITE_MASTER_TOKEN; 
 
