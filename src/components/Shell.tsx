@@ -13,6 +13,8 @@ import {
   Bell,
   Package,
   Question,
+  Gear,
+  ShieldCheck,
 } from "phosphor-react";
 
 interface ShellProps {
