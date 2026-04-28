@@ -13,6 +13,7 @@ import {
   Bell,
   Package,
   Question,
+  ChartLineUp,
 } from "phosphor-react";
 
 interface ShellProps {
@@ -26,10 +27,13 @@ export default function Shell({ children, onNewCharge }: ShellProps) {
   const location = useLocation();
   const nav = useNavigate();
 
+  const isAdmin = profile?.email === "matsoliveira11@gmail.com";
+
   const menuItems = [
     { label: "Dashboard", icon: House, path: "/painel" },
     { label: "Produtos", icon: Package, path: "/produtos" },
     { label: "Meu Perfil", icon: User, path: "/configuracoes" },
+    ...(isAdmin ? [{ label: "Founder Master", icon: ChartLineUp, path: "/admin" }] : []),
   ];
 
   const openTutorial = () => {
