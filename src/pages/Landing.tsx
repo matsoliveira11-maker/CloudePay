@@ -989,51 +989,71 @@ function Footer({ onEasterEgg }: { onEasterEgg: () => void }) {
 
 function EasterEggModal({ onClose }: { onClose: () => void }) {
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6">
-      <div 
-        className="absolute inset-0 bg-black/80 backdrop-blur-md animate-in fade-in duration-500" 
-        onClick={onClose} 
+    <div className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center p-0 sm:p-6">
+      {/* Backdrop */}
+      <div
+        className="absolute inset-0 bg-black/70 backdrop-blur-sm animate-in fade-in duration-300"
+        onClick={onClose}
       />
-      <div className="relative w-full max-w-md max-h-[88dvh] overflow-auto rounded-[28px] sm:rounded-[32px] border border-white/10 bg-gradient-to-b from-[#1a1a1a] to-[#0a0a0a] p-5 sm:p-8 text-center shadow-2xl animate-in zoom-in-95 duration-300">
-        <div className="absolute -right-20 -top-20 h-64 w-64 rounded-full bg-lime-accent/5 blur-3xl" />
-        <div className="absolute -left-20 -bottom-20 h-64 w-64 rounded-full bg-node-violet/10 blur-3xl" />
+
+      {/* Card — bottom sheet on mobile, centered on desktop */}
+      <div className="relative w-full sm:max-w-sm rounded-t-[32px] sm:rounded-[32px] border border-white/10 bg-[#0f0f0f] overflow-hidden shadow-2xl animate-in slide-in-from-bottom-4 sm:zoom-in-95 duration-300">
         
-        <div className="relative flex justify-center">
-          <Logo size="lg" variant="white" />
-        </div>
-        
-        <div className="mt-8 space-y-4">
-          <h3 className="font-heading text-2xl font-extrabold text-white">
-            Uma criação de <br />
-            <span className="bg-gradient-to-r from-lime-accent to-node-violet bg-clip-text text-transparent">Mateus Oliveira</span>
-          </h3>
-          
-          <p className="font-body text-sm leading-relaxed text-white/50">
-            O CloudePay nasceu do sonho de simplificar a vida de quem, assim como eu, acredita no trabalho independente. 
-          </p>
-          
-          <p className="font-body text-[13px] leading-relaxed text-white/40 italic">
-            "A tecnologia deve servir às pessoas, <br /> nunca o contrário."
-          </p>
+        {/* Neon glow top */}
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 h-px w-2/3 bg-gradient-to-r from-transparent via-lime-accent/60 to-transparent" />
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 h-16 w-48 bg-lime-accent/5 blur-2xl" />
+
+        {/* Drag handle (mobile) */}
+        <div className="flex justify-center pt-3 pb-1 sm:hidden">
+          <div className="h-1 w-10 rounded-full bg-white/10" />
         </div>
 
-        <div className="mt-10">
+        <div className="px-6 pt-4 pb-6 sm:px-8 sm:pt-6 sm:pb-8">
+          {/* Logo + Label */}
+          <div className="flex items-center justify-between mb-5">
+            <Logo variant="white" />
+            <span className="text-[9px] font-heading font-black uppercase tracking-[0.2em] text-lime-accent/60 border border-lime-accent/20 bg-lime-accent/5 px-2 py-1 rounded-full">
+              Easter Egg
+            </span>
+          </div>
+
+          {/* Divider */}
+          <div className="h-px bg-white/5 mb-5" />
+
+          {/* Content */}
+          <div className="space-y-3">
+            <div>
+              <p className="text-[10px] font-heading font-black uppercase tracking-[0.2em] text-white/20 mb-1">Uma criação de</p>
+              <h3 className="text-[22px] sm:text-[26px] font-heading font-black text-white leading-tight tracking-tight">
+                Mateus<br />
+                <span className="text-lime-accent">Oliveira</span>
+              </h3>
+            </div>
+
+            <p className="text-[12px] sm:text-[13px] font-body leading-relaxed text-white/40">
+              O CloudePay nasceu do sonho de simplificar a vida de quem acredita no trabalho independente.
+            </p>
+
+            <div className="border-l-2 border-lime-accent/30 pl-3">
+              <p className="text-[11px] font-body italic text-white/30 leading-relaxed">
+                "A tecnologia deve servir às pessoas, nunca o contrário."
+              </p>
+            </div>
+          </div>
+
+          {/* Close button */}
           <button
             onClick={onClose}
-            className="w-full rounded-2xl bg-white/5 px-6 py-3 text-sm font-heading font-bold text-white border border-white/10 hover:bg-white/10 transition active:scale-95"
+            className="mt-6 w-full rounded-2xl border border-white/10 bg-white/[0.03] hover:bg-white/[0.07] py-3 text-[12px] font-heading font-black text-white/50 hover:text-white uppercase tracking-[0.2em] transition-all active:scale-[0.98]"
           >
-            Fechar placa
+            Fechar
           </button>
-        </div>
-        
-        <div className="mt-6 flex justify-center gap-1">
-          {[...Array(3)].map((_, i) => (
-            <div key={i} className="h-1 w-1 rounded-full bg-lime-accent/20" />
-          ))}
         </div>
       </div>
     </div>
   );
 }
+
+
 
 
