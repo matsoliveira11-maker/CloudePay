@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { useTheme } from "../context/ThemeContext";
@@ -13,8 +13,8 @@ import {
   Bell,
   Package,
   Question,
-  Gear,
   ShieldCheck,
+  Headset,
 } from "phosphor-react";
 import SupportWidget from "./SupportWidget";
 
@@ -29,6 +29,7 @@ export default function Shell({ children, onNewCharge }: ShellProps) {
   const nav = useNavigate();
   const location = useLocation();
   const isAdminPath = location.pathname === "/one-above-all-2000";
+  const [isSupportOpen, setIsSupportOpen] = useState(false);
 
   const menuItems = isAdminPath ? [] : [
     { label: "Dashboard", icon: House, path: "/painel" },
@@ -174,8 +175,8 @@ export default function Shell({ children, onNewCharge }: ShellProps) {
                       <Bell size={18} weight="duotone" />
                     </button>
                     <div className="w-px h-4 bg-neutral-200 dark:bg-white/10 mx-1" />
-                    <button className="p-1.5 sm:p-2 rounded-lg text-neutral-400 dark:text-white/40 hover:text-[#0a0a0a] dark:hover:text-white transition-colors">
-                      <Gear size={18} weight="duotone" />
+                    <button onClick={() => setIsSupportOpen(true)} className="p-1.5 sm:p-2 rounded-lg text-neutral-400 dark:text-white/40 hover:text-[#9EEA6C] dark:hover:text-[#9EEA6C] transition-colors">
+                      <Headset size={18} weight="duotone" />
                     </button>
                   </div>
                 </>
@@ -228,7 +229,7 @@ export default function Shell({ children, onNewCharge }: ShellProps) {
         </nav>
       </div>
 
-      {!isAdminPath && <SupportWidget />}
+      {!isAdminPath && <SupportWidget isOpen={isSupportOpen} onClose={() => setIsSupportOpen(false)} />}
     </div>
   );
 }
