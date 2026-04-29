@@ -13,9 +13,11 @@ export default function AuthCallback() {
 
   useEffect(() => {
     async function exchangeCode() {
-      const code = searchParams.get("code");
-      const state = searchParams.get("state"); // ID do perfil
+      // Esperar o profile carregar se ainda não estiver pronto
+      if (!profile) return;
 
+      const code = searchParams.get("code");
+      
       if (!code) {
         setStatus("error");
         setErrorMsg("Código de autorização não encontrado.");
@@ -23,14 +25,12 @@ export default function AuthCallback() {
       }
 
       try {
-        // Obter a sessão atual para pegar o JWT
         const { data: { session } } = await supabase.auth.getSession();
         
         if (!session?.access_token) {
-            throw new Error("Sessão do usuário não encontrada. Faça login novamente.");
+          throw new Error("Sessão expirada. Por favor, faça login novamente no CloudePay.");
         }
 
-        // Chamar a Edge Function segura
         const response = await fetch(`${(import.meta as any).env.VITE_SUPABASE_URL}/functions/v1/mp-auth`, {
           method: "POST",
           headers: {
@@ -45,27 +45,25 @@ export default function AuthCallback() {
 
         if (!response.ok) {
           const errorData = await response.json().catch(() => null);
-          throw new Error(errorData?.error || "Erro ao conectar conta do Mercado Pago no servidor.");
+          throw new Error(errorData?.error || "O Mercado Pago rejeitou a conexão. Tente novamente.");
         }
 
-        // Se a function retornar 200, a atualização do perfil já foi feita lá dentro.
         setStatus("success");
         await refresh();
         
-        // Redirecionar após 2 segundos
         setTimeout(() => {
-          navigate("/dashboard");
+          navigate("/painel"); // Redirecionar para o painel correto
         }, 2000);
 
       } catch (err: any) {
         console.error("Auth Error:", err);
         setStatus("error");
-        setErrorMsg(err.message || "Ocorreu um erro ao conectar sua conta.");
+        setErrorMsg(err.message || "Erro na autenticação.");
       }
     }
 
     exchangeCode();
-  }, [searchParams]);
+  }, [searchParams, profile]);
 
   return (
     <div className="min-h-screen bg-[#0a0a0a] flex items-center justify-center p-4">
