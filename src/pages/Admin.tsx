@@ -37,7 +37,8 @@ import {
 } from "phosphor-react";
 import Logo from "../components/Logo";
 import { useAuth } from "../context/AuthContext";
-import { signIn, getMasterStats, getAllProfiles, getAllCharges } from "../lib/api";
+import { signIn, getMasterStats, getAllProfiles, getAllCharges, getAdminTickets, getTicketMessages, sendTicketMessage } from "../lib/api";
+import { supabase } from "../lib/supabase";
 
 
 /* ------------------------------------------------------------------ */
@@ -1087,20 +1088,145 @@ function FilterField({ label, value }: { label: string; value: string }) {
 /* ================================================================== */
 
 function SupportApp() {
-    return (
-        <div className="flex h-full items-center justify-center">
-            <div className="text-center max-w-md animate-in fade-in duration-500">
-                <Headset size={48} weight="duotone" className="mx-auto text-white/20 mb-4" />
-                <h3 className="font-heading text-xl font-bold text-white mb-2">Central de Suporte</h3>
-                <p className="font-body text-sm text-white/45 mb-6">Nenhum ticket de suporte aberto no momento. Quando os usuários entrarem em contato, os chamados aparecerão aqui.</p>
-                <div className="rounded-2xl border border-white/[0.06] bg-white/[0.02] p-4 text-left">
-                    <p className="font-body text-[11px] font-bold uppercase tracking-wider text-white/40 mb-3">Canais de contato configurados</p>
-                    <ul className="space-y-2 font-body text-xs text-white/65">
-                        <li className="flex items-center gap-2"><CheckCircle size={14} className="text-lime-accent" /> Email de suporte (em breve)</li>
-                        <li className="flex items-center gap-2"><CheckCircle size={14} className="text-lime-accent" /> Chat interno (em breve)</li>
-                    </ul>
+    const { profile } = useAuth();
+    const [tickets, setTickets] = useState<any[]>([]);
+    const [selectedTicket, setSelectedTicket] = useState<any | null>(null);
+    const [messages, setMessages] = useState<any[]>([]);
+    const [newMessage, setNewMessage] = useState("");
+    const [loadingTickets, setLoadingTickets] = useState(true);
+
+    // 1. Fetch Tickets
+    useEffect(() => {
+        getAdminTickets().then(data => {
+            setTickets(data);
+            setLoadingTickets(false);
+        });
+
+        // Listen for new tickets
+        const sub = supabase.channel('tickets_channel')
+            .on('postgres_changes', { event: '*', schema: 'public', table: 'tickets' }, () => {
+                getAdminTickets().then(setTickets);
+            })
+            .subscribe();
+
+        return () => { supabase.removeChannel(sub); };
+    }, []);
+
+    // 2. Fetch Messages for selected ticket
+    useEffect(() => {
+        if (!selectedTicket) return;
+        getTicketMessages(selectedTicket.id).then(setMessages);
+
+        // Listen for new messages
+        const sub = supabase.channel(`messages_${selectedTicket.id}`)
+            .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'ticket_messages', filter: `ticket_id=eq.${selectedTicket.id}` }, () => {
+                getTicketMessages(selectedTicket.id).then(setMessages);
+            })
+            .subscribe();
+
+        return () => { supabase.removeChannel(sub); };
+    }, [selectedTicket]);
+
+    // 3. Send message
+    const handleSend = async () => {
+        if (!newMessage.trim() || !selectedTicket || !profile) return;
+        try {
+            await sendTicketMessage(selectedTicket.id, profile.id, newMessage);
+            setNewMessage("");
+            // Optimistic reload or let realtime handle it:
+            getTicketMessages(selectedTicket.id).then(setMessages);
+        } catch (e) {
+            console.error("Erro ao enviar mensagem", e);
+        }
+    };
+
+    if (loadingTickets) {
+        return <div className="flex h-full items-center justify-center text-white/50 text-sm">Carregando chamados...</div>;
+    }
+
+    if (tickets.length === 0) {
+        return (
+            <div className="flex h-full items-center justify-center">
+                <div className="text-center max-w-md animate-in fade-in duration-500">
+                    <Headset size={48} weight="duotone" className="mx-auto text-white/20 mb-4" />
+                    <h3 className="font-heading text-xl font-bold text-white mb-2">Central de Suporte</h3>
+                    <p className="font-body text-sm text-white/45 mb-6">Nenhum ticket de suporte aberto no momento. Quando os usuários entrarem em contato, os chamados aparecerão aqui em tempo real.</p>
                 </div>
             </div>
+        );
+    }
+
+    return (
+        <div className="grid h-full grid-cols-1 gap-4 lg:grid-cols-[300px_1fr]">
+            {/* Tickets List */}
+            <div className="flex flex-col gap-2 overflow-y-auto pr-2 custom-scrollbar border-r border-white/5">
+                <h3 className="mb-2 font-heading text-sm font-bold text-white/80">Chamados Abertos ({tickets.length})</h3>
+                {tickets.map((t) => (
+                    <button
+                        key={t.id}
+                        onClick={() => setSelectedTicket(t)}
+                        className={`text-left rounded-xl border p-3 transition-all ${selectedTicket?.id === t.id ? "border-lime-accent/50 bg-lime-accent/5" : "border-white/[0.05] bg-white/[0.02] hover:bg-white/[0.04]"}`}
+                    >
+                        <div className="flex justify-between items-start mb-1">
+                            <span className="font-heading text-xs font-bold text-white truncate">{t.profiles?.full_name || 'Usuário'}</span>
+                            <span className="font-mono text-[9px] text-white/40">{new Date(t.created_at).toLocaleDateString()}</span>
+                        </div>
+                        <p className="font-body text-xs text-white/60 truncate">{t.subject}</p>
+                        <div className="mt-2 flex items-center gap-2">
+                            <span className={`inline-flex rounded-md px-1.5 py-0.5 font-body text-[9px] font-black uppercase tracking-widest ${t.status === 'open' ? 'bg-amber-400/20 text-amber-400' : 'bg-lime-accent/20 text-lime-accent'}`}>
+                                {t.status}
+                            </span>
+                        </div>
+                    </button>
+                ))}
+            </div>
+
+            {/* Chat Area */}
+            {selectedTicket ? (
+                <div className="flex flex-col h-full rounded-2xl border border-white/[0.06] bg-white/[0.01] overflow-hidden relative">
+                    <div className="border-b border-white/[0.06] bg-white/[0.02] px-4 py-3">
+                        <h4 className="font-heading text-sm font-bold text-white">{selectedTicket.subject}</h4>
+                        <p className="font-body text-[11px] text-white/45">Cliente: {selectedTicket.profiles?.email}</p>
+                    </div>
+
+                    <div className="flex-1 overflow-y-auto p-4 custom-scrollbar flex flex-col gap-4">
+                        {messages.length === 0 ? (
+                            <p className="text-center font-body text-xs text-white/40 mt-auto mb-auto">Nenhuma mensagem neste chamado ainda.</p>
+                        ) : (
+                            messages.map((m) => {
+                                const isAdmin = m.sender_id === profile?.id; // simplificação
+                                return (
+                                    <div key={m.id} className={`flex max-w-[80%] flex-col ${isAdmin ? "self-end items-end" : "self-start items-start"}`}>
+                                        <div className={`rounded-2xl px-4 py-2.5 font-body text-sm ${isAdmin ? "bg-lime-accent text-[#0a0a0a] rounded-tr-sm" : "bg-white/[0.06] text-white/90 rounded-tl-sm"}`}>
+                                            {m.message}
+                                        </div>
+                                        <span className="mt-1 px-1 font-mono text-[9px] text-white/40">{new Date(m.created_at).toLocaleTimeString()} - {m.profiles?.full_name || 'Admin'}</span>
+                                    </div>
+                                );
+                            })
+                        )}
+                    </div>
+
+                    <div className="border-t border-white/[0.06] bg-[#0a0d10] p-3">
+                        <div className="flex items-center gap-2">
+                            <input
+                                value={newMessage}
+                                onChange={(e) => setNewMessage(e.target.value)}
+                                onKeyDown={(e) => e.key === 'Enter' && handleSend()}
+                                placeholder="Digite sua resposta..."
+                                className="flex-1 rounded-xl border border-white/10 bg-white/[0.03] px-4 py-2.5 font-body text-sm text-white placeholder:text-white/30 focus:outline-none focus:ring-2 focus:ring-lime-accent/30"
+                            />
+                            <button onClick={handleSend} className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-lime-accent text-[#0a0a0a] transition-all hover:scale-105 active:scale-95">
+                                <ArrowUp size={16} weight="bold" />
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            ) : (
+                <div className="flex items-center justify-center text-white/40 font-body text-sm">
+                    Selecione um chamado à esquerda
+                </div>
+            )}
         </div>
     );
 }

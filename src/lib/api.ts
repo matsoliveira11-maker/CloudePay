@@ -555,3 +555,34 @@ export async function getAllCharges() {
   if (error) return [];
   return data as any[];
 }
+
+// ---------- SUPPORT TICKETS ----------
+
+export async function getAdminTickets() {
+  const { data, error } = await supabase
+    .from('tickets')
+    .select('*, profiles:user_id ( full_name, email )')
+    .order('created_at', { ascending: false });
+  if (error) return [];
+  return data;
+}
+
+export async function getTicketMessages(ticketId: string) {
+  const { data, error } = await supabase
+    .from('ticket_messages')
+    .select('*, profiles:sender_id ( full_name, email )')
+    .eq('ticket_id', ticketId)
+    .order('created_at', { ascending: true });
+  if (error) return [];
+  return data;
+}
+
+export async function sendTicketMessage(ticketId: string, senderId: string, message: string) {
+  const { data, error } = await supabase
+    .from('ticket_messages')
+    .insert({ ticket_id: ticketId, sender_id: senderId, message })
+    .select()
+    .single();
+  if (error) throw error;
+  return data;
+}
