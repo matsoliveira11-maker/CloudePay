@@ -340,7 +340,7 @@ export default function Admin() {
             </div>
 
             {/* Workspace */}
-            <main className="relative z-10 mx-auto h-[calc(100vh-150px)] max-w-[1500px] px-3 pb-4 sm:px-6 mt-4">
+            <main className="relative z-10 mx-auto h-[calc(100vh-120px)] md:h-[calc(100vh-150px)] max-w-[1500px] px-2 sm:px-6 mt-2 md:mt-4">
                 {openApps.length === 0 ? (
                     <EmptyDesk onOpen={openApp} />
                 ) : (
@@ -413,7 +413,7 @@ function AppWindow({
                 position: 'absolute',
                 top: 0, left: 0, right: 0, bottom: 0
             }}
-            className="flex-col overflow-hidden rounded-[24px] border border-white/10 bg-[#0a0d10]/85 shadow-2xl shadow-black/50 backdrop-blur-xl animate-in zoom-in-95 duration-200"
+            className="flex-col overflow-hidden rounded-[16px] md:rounded-[24px] border border-white/10 bg-[#0a0d10]/85 shadow-2xl shadow-black/50 backdrop-blur-xl animate-in zoom-in-95 duration-200"
         >
             {/* Window chrome */}
             <header className="flex items-center justify-between gap-3 border-b border-white/[0.06] px-4 py-2.5 cursor-default">
@@ -555,15 +555,15 @@ function Taskbar({
                 <button
                     onClick={onShowStart}
                     aria-label="Abrir menu"
-                    className={`group flex h-11 w-11 items-center justify-center rounded-xl transition-all active:scale-90 ${startActive ? "bg-lime-accent" : "text-white/75 hover:bg-white/[0.06]"
+                    className={`group shrink-0 flex h-11 w-11 items-center justify-center rounded-xl transition-all active:scale-90 ${startActive ? "bg-lime-accent" : "text-white/75 hover:bg-white/[0.06]"
                         }`}
                 >
                     <div className={startActive ? "brightness-0" : ""}>
                         <Logo size="sm" variant="white" iconOnly />
                     </div>
                 </button>
-                <div className="mx-1 hidden h-7 w-px bg-white/[0.08] sm:block" />
-                <div className="flex items-center gap-1 overflow-x-auto">
+                <div className="mx-1 hidden h-7 w-px shrink-0 bg-white/[0.08] sm:block" />
+                <div className="flex items-center gap-1 overflow-x-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] scroll-smooth">
                     {apps.map(({ id, label, Icon, color }) => {
                         const isOpen = openApps.includes(id);
                         const isActive = isOpen && id === activeApp;
