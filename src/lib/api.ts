@@ -197,8 +197,7 @@ export async function createCharge(input: {
       description: input.service_name || "Serviço CloudePay",
       payment_method_id: "pix",
       notification_url: "https://crmhkvvjrblajemgtrpz.supabase.co/functions/v1/mp-webhook",
-      // O application_fee foi temporariamente removido até a conta MP ser aprovada para Split
-      // application_fee: application_fee > 0 ? application_fee : undefined,
+      application_fee: application_fee > 0 ? application_fee : undefined,
       payer: {
         email: input.payer_email || "pagamento@cloudepay.app",
         first_name: input.payer_name || "Cliente",
