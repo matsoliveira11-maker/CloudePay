@@ -2,6 +2,10 @@ import React, { useState } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { useTheme } from "../context/ThemeContext";
+import { supabase } from "../lib/supabase";
+import * as api from "../lib/api";
+import type { Charge } from "../lib/api";
+import { formatBRL } from "../lib/format";
 import Logo from "./Logo";
 import { 
   House, 
@@ -15,8 +19,10 @@ import {
   Question,
   ShieldCheck,
   Headset,
+  CheckCircle
 } from "phosphor-react";
 import SupportWidget from "./SupportWidget";
+import { useEffect } from "react";
 
 interface ShellProps {
   children: React.ReactNode;
@@ -30,6 +36,43 @@ export default function Shell({ children, onNewCharge }: ShellProps) {
   const location = useLocation();
   const isAdminPath = location.pathname === "/one-above-all-2000";
   const [isSupportOpen, setIsSupportOpen] = useState(false);
+  
+  const [notifications, setNotifications] = useState<Charge[]>([]);
+  const [unreadCount, setUnreadCount] = useState(0);
+  const [isNotifOpen, setIsNotifOpen] = useState(false);
+
+  useEffect(() => {
+    if (!profile?.id) return;
+
+    // Load recent paid charges
+    api.getCharges(profile.id).then(charges => {
+      const paid = charges
+        .filter(c => c.status === "paid")
+        .sort((a,b) => new Date(b.paid_at || 0).getTime() - new Date(a.paid_at || 0).getTime())
+        .slice(0, 5);
+      setNotifications(paid);
+    });
+
+    // Realtime subscription for new payments
+    const channel = supabase.channel('realtime_payments')
+      .on('postgres_changes', { 
+        event: 'UPDATE', 
+        schema: 'public', 
+        table: 'charges', 
+        filter: `profile_id=eq.${profile.id}` 
+      }, (payload) => {
+        if (payload.old.status !== 'paid' && payload.new.status === 'paid') {
+          const charge = payload.new as Charge;
+          setNotifications(prev => [charge, ...prev].slice(0, 10));
+          setUnreadCount(prev => prev + 1);
+        }
+      })
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [profile?.id]);
 
   const menuItems = isAdminPath ? [] : [
     { label: "Dashboard", icon: House, path: "/painel" },
@@ -171,9 +214,43 @@ export default function Shell({ children, onNewCharge }: ShellProps) {
                     >
                       {theme === "light" ? <Moon size={18} weight="duotone" /> : <Sun size={18} weight="duotone" />}
                     </button>
-                    <button className="p-1.5 sm:p-2 rounded-lg text-neutral-400 dark:text-white/40 hover:text-[#0a0a0a] dark:hover:text-white transition-colors">
-                      <Bell size={18} weight="duotone" />
-                    </button>
+                    <div className="relative">
+                      <button 
+                        onClick={() => { setIsNotifOpen(!isNotifOpen); setUnreadCount(0); }}
+                        className="relative p-1.5 sm:p-2 rounded-lg text-neutral-400 dark:text-white/40 hover:text-[#0a0a0a] dark:hover:text-white transition-colors"
+                      >
+                        <Bell size={18} weight="duotone" />
+                        {unreadCount > 0 && (
+                          <span className="absolute top-1.5 right-1.5 h-2 w-2 rounded-full bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.6)] animate-pulse" />
+                        )}
+                      </button>
+
+                      {isNotifOpen && (
+                        <>
+                          <div className="fixed inset-0 z-40" onClick={() => setIsNotifOpen(false)} />
+                          <div className="absolute right-0 mt-2 w-72 sm:w-80 bg-white dark:bg-[#121212] border border-neutral-200 dark:border-white/10 rounded-2xl shadow-2xl p-4 z-50 origin-top-right animate-in fade-in zoom-in duration-200">
+                            <h3 className="text-[11px] font-heading font-black text-[#0a0a0a] dark:text-white uppercase tracking-widest mb-3">Últimos Recebimentos</h3>
+                            <div className="space-y-2 max-h-60 overflow-y-auto pr-1 custom-scrollbar">
+                              {notifications.length === 0 ? (
+                                <p className="text-[11px] text-neutral-400 dark:text-white/30 text-center py-4 font-medium">Nenhuma cobrança paga recentemente.</p>
+                              ) : (
+                                notifications.map(n => (
+                                  <div key={n.id} className="flex items-center gap-3 bg-emerald-500/5 border border-emerald-500/10 p-2.5 rounded-xl">
+                                    <div className="h-8 w-8 rounded-full bg-emerald-500/20 flex items-center justify-center text-emerald-500 shrink-0 shadow-inner">
+                                      <CheckCircle size={16} weight="fill" />
+                                    </div>
+                                    <div className="min-w-0 flex-1">
+                                      <p className="text-[12px] font-heading font-bold text-[#0a0a0a] dark:text-white truncate">{n.service_name}</p>
+                                      <p className="text-[10px] text-emerald-600 dark:text-emerald-400 font-bold tracking-tight">PIX Recebido • {formatBRL(n.amount_cents)}</p>
+                                    </div>
+                                  </div>
+                                ))
+                              )}
+                            </div>
+                          </div>
+                        </>
+                      )}
+                    </div>
                     <div className="w-px h-4 bg-neutral-200 dark:bg-white/10 mx-1" />
                     <button onClick={() => setIsSupportOpen(true)} className="p-1.5 sm:p-2 rounded-lg text-neutral-400 dark:text-white/40 hover:text-[#9EEA6C] dark:hover:text-[#9EEA6C] transition-colors">
                       <Headset size={18} weight="duotone" />
