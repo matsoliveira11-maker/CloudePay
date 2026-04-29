@@ -3,34 +3,27 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.39.3'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': '*',
-  'Access-Control-Allow-Methods': '*',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  'Access-Control-Allow-Methods': 'POST, OPTIONS',
 }
 
 serve(async (req) => {
-  // Tratar requisição CORS (Preflight)
+  // 1. SEMPRE tratar OPTIONS primeiro de forma isolada
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders })
   }
 
   try {
-    const { code, redirect_uri, userId } = await req.json()
-    const authHeader = req.headers.get('Authorization')!
+    // Verificar se existe corpo na requisição
+    const body = await req.json().catch(() => ({}));
+    const { code, redirect_uri, userId } = body;
+
+    if (!code || !userId) {
+      throw new Error('Dados insuficientes: code ou userId faltando.')
+    }
 
     const supabaseUrl = Deno.env.get('SUPABASE_URL') ?? ''
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
-
-    // Criar cliente Admin para garantir o update
-    const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey)
-
-    // O ID do usuário vem direto do corpo da requisição enviada pelo frontend
-    const finalUserId = userId
-
-    if (!finalUserId) {
-      throw new Error('Identificação do usuário (userId) não encontrada no servidor.')
-    }
-
-    // 2. Chamar a API do Mercado Pago de forma segura no backend
     const mpClientId = Deno.env.get('MP_CLIENT_ID')
     const mpClientSecret = Deno.env.get('MP_CLIENT_SECRET')
 
@@ -38,6 +31,7 @@ serve(async (req) => {
       throw new Error('Credenciais do Mercado Pago não configuradas no servidor.')
     }
 
+    // 2. Trocar código pelo token no Mercado Pago
     const mpResponse = await fetch("https://api.mercadopago.com/oauth/token", {
       method: "POST",
       headers: {
@@ -53,45 +47,40 @@ serve(async (req) => {
       })
     })
 
-    if (!mpResponse.ok) {
-      const errorData = await mpResponse.json()
-      console.error("Erro MP:", errorData)
-      throw new Error(errorData.message || "Falha na comunicação com Mercado Pago.")
-    }
-
     const tokenData = await mpResponse.json()
 
-    // 3. Salvar os tokens do Mercado Pago no perfil do usuário
-    // Usamos a Service Role Key para garantir permissão de update na tabela
-    const supabaseAdmin = createClient(
-      supabaseUrl, 
-      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
-    )
+    if (!mpResponse.ok) {
+      console.error("Erro MP Detalhado:", JSON.stringify(tokenData))
+      throw new Error(`Mercado Pago diz: ${tokenData.message || tokenData.error || 'Erro desconhecido'}`)
+    }
 
+    // 3. Salvar no Banco de Dados
+    const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey)
     const { error: updateError } = await supabaseAdmin
       .from('profiles')
       .update({
         mp_access_token: tokenData.access_token,
         mp_refresh_token: tokenData.refresh_token,
         mp_user_id: tokenData.user_id.toString(),
+        gateway_active: true,
         updated_at: new Date().toISOString()
       })
-      .eq('id', finalUserId)
+      .eq('id', userId)
 
     if (updateError) {
-      throw new Error('Erro ao salvar token no banco de dados.')
+      throw new Error(`Erro ao salvar no banco: ${updateError.message}`)
     }
 
-    // Sucesso!
     return new Response(JSON.stringify({ success: true }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       status: 200,
     })
 
   } catch (error: any) {
+    console.error("Erro na Function:", error.message)
     return new Response(JSON.stringify({ error: error.message }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      status: 400,
+      status: 200, // Usar 200 para o CORS não reclamar, mas enviar o erro no corpo
     })
   }
 })
