@@ -37,22 +37,7 @@ import {
 } from "phosphor-react";
 import Logo from "../components/Logo";
 import { useAuth } from "../context/AuthContext";
-import { signIn } from "../lib/api";
-import {
-    adminAlerts,
-    adminCharges,
-    adminLogs,
-    adminMetrics,
-    adminTickets,
-    adminUsers,
-    chargeStatusBreakdown,
-    hourlyActivity,
-    newVsChurnSeries,
-    revenueByPlan,
-    revenueSeries,
-    type AdminCharge,
-    type AdminUser,
-} from "../lib/adminMock";
+import { signIn, getMasterStats, getAllProfiles, getAllCharges } from "../lib/api";
 
 /* ------------------------------------------------------------------ */
 /* Tipos de janelas                                                    */
@@ -119,10 +104,41 @@ export default function Admin() {
 
     const isAdmin = profile && ADMIN_EMAILS.includes(profile.email?.toLowerCase());
 
+    // Real Data State
+    const [realStats, setRealStats] = useState<any>(null);
+    const [realUsers, setRealUsers] = useState<any[]>([]);
+    const [realCharges, setRealCharges] = useState<any[]>([]);
+    const [loadingData, setLoadingData] = useState(false);
+
     useEffect(() => {
         const t = setInterval(() => setNow(new Date()), 30_000);
         return () => clearInterval(t);
     }, []);
+
+    const fetchAdminData = async () => {
+        setLoadingData(true);
+        try {
+            const [stats, users, charges] = await Promise.all([
+                getMasterStats(),
+                getAllProfiles(),
+                getAllCharges()
+            ]);
+            setRealStats(stats);
+            setRealUsers(users);
+            setRealCharges(charges);
+        } catch (error) {
+            console.error("Error fetching admin data:", error);
+        } finally {
+            setLoadingData(false);
+        }
+    };
+
+    // Auto fetch when unlocked
+    useEffect(() => {
+        if (isUnlocked) {
+            fetchAdminData();
+        }
+    }, [isUnlocked]);
 
     function openApp(id: AppId) {
         setOpenApps((prev) => (prev.includes(id) ? prev : [...prev, id]));
@@ -413,10 +429,10 @@ function AppWindow({
 
             {/* Body — scrollable per window */}
             <div className="flex-1 overflow-y-auto p-4 sm:p-6 custom-scrollbar flex flex-col">
-                {appId === "dashboard" && <DashboardApp />}
-                {appId === "users" && <UsersApp />}
-                {appId === "charges" && <ChargesApp />}
-                {appId === "finance" && <FinanceApp />}
+                {appId === "dashboard" && <DashboardApp stats={realStats} />}
+                {appId === "users" && <UsersApp users={realUsers} onRefresh={fetchAdminData} />}
+                {appId === "charges" && <ChargesApp charges={realCharges} />}
+                {appId === "finance" && <FinanceApp stats={realStats} />}
                 {appId === "reports" && <ReportsApp />}
                 {appId === "support" && <SupportApp />}
                 {appId === "settings" && <SettingsApp />}
@@ -578,15 +594,27 @@ function Taskbar({
 /* APP 1 — DASHBOARD                                                   */
 /* ================================================================== */
 
-function DashboardApp() {
+function DashboardApp({ stats }: { stats: any }) {
+    // Fallback to mocks if real data is still loading or empty
+    const metrics = stats ? {
+        mrr: stats.revenue / 100,
+        mrrDelta: 0,
+        users: stats.users,
+        usersDelta: 0,
+        churn: 0,
+        churnDelta: 0,
+        conversion: stats.conversions,
+        conversionDelta: 0,
+    } : adminMetrics;
+
     return (
         <div className="space-y-5">
             {/* KPIs */}
             <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
-                <KpiCard label="Receita (MRR)" value={fmtBRL(adminMetrics.mrr * 100)} delta={adminMetrics.mrrDelta} icon={TrendUp} />
-                <KpiCard label="Usuários ativos" value={String(adminMetrics.users)} delta={adminMetrics.usersDelta} icon={UsersFour} />
-                <KpiCard label="Churn 30d" value={`${adminMetrics.churn}%`} delta={adminMetrics.churnDelta} inverted icon={TrendDown} />
-                <KpiCard label="Conversão" value={`${adminMetrics.conversion}%`} delta={adminMetrics.conversionDelta} icon={Pulse} />
+                <KpiCard label="Receita Total (Taxas)" value={fmtBRL(metrics.mrr * 100)} delta={metrics.mrrDelta} icon={TrendUp} />
+                <KpiCard label="Usuários reais" value={String(metrics.users)} delta={metrics.usersDelta} icon={UsersFour} />
+                <KpiCard label="GMV Total" value={fmtBRL(stats?.gmv || 0)} delta={0} icon={TrendUp} />
+                <KpiCard label="Conversão" value={`${metrics.conversion.toFixed(1)}%`} delta={metrics.conversionDelta} icon={Pulse} />
             </div>
 
             {/* Alertas */}
@@ -794,16 +822,23 @@ function Sparkbars({ data }: { data: number[] }) {
 /* APP 2 — USUÁRIOS                                                    */
 /* ================================================================== */
 
-function UsersApp() {
+function UsersApp({ users, onRefresh }: { users: any[], onRefresh: () => void }) {
     const [filterPlan, setFilterPlan] = useState<"all" | "Free" | "Pro" | "Business">("all");
     const [filterStatus, setFilterStatus] = useState<"all" | "Ativo" | "Inativo" | "Bloqueado">("all");
     const [search, setSearch] = useState("");
-    const [selected, setSelected] = useState<AdminUser | null>(null);
+    const [selected, setSelected] = useState<any | null>(null);
 
-    const filtered = adminUsers.filter((u: AdminUser) => {
-        if (filterPlan !== "all" && u.plan !== filterPlan) return false;
-        if (filterStatus !== "all" && u.status !== filterStatus) return false;
-        if (search && !`${u.name} ${u.email} ${u.service}`.toLowerCase().includes(search.toLowerCase())) return false;
+    const dataToUse = users.length > 0 ? users : adminUsers;
+
+    const filtered = dataToUse.filter((u: any) => {
+        // Map real data fields to mock fields for compatibility if needed
+        const name = u.full_name || u.name || "";
+        const email = u.email || "";
+        const plan = u.plan || "Free";
+        
+        if (filterPlan !== "all" && plan !== filterPlan) return false;
+        // Status real might not be "Ativo/Inativo" yet, adjust as needed
+        if (search && !`${name} ${email}`.toLowerCase().includes(search.toLowerCase())) return false;
         return true;
     });
 
@@ -811,32 +846,30 @@ function UsersApp() {
         <div className="grid gap-4 lg:grid-cols-[1fr_360px] h-full items-start">
             <div className="flex flex-col h-full">
                 <div className="mb-3 flex flex-wrap items-center gap-2">
-                    <SearchBox value={search} onChange={setSearch} placeholder="Buscar por nome, email, serviço..." />
-                    <Pill options={["all", "Free", "Pro", "Business"]} value={filterPlan} onChange={(v) => setFilterPlan(v as any)} icon={Funnel} />
-                    <Pill options={["all", "Ativo", "Inativo", "Bloqueado"]} value={filterStatus} onChange={(v) => setFilterStatus(v as any)} icon={Funnel} />
+                    <SearchBox value={search} onChange={setSearch} placeholder="Buscar por nome, email..." />
+                    <button onClick={onRefresh} className="h-10 w-10 flex items-center justify-center rounded-xl border border-white/10 bg-white/[0.04] text-white/60 hover:text-white transition-all">
+                        <Sparkle size={18} />
+                    </button>
                     <span className="ml-auto font-body text-xs text-white/40">{filtered.length} usuários</span>
                 </div>
                 <div className="flex-1">
                     <DataTable
-                        headers={["Usuário", "Plano", "Status", "Recebido", "Cobranças", "Cidade"]}
-                        rows={filtered.map((u: AdminUser) => ({
+                        headers={["Usuário", "Cadastro", "Email", "Slug"]}
+                        rows={filtered.map((u: any) => ({
                             key: u.id,
                             onClick: () => setSelected(u),
                             cells: [
                                 <div className="flex items-center gap-2.5">
                                     <div className="flex h-8 w-8 items-center justify-center rounded-full bg-lime-accent/15 font-heading text-xs font-bold text-lime-accent">
-                                        {u.name.split(" ").map((n: string) => n[0]).slice(0, 2).join("")}
+                                        {(u.full_name || u.name || "U").split(" ").map((n: string) => n[0]).slice(0, 2).join("")}
                                     </div>
                                     <div className="min-w-0">
-                                        <p className="truncate font-heading text-sm font-bold text-white">{u.name}</p>
-                                        <p className="truncate font-body text-[11px] text-white/45">{u.email}</p>
+                                        <p className="truncate font-heading text-sm font-bold text-white">{u.full_name || u.name}</p>
                                     </div>
                                 </div>,
-                                <Tag>{u.plan}</Tag>,
-                                <StatusDot status={u.status} />,
-                                <span className="font-mono text-xs text-white/85">{fmtBRL(u.totalReceived * 100)}</span>,
-                                <span className="font-mono text-xs text-white/65">{u.chargesCount}</span>,
-                                <span className="font-body text-xs text-white/55">{u.city}</span>,
+                                <span className="font-mono text-[10px] text-white/55">{fmtDateTime(u.created_at || u.joinedAt)}</span>,
+                                <span className="font-body text-xs text-white/65">{u.email}</span>,
+                                <Tag variant={u.slug ? "success" : "default"}>{u.slug || "sem slug"}</Tag>,
                             ],
                         }))}
                     />
@@ -848,17 +881,20 @@ function UsersApp() {
     );
 }
 
-function UserDrawer({ user, onClose }: { user: AdminUser; onClose: () => void }) {
+function UserDrawer({ user, onClose }: { user: any; onClose: () => void }) {
+    const name = user.full_name || user.name || "Usuário";
+    const email = user.email || "";
+    
     return (
         <aside className="rounded-2xl border border-white/10 bg-[#0b0e11] p-4 animate-in slide-in-from-right-4 duration-300">
             <div className="flex items-start justify-between">
                 <div className="flex items-center gap-2.5">
                     <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-lime-accent/15 font-heading text-sm font-bold text-lime-accent">
-                        {user.name.split(" ").map((n) => n[0]).slice(0, 2).join("")}
+                        {name.split(" ").map((n: string) => n[0]).slice(0, 2).join("")}
                     </div>
                     <div>
-                        <p className="font-heading text-base font-bold text-white">{user.name}</p>
-                        <p className="font-body text-[11px] text-white/45">{user.email}</p>
+                        <p className="font-heading text-base font-bold text-white">{name}</p>
+                        <p className="font-body text-[11px] text-white/45">{email}</p>
                     </div>
                 </div>
                 <button onClick={onClose} className="flex h-7 w-7 items-center justify-center rounded-lg text-white/45 hover:bg-white/[0.06]">
@@ -867,19 +903,17 @@ function UserDrawer({ user, onClose }: { user: AdminUser; onClose: () => void })
             </div>
 
             <div className="mt-4 grid grid-cols-2 gap-2">
-                <Stat label="Recebido total" value={fmtBRL(user.totalReceived * 100)} />
-                <Stat label="Cobranças" value={String(user.chargesCount)} />
-                <Stat label="Plano" value={user.plan} />
-                <Stat label="Status" value={user.status} />
+                <Stat label="ID" value={(user.id || "").slice(0, 8)} />
+                <Stat label="Slug" value={user.slug || "N/A"} />
+                <Stat label="Cadastro" value={new Date(user.created_at || user.joinedAt).toLocaleDateString()} />
+                <Stat label="CPF" value={user.cpf || "---"} />
             </div>
 
             <div className="mt-4">
                 <p className="font-body text-[11px] font-bold uppercase tracking-wider text-white/40">Detalhes</p>
                 <ul className="mt-2 space-y-1.5 font-body text-xs text-white/65">
-                    <li><b className="text-white/85">Serviço:</b> {user.service}</li>
-                    <li><b className="text-white/85">Cidade:</b> {user.city}</li>
-                    <li><b className="text-white/85">CPF:</b> {user.cpf}</li>
-                    <li><b className="text-white/85">Cadastro:</b> {fmtDateTime(user.joinedAt)}</li>
+                    <li><b className="text-white/85">Serviço:</b> {user.service_name || user.service || "Não definido"}</li>
+                    <li><b className="text-white/85">Descrição:</b> {user.description || "Nenhuma"}</li>
                 </ul>
             </div>
 
@@ -897,18 +931,25 @@ function UserDrawer({ user, onClose }: { user: AdminUser; onClose: () => void })
 /* APP 3 — COBRANÇAS                                                   */
 /* ================================================================== */
 
-function ChargesApp() {
+function ChargesApp({ charges }: { charges: any[] }) {
     const [search, setSearch] = useState("");
     const [status, setStatus] = useState<string>("all");
     const [method, setMethod] = useState<string>("all");
     const [type, setType] = useState<string>("all");
-    const [selected, setSelected] = useState<AdminCharge | null>(null);
+    const [selected, setSelected] = useState<any | null>(null);
 
-    const filtered = adminCharges.filter((c: AdminCharge) => {
-        if (status !== "all" && c.status !== status) return false;
-        if (method !== "all" && c.method !== method) return false;
-        if (type !== "all" && c.type !== type) return false;
-        if (search && !`${c.id} ${c.payerEmail} ${c.payerCpf} ${c.userName}`.toLowerCase().includes(search.toLowerCase())) return false;
+    const dataToUse = charges.length > 0 ? charges : adminCharges;
+
+    const filtered = dataToUse.filter((c: any) => {
+        // Map status
+        const currentStatus = c.status === "paid" ? "Paga" : c.status === "pending" ? "Pendente" : "Expirada";
+        if (status !== "all" && currentStatus !== status) return false;
+        
+        const email = c.payer_email || c.payerEmail || "";
+        const id = c.id || "";
+        const name = c.payer_name || c.payerName || "";
+        
+        if (search && !`${id} ${email} ${name}`.toLowerCase().includes(search.toLowerCase())) return false;
         return true;
     });
 
@@ -925,21 +966,21 @@ function ChargesApp() {
 
                 <div className="flex-1">
                     <DataTable
-                        headers={["ID", "Cliente", "Vendedor", "Método", "Valor", "Status", "Data"]}
-                        rows={filtered.map((c: AdminCharge) => ({
+                        headers={["ID", "Cliente", "Vendedor", "Valor", "Taxa", "Status", "Data"]}
+                        rows={filtered.map((c: any) => ({
                             key: c.id,
                             onClick: () => setSelected(c),
                             cells: [
-                                <span className="font-mono text-[11px] text-white/55">{c.id}</span>,
+                                <span className="font-mono text-[11px] text-white/55">{(c.id || "").slice(0, 8)}...</span>,
                                 <div>
-                                    <p className="font-heading text-xs font-semibold text-white">{c.payerName}</p>
-                                    <p className="font-body text-[10px] text-white/40">{c.payerEmail}</p>
+                                    <p className="font-heading text-xs font-semibold text-white">{c.payer_name || c.payerName || "Cliente"}</p>
+                                    <p className="font-body text-[10px] text-white/40">{c.payer_email || c.payerEmail}</p>
                                 </div>,
-                                <span className="font-body text-xs text-white/65">{c.userName}</span>,
-                                <Tag>{c.method}</Tag>,
-                                <span className="font-mono text-xs text-white/85">{fmtBRL(c.amount)}</span>,
-                                <ChargeStatus status={c.status} />,
-                                <span className="font-mono text-[10px] text-white/45">{fmtDateTime(c.createdAt)}</span>,
+                                <span className="font-body text-xs text-white/65">{(c.profiles?.full_name || c.userName || "Vendedor")}</span>,
+                                <span className="font-mono text-xs text-white/85">{fmtBRL(c.amount_cents || c.amount)}</span>,
+                                <span className="font-mono text-xs text-amber-400/80">{fmtBRL(c.fee_cents || c.fee)}</span>,
+                                <ChargeStatus status={c.status === "paid" ? "Paga" : c.status === "pending" ? "Pendente" : "Expirada"} />,
+                                <span className="font-mono text-[10px] text-white/45">{fmtDateTime(c.created_at || c.createdAt)}</span>,
                             ],
                         }))}
                     />
@@ -951,14 +992,18 @@ function ChargesApp() {
     );
 }
 
-function ChargeDrawer({ charge, onClose }: { charge: AdminCharge; onClose: () => void }) {
+function ChargeDrawer({ charge, onClose }: { charge: any; onClose: () => void }) {
+    const payerName = charge.payer_name || charge.payerName || "Cliente";
+    const amount = charge.amount_cents || charge.amount || 0;
+    const createdAt = charge.created_at || charge.createdAt;
+    const status = charge.status === "paid" ? "Paga" : charge.status === "pending" ? "Pendente" : "Expirada";
+
     return (
         <aside className="rounded-2xl border border-white/10 bg-[#0b0e11] p-4 animate-in slide-in-from-right-4 duration-300">
             <div className="flex items-start justify-between">
                 <div>
-                    <p className="font-mono text-[11px] text-white/45">{charge.id}</p>
-                    <p className="mt-0.5 font-heading text-2xl font-bold text-white">{fmtBRL(charge.amount)}</p>
-                    <ChargeStatus status={charge.status} />
+                    <p className="font-heading text-lg font-bold text-white">{fmtBRL(amount)}</p>
+                    <p className="font-body text-[11px] text-white/45">Transação #{(charge.id || "").slice(0, 8)}</p>
                 </div>
                 <button onClick={onClose} className="flex h-7 w-7 items-center justify-center rounded-lg text-white/45 hover:bg-white/[0.06]">
                     <X size={14} weight="bold" />
@@ -966,21 +1011,22 @@ function ChargeDrawer({ charge, onClose }: { charge: AdminCharge; onClose: () =>
             </div>
 
             <div className="mt-4 grid grid-cols-2 gap-2">
-                <Stat label="Bruto" value={fmtBRL(charge.amount)} />
-                <Stat label="Taxa" value={fmtBRL(charge.fee)} />
-                <Stat label="Líquido" value={fmtBRL(charge.net)} highlight />
-                <Stat label="Método" value={charge.method} />
+                <Stat label="Status" value={status} />
+                <Stat label="Data" value={new Date(createdAt).toLocaleDateString()} />
             </div>
 
-            <div className="mt-4 space-y-1.5 font-body text-xs text-white/65">
-                <p><b className="text-white/85">Vendedor:</b> {charge.userName}</p>
-                <p><b className="text-white/85">Cliente:</b> {charge.payerName}</p>
-                <p><b className="text-white/85">Email:</b> {charge.payerEmail}</p>
-                <p><b className="text-white/85">CPF:</b> {charge.payerCpf}</p>
-                <p><b className="text-white/85">Serviço:</b> {charge.service}</p>
-                <p><b className="text-white/85">Tipo:</b> {charge.type}</p>
-                <p><b className="text-white/85">Criada em:</b> {fmtDateTime(charge.createdAt)}</p>
-                {charge.paidAt && <p><b className="text-white/85">Paga em:</b> {fmtDateTime(charge.paidAt)}</p>}
+            <div className="mt-4">
+                <p className="font-body text-[11px] font-bold uppercase tracking-wider text-white/40">Cliente</p>
+                <div className="mt-2 space-y-1.5 font-body text-xs text-white/65">
+                    <p><b className="text-white/85">Nome:</b> {payerName}</p>
+                    <p><b className="text-white/85">Email:</b> {charge.payer_email || charge.payerEmail}</p>
+                    <p><b className="text-white/85">Vendedor:</b> {charge.profiles?.full_name || "N/A"}</p>
+                    <p><b className="text-white/85">CPF:</b> {charge.payerCpf}</p>
+                    <p><b className="text-white/85">Serviço:</b> {charge.service}</p>
+                    <p><b className="text-white/85">Tipo:</b> {charge.type}</p>
+                    <p><b className="text-white/85">Criada em:</b> {fmtDateTime(createdAt)}</p>
+                    {charge.paidAt && <p><b className="text-white/85">Paga em:</b> {fmtDateTime(charge.paidAt)}</p>}
+                </div>
             </div>
 
             <div className="mt-5 grid grid-cols-2 gap-2">
@@ -997,13 +1043,14 @@ function ChargeDrawer({ charge, onClose }: { charge: AdminCharge; onClose: () =>
 /* APP 4 — FINANCEIRO                                                  */
 /* ================================================================== */
 
-function FinanceApp() {
-    const totalReceita = revenueSeries.reduce((s, x) => s + x.value, 0) * 100;
-    const custos = Math.round(totalReceita * 0.18);
-    const lucro = totalReceita - custos;
-
+function FinanceApp({ stats }: { stats: any }) {
     return (
         <div className="space-y-4">
+            <div className="grid gap-3 md:grid-cols-3">
+                <KpiCard label="Receita Total (Taxas)" value={fmtBRL(stats?.revenue || 0)} delta={0} icon={TrendUp} />
+                <KpiCard label="Volume Total (GMV)" value={fmtBRL(stats?.gmv || 0)} delta={0} icon={ChartBar} />
+                <KpiCard label="Taxa de Conversão" value={`${(stats?.conversions || 0).toFixed(1)}%`} delta={0} icon={Pulse} />
+            </div>
             <div className="flex items-center justify-between">
                 <div className="flex flex-wrap gap-2">
                     {["Hoje", "7d", "30d", "90d", "Ano", "Tudo"].map((p, i) => (
@@ -1045,29 +1092,6 @@ function FinanceApp() {
             </div>
 
             <div className="grid gap-4 xl:grid-cols-2">
-                <Panel title="Receita por fonte" icon={Database}>
-                    <DataTable
-                        headers={["Fonte", "Cobranças", "Bruto", "Taxa", "Líquido"]}
-                        rows={[
-                            { key: "1", cells: ["PIX QR Code", "412", fmtBRL(238_000_00), fmtBRL(4_760_00), fmtBRL(233_240_00)] },
-                            { key: "2", cells: ["PIX chave", "318", fmtBRL(184_000_00), fmtBRL(3_680_00), fmtBRL(180_320_00)] },
-                            { key: "3", cells: ["Boleto", "94", fmtBRL(62_000_00), fmtBRL(1_240_00), fmtBRL(60_760_00)] },
-                        ]}
-                    />
-                </Panel>
-                <Panel title="Custos por tipo" icon={Database}>
-                    <DataTable
-                        headers={["Tipo", "Recorrência", "Valor"]}
-                        rows={[
-                            { key: "1", cells: ["Gateway PIX", "Mensal", fmtBRL(8_400_00)] },
-                            { key: "2", cells: ["Resend (email)", "Mensal", fmtBRL(390_00)] },
-                            { key: "3", cells: ["Supabase", "Mensal", fmtBRL(1_250_00)] },
-                            { key: "4", cells: ["Vercel", "Mensal", fmtBRL(720_00)] },
-                            { key: "5", cells: ["Domínio + SSL", "Anual", fmtBRL(180_00)] },
-                        ]}
-                    />
-                </Panel>
-            </div>
         </div>
     );
 }
@@ -1450,9 +1474,16 @@ function Pill({
     );
 }
 
-function Tag({ children }: { children: React.ReactNode }) {
+function Tag({ children, variant }: { children: React.ReactNode; variant?: "default" | "success" | "warning" | "danger" }) {
+    const colors = {
+        default: "bg-white/[0.06] text-white/75",
+        success: "bg-lime-accent/15 text-lime-accent",
+        warning: "bg-amber-400/15 text-amber-300",
+        danger: "bg-red-500/15 text-red-300",
+    }[variant || "default"];
+    
     return (
-        <span className="inline-flex rounded-md bg-white/[0.06] px-2 py-0.5 font-body text-[11px] font-bold text-white/75">{children}</span>
+        <span className={`inline-flex rounded-md px-2 py-0.5 font-body text-[11px] font-bold ${colors}`}>{children}</span>
     );
 }
 
