@@ -559,22 +559,36 @@ export async function getAllCharges() {
 // ---------- SUPPORT TICKETS ----------
 
 export async function getAdminTickets() {
-  const { data, error } = await supabase
+  const { data: tickets, error } = await supabase
     .from('tickets')
-    .select('*, profiles:user_id ( full_name, email )')
+    .select('*')
     .order('created_at', { ascending: false });
-  if (error) return [];
-  return data;
+  if (error || !tickets) return [];
+
+  const userIds = [...new Set(tickets.map(t => t.user_id))];
+  const { data: profiles } = await supabase.from('profiles').select('id, full_name, email').in('id', userIds);
+
+  return tickets.map(t => ({
+    ...t,
+    profiles: profiles?.find(p => p.id === t.user_id) || null
+  }));
 }
 
 export async function getTicketMessages(ticketId: string) {
-  const { data, error } = await supabase
+  const { data: messages, error } = await supabase
     .from('ticket_messages')
-    .select('*, profiles:sender_id ( full_name, email )')
+    .select('*')
     .eq('ticket_id', ticketId)
     .order('created_at', { ascending: true });
-  if (error) return [];
-  return data;
+  if (error || !messages) return [];
+
+  const senderIds = [...new Set(messages.map(m => m.sender_id))];
+  const { data: profiles } = await supabase.from('profiles').select('id, full_name, email').in('id', senderIds);
+
+  return messages.map(m => ({
+    ...m,
+    profiles: profiles?.find(p => p.id === m.sender_id) || null
+  }));
 }
 
 export async function sendTicketMessage(ticketId: string, senderId: string, message: string) {
