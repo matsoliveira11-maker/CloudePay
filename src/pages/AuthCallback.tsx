@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { supabase } from "../lib/supabase";
@@ -7,46 +7,53 @@ import { CircleNotch, CheckCircle, XCircle } from "phosphor-react";
 export default function AuthCallback() {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
-  const { profile, refresh } = useAuth();
+  const { refresh } = useAuth();
   const [status, setStatus] = useState<"loading" | "success" | "error">("loading");
   const [errorMsg, setErrorMsg] = useState("");
 
-  useEffect(() => {
-    async function exchangeCode() {
-      // Esperar o profile carregar se ainda não estiver pronto
-      if (!profile) return;
+  // CRÍTICO: Impede que o código OAuth seja usado mais de uma vez.
+  // Códigos OAuth são de uso único — consumir 2x causa "invalid_grant".
+  const hasRun = useRef(false);
 
+  useEffect(() => {
+    // Guard: só executa UMA vez, independente de re-renders do React
+    if (hasRun.current) return;
+    hasRun.current = true;
+
+    async function exchangeCode() {
       const code = searchParams.get("code");
-      
+      // O state contém o userId que enviamos na URL de autorização
+      const stateUserId = searchParams.get("state");
+
       if (!code) {
         setStatus("error");
-        setErrorMsg("Código de autorização não encontrado.");
+        setErrorMsg("Código de autorização não encontrado na URL.");
         return;
       }
 
       try {
-        const { data: { session }, error: sessionError } = await supabase.auth.getSession();
-        
-        if (sessionError) {
-          throw new Error(`Erro de sessão Supabase: ${sessionError.message}`);
+        // Tentar obter a sessão atual do Supabase
+        const { data: { session } } = await supabase.auth.getSession();
+
+        // Usar userId da sessão. Se não tiver (ex: janela anônima perdeu sessão),
+        // usar o state que enviamos como parâmetro OAuth como fallback seguro.
+        const userId = session?.user?.id || stateUserId;
+
+        if (!userId) {
+          throw new Error("Usuário não identificado. Faça login novamente no CloudePay.");
         }
 
-        if (!session?.access_token) {
-          throw new Error("Sessão não encontrada. Tente fazer logout e login novamente no CloudePay.");
-        }
-
-        // Usar o método oficial do Supabase para chamar a Function
-        // Isso resolve automaticamente problemas de CORS e Headers
+        // Chamar a Edge Function via método oficial do Supabase (resolve CORS automaticamente)
         const { data, error: funcError } = await supabase.functions.invoke('mp-auth', {
           body: {
             code,
             redirect_uri: (import.meta as any).env.VITE_REDIRECT_URI,
-            userId: profile?.id
+            userId
           }
         });
 
         if (funcError) {
-          throw new Error(`Erro na Function: ${funcError.message}`);
+          throw new Error(`Erro na conexão: ${funcError.message}`);
         }
 
         if (data?.error) {
@@ -55,7 +62,7 @@ export default function AuthCallback() {
 
         setStatus("success");
         await refresh();
-        
+
         setTimeout(() => {
           navigate("/painel");
         }, 2000);
@@ -68,7 +75,7 @@ export default function AuthCallback() {
     }
 
     exchangeCode();
-  }, [searchParams, profile]);
+  }, []); // Array vazio = monta apenas uma vez
 
   return (
     <div className="min-h-screen bg-[#0a0a0a] flex items-center justify-center p-4">
@@ -98,7 +105,7 @@ export default function AuthCallback() {
             </div>
             <h2 className="text-2xl font-heading font-black text-white uppercase tracking-tight mb-2">Ops! Algo deu errado</h2>
             <p className="text-white/40 text-sm mb-8">{errorMsg}</p>
-            <button 
+            <button
               onClick={() => navigate("/painel")}
               className="bg-white/10 hover:bg-white/20 text-white rounded-2xl px-8 py-3 font-heading font-bold uppercase text-xs transition-all"
             >
