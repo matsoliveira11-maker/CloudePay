@@ -38,6 +38,19 @@ import {
 import Logo from "../components/Logo";
 import { useAuth } from "../context/AuthContext";
 import { signIn, getMasterStats, getAllProfiles, getAllCharges } from "../lib/api";
+import {
+    adminAlerts,
+    adminCharges,
+    adminLogs,
+    adminMetrics,
+    adminTickets,
+    adminUsers,
+    chargeStatusBreakdown,
+    hourlyActivity,
+    newVsChurnSeries,
+    revenueByPlan,
+    revenueSeries,
+} from "../lib/adminMock";
 
 /* ------------------------------------------------------------------ */
 /* Tipos de janelas                                                    */
