@@ -35,29 +35,22 @@ export default function AuthCallback() {
           throw new Error("Sessão não encontrada. Tente fazer logout e login novamente no CloudePay.");
         }
 
-        // Limpar a URL do Supabase para evitar erros de barra dupla
-        const rawUrl = (import.meta as any).env.VITE_SUPABASE_URL || "";
-        const supabaseUrl = rawUrl.replace(/\/$/, "");
-        const functionUrl = `${supabaseUrl}/functions/v1/mp-auth`;
-
-        const response = await fetch(functionUrl, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "Authorization": `Bearer ${session.access_token}`,
-            "apikey": (import.meta as any).env.VITE_SUPABASE_ANON_KEY
-          },
-          body: JSON.stringify({
+        // Usar o método oficial do Supabase para chamar a Function
+        // Isso resolve automaticamente problemas de CORS e Headers
+        const { data, error: funcError } = await supabase.functions.invoke('mp-auth', {
+          body: {
             code,
             redirect_uri: (import.meta as any).env.VITE_REDIRECT_URI,
             userId: profile?.id
-          })
+          }
         });
 
-        if (!response.ok) {
-          const errorData = await response.json().catch(() => null);
-          const detail = errorData?.error || response.statusText;
-          throw new Error(`O Servidor recusou a conexão: ${detail}`);
+        if (funcError) {
+          throw new Error(`Erro na Function: ${funcError.message}`);
+        }
+
+        if (data?.error) {
+          throw new Error(data.error);
         }
 
         setStatus("success");
