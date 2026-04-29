@@ -10,6 +10,7 @@ import Products from "./pages/Products";
 import Admin from "./pages/Admin";
 import PublicCharge from "./pages/PublicCharge";
 import FixedQRCode from "./pages/FixedQRCode";
+import AuthCallback from "./pages/AuthCallback";
 import OnboardingTour from "./components/OnboardingTour";
 
 import { ThemeProvider } from "./context/ThemeContext";
@@ -56,6 +57,9 @@ export default function App() {
 
           {/* Página pública de cobrança fixa via QR Code: /:slug/pagar */}
           <Route path=":slug/pagar" element={<FixedQRCode />} />
+
+          {/* Rota de retorno do Mercado Pago */}
+          <Route path="/auth/callback" element={<AuthCallback />} />
 
           {/* Página pública de cobrança avulsa: /:slug/:chargeId */}
           <Route path=":slug/:chargeId" element={<PublicCharge />} />
