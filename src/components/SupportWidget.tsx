@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { Headset, X, ArrowUp, Plus, ChatCircleDots } from "phosphor-react";
 import { useAuth } from "../context/AuthContext";
-import { getClientTickets, getTicketMessages, sendTicketMessage, createTicket } from "../lib/api";
+import { getClientTickets, getTicketMessages, sendTicketMessage, createTicket, closeTicket } from "../lib/api";
 import { supabase } from "../lib/supabase";
 
 interface SupportWidgetProps {
@@ -148,11 +148,28 @@ export default function SupportWidget({ isOpen, onClose }: SupportWidgetProps) {
                         </form>
                     ) : selectedTicket ? (
                         <div className="flex h-full flex-col overflow-hidden">
-                            <div className="flex items-center gap-2 border-b border-neutral-100 bg-neutral-50/50 px-3 py-2 dark:border-white/5 dark:bg-white/[0.01]">
-                                <button onClick={() => setSelectedTicket(null)} className="rounded-md p-1 hover:bg-neutral-200 dark:hover:bg-white/10 text-neutral-500 dark:text-white/50">
-                                    <X size={14} />
-                                </button>
-                                <span className="font-heading text-[12px] font-bold text-[#0a0a0a] dark:text-white truncate">{selectedTicket.subject}</span>
+                            <div className="flex items-center justify-between border-b border-neutral-100 bg-neutral-50/50 px-3 py-2 dark:border-white/5 dark:bg-white/[0.01]">
+                                <div className="flex items-center gap-2">
+                                    <button onClick={() => setSelectedTicket(null)} className="rounded-md p-1 hover:bg-neutral-200 dark:hover:bg-white/10 text-neutral-500 dark:text-white/50">
+                                        <X size={14} />
+                                    </button>
+                                    <span className="font-heading text-[12px] font-bold text-[#0a0a0a] dark:text-white truncate">{selectedTicket.subject}</span>
+                                </div>
+                                {selectedTicket.status === 'open' && (
+                                    <button 
+                                        onClick={async () => {
+                                            try {
+                                                await closeTicket(selectedTicket.id);
+                                                setSelectedTicket({...selectedTicket, status: 'closed'});
+                                            } catch (e) {
+                                                console.error(e);
+                                            }
+                                        }}
+                                        className="rounded-md bg-neutral-200 dark:bg-white/10 px-2 py-1 font-heading text-[10px] text-neutral-700 dark:text-white hover:bg-neutral-300 dark:hover:bg-white/20"
+                                    >
+                                        Encerrar
+                                    </button>
+                                )}
                             </div>
                             
                             <div className="flex-1 overflow-y-auto p-4 custom-scrollbar flex flex-col gap-3">
@@ -179,18 +196,22 @@ export default function SupportWidget({ isOpen, onClose }: SupportWidgetProps) {
                             </div>
 
                             <div className="border-t border-neutral-100 bg-white p-3 dark:border-white/5 dark:bg-[#0a0d10]">
-                                <div className="flex items-center gap-2">
-                                    <input
-                                        value={newMessage}
-                                        onChange={(e) => setNewMessage(e.target.value)}
-                                        onKeyDown={(e) => e.key === 'Enter' && handleSend()}
-                                        placeholder="Digite sua mensagem..."
-                                        className="flex-1 rounded-xl border border-neutral-200 bg-neutral-50 px-3 py-2 font-body text-[13px] text-[#0a0a0a] placeholder:text-neutral-400 focus:border-[#9EEA6C] focus:outline-none dark:border-white/10 dark:bg-white/5 dark:text-white dark:placeholder:text-white/30"
-                                    />
-                                    <button onClick={handleSend} className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-[#9EEA6C] text-[#0a0a0a] transition-all hover:scale-105 active:scale-95">
-                                        <ArrowUp size={16} weight="bold" />
-                                    </button>
-                                </div>
+                                {selectedTicket.status === 'open' ? (
+                                    <div className="flex items-center gap-2">
+                                        <input
+                                            value={newMessage}
+                                            onChange={(e) => setNewMessage(e.target.value)}
+                                            onKeyDown={(e) => e.key === 'Enter' && handleSend()}
+                                            placeholder="Digite sua mensagem..."
+                                            className="flex-1 rounded-xl border border-neutral-200 bg-neutral-50 px-3 py-2 font-body text-[13px] text-[#0a0a0a] placeholder:text-neutral-400 focus:border-[#9EEA6C] focus:outline-none dark:border-white/10 dark:bg-white/5 dark:text-white dark:placeholder:text-white/30"
+                                        />
+                                        <button onClick={handleSend} className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-[#9EEA6C] text-[#0a0a0a] transition-all hover:scale-105 active:scale-95">
+                                            <ArrowUp size={16} weight="bold" />
+                                        </button>
+                                    </div>
+                                ) : (
+                                    <p className="text-center font-body text-[11px] text-neutral-500 dark:text-white/40">Este chamado foi encerrado.</p>
+                                )}
                             </div>
                         </div>
                     ) : (

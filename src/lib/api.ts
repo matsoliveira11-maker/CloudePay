@@ -628,3 +628,14 @@ export async function createTicket(userId: string, subject: string, initialMessa
 
   return ticket;
 }
+
+export async function closeTicket(ticketId: string) {
+  const { data, error } = await supabase
+    .from('tickets')
+    .update({ status: 'closed', updated_at: new Date().toISOString() })
+    .eq('id', ticketId)
+    .select()
+    .single();
+  if (error) throw error;
+  return data;
+}
