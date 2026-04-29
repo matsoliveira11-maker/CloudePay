@@ -36,7 +36,8 @@ export default function AuthCallback() {
         }
 
         // Limpar a URL do Supabase para evitar erros de barra dupla
-        const supabaseUrl = (import.meta as any).env.VITE_SUPABASE_URL.replace(/\/$/, "");
+        const rawUrl = (import.meta as any).env.VITE_SUPABASE_URL || "";
+        const supabaseUrl = rawUrl.replace(/\/$/, "");
         const functionUrl = `${supabaseUrl}/functions/v1/mp-auth`;
 
         const response = await fetch(functionUrl, {
