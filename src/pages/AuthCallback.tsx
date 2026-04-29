@@ -25,10 +25,14 @@ export default function AuthCallback() {
       }
 
       try {
-        const { data: { session } } = await supabase.auth.getSession();
+        const { data: { session }, error: sessionError } = await supabase.auth.getSession();
         
+        if (sessionError) {
+          throw new Error(`Erro de sessão Supabase: ${sessionError.message}`);
+        }
+
         if (!session?.access_token) {
-          throw new Error("Sessão expirada. Por favor, faça login novamente no CloudePay.");
+          throw new Error("Sessão não encontrada. Tente fazer logout e login novamente no CloudePay.");
         }
 
         const response = await fetch(`${(import.meta as any).env.VITE_SUPABASE_URL}/functions/v1/mp-auth`, {
@@ -45,20 +49,21 @@ export default function AuthCallback() {
 
         if (!response.ok) {
           const errorData = await response.json().catch(() => null);
-          throw new Error(errorData?.error || "O Mercado Pago rejeitou a conexão. Tente novamente.");
+          const detail = errorData?.error || response.statusText;
+          throw new Error(`O Servidor recusou a conexão: ${detail}`);
         }
 
         setStatus("success");
         await refresh();
         
         setTimeout(() => {
-          navigate("/painel"); // Redirecionar para o painel correto
+          navigate("/painel");
         }, 2000);
 
       } catch (err: any) {
-        console.error("Auth Error:", err);
+        console.error("Auth Error Detail:", err);
         setStatus("error");
-        setErrorMsg(err.message || "Erro na autenticação.");
+        setErrorMsg(err.message || "Erro desconhecido na autenticação.");
       }
     }
 
