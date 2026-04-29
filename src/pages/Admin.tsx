@@ -1044,54 +1044,28 @@ function ChargeDrawer({ charge, onClose }: { charge: any; onClose: () => void })
 /* ================================================================== */
 
 function FinanceApp({ stats }: { stats: any }) {
+    const totalReceita = stats?.revenue || 0;
+    const gmv = stats?.gmv || 0;
+    const conversao = stats?.conversions || 0;
+
     return (
         <div className="space-y-4">
             <div className="grid gap-3 md:grid-cols-3">
-                <KpiCard label="Receita Total (Taxas)" value={fmtBRL(stats?.revenue || 0)} delta={0} icon={TrendUp} />
-                <KpiCard label="Volume Total (GMV)" value={fmtBRL(stats?.gmv || 0)} delta={0} icon={ChartBar} />
-                <KpiCard label="Taxa de Conversão" value={`${(stats?.conversions || 0).toFixed(1)}%`} delta={0} icon={Pulse} />
-            </div>
-            <div className="flex items-center justify-between">
-                <div className="flex flex-wrap gap-2">
-                    {["Hoje", "7d", "30d", "90d", "Ano", "Tudo"].map((p, i) => (
-                        <button key={p} className={`rounded-full border px-3 py-1.5 font-heading text-xs font-black transition-all ${i === 2 ? "border-lime-accent bg-lime-accent text-[#0a0a0a]" : "border-white/10 text-white/65 hover:bg-white/[0.06]"
-                            }`}>{p}</button>
-                    ))}
-                </div>
-                <div className="flex gap-2">
-                    <ActionBtn icon={DownloadSimple} label="CSV" small />
-                    <ActionBtn icon={DownloadSimple} label="PDF" small />
-                </div>
-            </div>
-
-            <div className="grid gap-3 md:grid-cols-3">
-                <KpiCard label="Receita bruta" value={fmtBRL(totalReceita)} delta={9.4} icon={TrendUp} />
-                <KpiCard label="Custos" value={fmtBRL(custos)} delta={-2.1} icon={TrendDown} />
-                <KpiCard label="Lucro líquido" value={fmtBRL(lucro)} delta={11.7} icon={Sparkle} />
+                <KpiCard label="Receita Total (Taxas)" value={fmtBRL(totalReceita)} delta={0} icon={TrendUp} />
+                <KpiCard label="Volume Total (GMV)" value={fmtBRL(gmv)} delta={0} icon={ChartBar} />
+                <KpiCard label="Taxa de Conversão" value={`${conversao.toFixed(1)}%`} delta={0} icon={Pulse} />
             </div>
 
             <div className="grid gap-4 xl:grid-cols-2">
-                <Panel title="Receita acumulada" icon={ChartLineUp}>
+                <Panel title="Receita acumulada (MOCK)" icon={ChartLineUp}>
                     <LineChart data={revenueSeries.map((_, i) =>
                         revenueSeries.slice(0, i + 1).reduce((s, x) => s + x.value, 0)
                     )} />
                 </Panel>
-                <Panel title="Composição da receita" icon={ChartBar}>
+                <Panel title="Composição (MOCK)" icon={ChartBar}>
                     <Donut segments={revenueByPlan.map((p) => ({ value: p.value, color: p.color, label: p.label }))} />
                 </Panel>
-                <Panel title="Margem (lucro / receita)" icon={Pulse}>
-                    <Sparkbars data={revenueSeries.map((p, i) => 60 + Math.round(((revenueSeries[(i + 3) % 30].value / p.value) - 0.7) * 40))} />
-                </Panel>
-                <Panel title="Top categorias" icon={ListChecks}>
-                    <BarsHorizontal data={[
-                        { label: "Cobrança avulsa", value: 62, color: "#9EEA6C" },
-                        { label: "Assinatura", value: 28, color: "#3B82F6" },
-                        { label: "Upsell", value: 10, color: "#A78BFA" },
-                    ]} />
-                </Panel>
             </div>
-
-            <div className="grid gap-4 xl:grid-cols-2">
         </div>
     );
 }
