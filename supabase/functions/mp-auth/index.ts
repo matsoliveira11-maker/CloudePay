@@ -54,16 +54,14 @@ serve(async (req) => {
       throw new Error(`Mercado Pago diz: ${tokenData.message || tokenData.error || 'Erro desconhecido'}`)
     }
 
-    // 3. Salvar no Banco de Dados
     const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey)
     const { error: updateError } = await supabaseAdmin
       .from('profiles')
       .update({
         mp_access_token: tokenData.access_token,
         mp_refresh_token: tokenData.refresh_token,
-        mp_user_id: tokenData.user_id.toString(),
-        gateway_active: true,
-        updated_at: new Date().toISOString()
+        mp_user_id: String(tokenData.user_id),
+        gateway_active: true
       })
       .eq('id', userId)
 
