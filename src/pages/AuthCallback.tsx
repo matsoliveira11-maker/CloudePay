@@ -23,52 +23,32 @@ export default function AuthCallback() {
       }
 
       try {
-        const client_id = (import.meta as any).env.VITE_MP_CLIENT_ID;
-        const client_secret = (import.meta as any).env.VITE_MP_CLIENT_SECRET;
-        const redirect_uri = (import.meta as any).env.VITE_REDIRECT_URI;
+        // Obter a sessão atual para pegar o JWT
+        const { data: { session } } = await supabase.auth.getSession();
+        
+        if (!session?.access_token) {
+            throw new Error("Sessão do usuário não encontrada. Faça login novamente.");
+        }
 
-        // Trocar o CODE pelo ACCESS_TOKEN
-        const response = await fetch("https://api.mercadopago.com/oauth/token", {
+        // Chamar a Edge Function segura
+        const response = await fetch(`${(import.meta as any).env.VITE_SUPABASE_URL}/functions/v1/mp-auth`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
-            "Accept": "application/json"
+            "Authorization": `Bearer ${session.access_token}`
           },
           body: JSON.stringify({
-            client_id,
-            client_secret,
-            grant_type: "authorization_code",
             code,
-            redirect_uri
+            redirect_uri: (import.meta as any).env.VITE_REDIRECT_URI
           })
         });
 
         if (!response.ok) {
-          const errorData = await response.json();
-          throw new Error(errorData.message || "Erro na troca do token");
+          const errorData = await response.json().catch(() => null);
+          throw new Error(errorData?.error || "Erro ao conectar conta do Mercado Pago no servidor.");
         }
 
-        const data = await response.json();
-        
-        // Salvar o token no perfil do usuário no Supabase
-        const profileId = state || profile?.id;
-        
-        if (!profileId) {
-            throw new Error("Sessão do usuário não encontrada.");
-        }
-
-        const { error: updateError } = await supabase
-          .from("profiles")
-          .update({
-            mp_access_token: data.access_token,
-            mp_refresh_token: data.refresh_token,
-            mp_user_id: data.user_id.toString(),
-            updated_at: new Date().toISOString()
-          })
-          .eq("id", profileId);
-
-        if (updateError) throw updateError;
-
+        // Se a function retornar 200, a atualização do perfil já foi feita lá dentro.
         setStatus("success");
         await refresh();
         
