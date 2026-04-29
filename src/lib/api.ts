@@ -73,7 +73,7 @@ export async function getCurrentProfile(): Promise<Profile | null> {
 
 export async function updateProfile(
   id: string,
-  patch: Partial<Pick<Profile, "service_name" | "description" | "slug">>
+  patch: Partial<Pick<Profile, "service_name" | "description" | "slug" | "full_name" | "cpf" | "email">>
 ) {
   const { data, error } = await supabase
     .from('profiles')
@@ -84,6 +84,16 @@ export async function updateProfile(
 
   if (error) return { ok: false as const, error: error.message };
   return { ok: true as const, profile: data as Profile };
+}
+
+export async function updateAuthCredentials(email?: string, password?: string) {
+  const updates: { email?: string; password?: string } = {};
+  if (email) updates.email = email;
+  if (password) updates.password = password;
+
+  const { error } = await supabase.auth.updateUser(updates);
+  if (error) return { ok: false as const, error: error.message };
+  return { ok: true as const };
 }
 
 export async function updateOnboardingState(
