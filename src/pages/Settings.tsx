@@ -15,10 +15,15 @@ export default function Settings() {
 
   const handleConnectMP = () => {
     const clientId = (import.meta as any).env.VITE_MP_CLIENT_ID;
-    const redirectUri = encodeURIComponent((import.meta as any).env.VITE_REDIRECT_URI);
+    const redirectUri = (import.meta as any).env.VITE_REDIRECT_URI;
     
-    // URL simplificada
-    const authUrl = `https://auth.mercadopago.com.br/authorization?client_id=${clientId}&response_type=code&redirect_uri=${redirectUri}&scope=read%20write%20offline_access&state=${profile?.id}`;
+    if (!clientId || !redirectUri) {
+      alert("Erro de configuração: Variáveis de ambiente não encontradas na Vercel.");
+      return;
+    }
+
+    const encodedRedirect = encodeURIComponent(redirectUri);
+    const authUrl = `https://auth.mercadopago.com.br/authorization?client_id=${clientId}&response_type=code&redirect_uri=${encodedRedirect}&scope=read%20write%20offline_access&state=${profile?.id}`;
     
     window.location.href = authUrl;
   };
