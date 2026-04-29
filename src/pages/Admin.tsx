@@ -17,7 +17,7 @@ import {
     GearSix,
     Headset,
     Lightning,
-    ListChecks,
+
     Lock,
     MagnifyingGlass,
     Activity as Pulse,
@@ -26,7 +26,7 @@ import {
     SignOut,
     Sparkle,
     Trash,
-    TrendDown,
+
     TrendUp,
     UserCircle,
     UsersFour,
@@ -121,7 +121,7 @@ export default function Admin() {
     const [realStats, setRealStats] = useState<any>(null);
     const [realUsers, setRealUsers] = useState<any[]>([]);
     const [realCharges, setRealCharges] = useState<any[]>([]);
-    const [loadingData, setLoadingData] = useState(false);
+    const [, setLoadingData] = useState(false);
 
     useEffect(() => {
         const t = setInterval(() => setNow(new Date()), 30_000);
@@ -365,6 +365,10 @@ export default function Admin() {
                                 onClose={() => closeApp(id)}
                                 onMinimize={() => setActiveApp(openApps.find((a) => a !== id) ?? id)}
                                 onFocus={() => setActiveApp(id)}
+                                realStats={realStats}
+                                realUsers={realUsers}
+                                realCharges={realCharges}
+                                fetchAdminData={fetchAdminData}
                             />
                         ))}
                     </div>
@@ -398,13 +402,18 @@ export default function Admin() {
 /* ------------------------------------------------------------------ */
 
 function AppWindow({
-    visible, appId, onClose, onMinimize, onFocus
+    visible, appId, onClose, onMinimize, onFocus,
+    realStats, realUsers, realCharges, fetchAdminData,
 }: {
     visible: boolean;
     appId: AppId;
     onClose: () => void;
     onMinimize: () => void;
     onFocus: () => void;
+    realStats: any;
+    realUsers: any[];
+    realCharges: any[];
+    fetchAdminData: () => void;
 }) {
     const def = APPS.find((a) => a.id === appId)!;
     return (
@@ -836,21 +845,14 @@ function Sparkbars({ data }: { data: number[] }) {
 /* ================================================================== */
 
 function UsersApp({ users, onRefresh }: { users: any[], onRefresh: () => void }) {
-    const [filterPlan, setFilterPlan] = useState<"all" | "Free" | "Pro" | "Business">("all");
-    const [filterStatus, setFilterStatus] = useState<"all" | "Ativo" | "Inativo" | "Bloqueado">("all");
     const [search, setSearch] = useState("");
     const [selected, setSelected] = useState<any | null>(null);
 
     const dataToUse = users.length > 0 ? users : adminUsers;
 
     const filtered = dataToUse.filter((u: any) => {
-        // Map real data fields to mock fields for compatibility if needed
         const name = u.full_name || u.name || "";
         const email = u.email || "";
-        const plan = u.plan || "Free";
-        
-        if (filterPlan !== "all" && plan !== filterPlan) return false;
-        // Status real might not be "Ativo/Inativo" yet, adjust as needed
         if (search && !`${name} ${email}`.toLowerCase().includes(search.toLowerCase())) return false;
         return true;
     });
@@ -1474,18 +1476,6 @@ function Tag({ children, variant }: { children: React.ReactNode; variant?: "defa
     );
 }
 
-function StatusDot({ status }: { status: string }) {
-    const color = status === "Ativo" ? "bg-lime-accent shadow-[0_0_8px_rgba(158,234,108,0.5)]"
-        : status === "Inativo" ? "bg-amber-300 shadow-[0_0_8px_rgba(252,211,77,0.5)]"
-            : status === "Bloqueado" ? "bg-red-400 shadow-[0_0_8px_rgba(248,113,113,0.5)]"
-                : "bg-white/40";
-    return (
-        <span className="inline-flex items-center gap-1.5 font-body text-xs text-white/75">
-            <span className={`h-1.5 w-1.5 rounded-full ${color}`} />
-            {status}
-        </span>
-    );
-}
 
 function ChargeStatus({ status }: { status: string }) {
     const map: Record<string, string> = {
