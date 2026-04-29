@@ -16,6 +16,7 @@ import {
   Gear,
   ShieldCheck,
 } from "phosphor-react";
+import SupportWidget from "./SupportWidget";
 
 interface ShellProps {
   children: React.ReactNode;
@@ -226,6 +227,8 @@ export default function Shell({ children, onNewCharge }: ShellProps) {
           </div>
         </nav>
       </div>
+
+      {!isAdminPath && <SupportWidget />}
     </div>
   );
 }

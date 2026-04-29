@@ -586,3 +586,31 @@ export async function sendTicketMessage(ticketId: string, senderId: string, mess
   if (error) throw error;
   return data;
 }
+
+export async function getClientTickets(userId: string) {
+  const { data, error } = await supabase
+    .from('tickets')
+    .select('*')
+    .eq('user_id', userId)
+    .order('created_at', { ascending: false });
+  if (error) return [];
+  return data;
+}
+
+export async function createTicket(userId: string, subject: string, initialMessage: string) {
+  // 1. Create the ticket
+  const { data: ticket, error: ticketError } = await supabase
+    .from('tickets')
+    .insert({ user_id: userId, subject })
+    .select()
+    .single();
+  if (ticketError) throw ticketError;
+  
+  // 2. Create the first message
+  const { error: msgError } = await supabase
+    .from('ticket_messages')
+    .insert({ ticket_id: ticket.id, sender_id: userId, message: initialMessage });
+  if (msgError) throw msgError;
+
+  return ticket;
+}
