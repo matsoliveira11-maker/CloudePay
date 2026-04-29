@@ -574,8 +574,8 @@ function CreateChargeFlowModal({
         slug: profile.slug,
         product_id: selectedProductId,
         payer_name: sanitizeText(payerName, 80) || null,
-        payer_cpf: profile.cpf,
-        payer_email: profile.email,
+        payer_cpf: profile.cpf || "00000000000",
+        payer_email: profile.email || "",
         notes: sanitizeText(notes, 100) || null,
       });
       console.log("[createFromProduct] Cobrança criada:", charge);
@@ -590,7 +590,10 @@ function CreateChargeFlowModal({
 
   async function createCustom(e: React.FormEvent) {
     e.preventDefault();
-    if (!profile?.slug) return;
+    if (!profile?.slug) {
+      setErrors({ slug: "Configure seu link público em Configurações antes de gerar cobranças." });
+      return;
+    }
 
     const ev: Record<string, string> = {};
     const cents = parseBRLToCents(amountStr);
@@ -600,19 +603,24 @@ function CreateChargeFlowModal({
     if (Object.keys(ev).length > 0) return;
 
     setLoading(true);
-    const charge = await api.createCharge({
-      profile_id: profile.id,
-      slug: profile.slug,
-      amount_cents: cents,
-      service_name: sanitizeText(serviceName, 60),
-      description: null,
-      payer_name: sanitizeText(payerName, 80) || null,
-      payer_cpf: profile.cpf,
-      payer_email: profile.email,
-      notes: sanitizeText(notes, 100) || null,
-    });
-    setLoading(false);
-    onCreated(charge);
+    try {
+      const charge = await api.createCharge({
+        profile_id: profile.id,
+        slug: profile.slug,
+        amount_cents: cents,
+        service_name: sanitizeText(serviceName, 60),
+        description: null,
+        payer_name: sanitizeText(payerName, 80) || null,
+        payer_cpf: profile.cpf || "00000000000",
+        payer_email: profile.email || "",
+        notes: sanitizeText(notes, 100) || null,
+      });
+      onCreated(charge);
+    } catch (error: any) {
+      setErrors({ general: `Erro: ${error?.message || "Tente novamente."}` });
+    } finally {
+      setLoading(false);
+    }
   }
 
   return (
