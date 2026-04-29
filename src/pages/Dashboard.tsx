@@ -767,6 +767,13 @@ function CreateChargeFlowModal({
               onChange={(e) => setNotes(e.target.value)}
             />
 
+            {errors.slug && (
+              <p className="text-[11px] text-red-500 font-heading font-extrabold">
+                {errors.slug} <Link to="/configuracoes" className="underline text-[#9EEA6C]">Configurar agora</Link>
+              </p>
+            )}
+            {errors.general && <p className="text-[11px] text-red-500 font-heading font-extrabold">{errors.general}</p>}
+
             <button
               type="submit"
               disabled={loading}
