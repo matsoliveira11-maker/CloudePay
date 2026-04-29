@@ -205,20 +205,27 @@ export async function createCharge(input: {
           type: "CPF",
           number: input.payer_cpf.replace(/\D/g, "")
         }
-      },
-      installments: 1
+      }
     })
   });
 
   if (!response.ok) {
-    const errorData = await response.json();
-    console.error("[MP Error]", errorData);
-    
-    if (errorData.message?.includes("application_fee")) {
-        throw new Error("Erro de Split: Sua conta Mercado Pago ainda não permite cobrar taxas de serviço. Tente conectar novamente ou entre em contato.");
+    let errorData: any;
+    try {
+      errorData = await response.json();
+    } catch {
+      throw new Error(`Erro ao gerar PIX (HTTP ${response.status})`);
     }
     
-    throw new Error("Erro ao gerar PIX real. Verifique se sua conta Mercado Pago está ativa.");
+    console.error("[MP Error]", JSON.stringify(errorData, null, 2));
+    
+    if (errorData.message?.includes("application_fee")) {
+        throw new Error("Erro de Split: Sua conta Mercado Pago ainda não permite cobrar taxas de serviço.");
+    }
+    
+    // Mostra o erro real do MP para facilitar o debug
+    const cause = errorData.cause?.[0]?.description || errorData.message || "Erro desconhecido";
+    throw new Error(`Recusado pelo Mercado Pago: ${cause}`);
   }
 
   const payment = await response.json();
