@@ -17,8 +17,8 @@ export default function Settings() {
     const redirectUri = encodeURIComponent((import.meta as any).env.VITE_REDIRECT_URI);
     
     // URL simplificada
-    const authUrl = `https://auth.mercadopago.com/authorization?client_id=${clientId}&response_type=code&redirect_uri=${redirectUri}&state=${profile?.id}`;
-    console.log("Gerando URL de Autenticação:", authUrl);
+    const authUrl = `https://auth.mercadopago.com.br/authorization?client_id=${clientId}&response_type=code&redirect_uri=${redirectUri}&scope=read%20write%20offline_access&state=${profile?.id}`;
+    console.log("URL Final:", authUrl);
     
     window.location.href = authUrl;
   };
