@@ -91,7 +91,7 @@ export default function SupportWidget({ isOpen, onClose }: SupportWidgetProps) {
             setSelectedTicket(ticket);
         } catch (e: any) {
             console.error("Erro ao criar chamado", e);
-            setCreateError("Falha ao criar chamado. Verifique se o banco de dados está atualizado com o script SQL.");
+            setCreateError(`Falha do Servidor: ${e.message || e.details || e.hint || "Erro desconhecido. Verifique o console ou o script SQL."}`);
         }
     };
 
