@@ -101,10 +101,10 @@ export default function AuthCallback() {
             <h2 className="text-2xl font-heading font-black text-white uppercase tracking-tight mb-2">Ops! Algo deu errado</h2>
             <p className="text-white/40 text-sm mb-8">{errorMsg}</p>
             <button 
-              onClick={() => navigate("/dashboard")}
+              onClick={() => navigate("/painel")}
               className="bg-white/10 hover:bg-white/20 text-white rounded-2xl px-8 py-3 font-heading font-bold uppercase text-xs transition-all"
             >
-              Voltar ao Dashboard
+              Voltar ao Painel
             </button>
           </>
         )}
