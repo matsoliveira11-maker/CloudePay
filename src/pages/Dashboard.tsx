@@ -536,6 +536,8 @@ function CreateChargeFlowModal({
   const [amountStr, setAmountStr] = useState("");
   const [serviceName, setServiceName] = useState("");
   const [payerName, setPayerName] = useState("");
+  const [payerEmail, setPayerEmail] = useState("");
+  const [payerCpf, setPayerCpf] = useState("");
   const [notes, setNotes] = useState("");
   const [errors, setErrors] = useState<Record<string, string>>({});
   useEffect(() => {
@@ -611,8 +613,8 @@ function CreateChargeFlowModal({
         service_name: sanitizeText(serviceName, 60),
         description: null,
         payer_name: sanitizeText(payerName, 80) || null,
-        payer_cpf: profile.cpf || "00000000000",
-        payer_email: profile.email || "",
+        payer_cpf: payerCpf ? payerCpf.replace(/\D/g, "") : (profile.cpf || "00000000000"),
+        payer_email: payerEmail.trim() || profile.email || "",
         notes: sanitizeText(notes, 100) || null,
       });
       onCreated(charge);
@@ -758,6 +760,21 @@ function CreateChargeFlowModal({
               className="w-full rounded-xl border border-neutral-200 dark:border-white/10 bg-neutral-50 dark:bg-white/5 px-3 py-2.5 text-[12px] text-[#0a0a0a] dark:text-white"
               value={payerName}
               onChange={(e) => setPayerName(e.target.value)}
+            />
+
+            <input
+              placeholder="E-mail do cliente (Requerido para teste MP)"
+              type="email"
+              className="w-full rounded-xl border border-neutral-200 dark:border-white/10 bg-neutral-50 dark:bg-white/5 px-3 py-2.5 text-[12px] text-[#0a0a0a] dark:text-white"
+              value={payerEmail}
+              onChange={(e) => setPayerEmail(e.target.value)}
+            />
+
+            <input
+              placeholder="CPF do cliente (opcional)"
+              className="w-full rounded-xl border border-neutral-200 dark:border-white/10 bg-neutral-50 dark:bg-white/5 px-3 py-2.5 text-[12px] text-[#0a0a0a] dark:text-white"
+              value={payerCpf}
+              onChange={(e) => setPayerCpf(e.target.value)}
             />
 
             <textarea
