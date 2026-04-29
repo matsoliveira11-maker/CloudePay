@@ -38,19 +38,7 @@ import {
 import Logo from "../components/Logo";
 import { useAuth } from "../context/AuthContext";
 import { signIn, getMasterStats, getAllProfiles, getAllCharges } from "../lib/api";
-import {
-    adminAlerts,
-    adminCharges,
-    adminLogs,
-    adminMetrics,
-    adminTickets,
-    adminUsers,
-    chargeStatusBreakdown,
-    hourlyActivity,
-    newVsChurnSeries,
-    revenueByPlan,
-    revenueSeries,
-} from "../lib/adminMock";
+
 
 /* ------------------------------------------------------------------ */
 /* Tipos de janelas                                                    */
@@ -451,10 +439,10 @@ function AppWindow({
 
             {/* Body — scrollable per window */}
             <div className="flex-1 overflow-y-auto p-4 sm:p-6 custom-scrollbar flex flex-col">
-                {appId === "dashboard" && <DashboardApp stats={realStats} />}
+                {appId === "dashboard" && <DashboardApp stats={realStats} charges={realCharges} />}
                 {appId === "users" && <UsersApp users={realUsers} onRefresh={fetchAdminData} />}
                 {appId === "charges" && <ChargesApp charges={realCharges} />}
-                {appId === "finance" && <FinanceApp stats={realStats} />}
+                {appId === "finance" && <FinanceApp stats={realStats} charges={realCharges} />}
                 {appId === "reports" && <ReportsApp />}
                 {appId === "support" && <SupportApp />}
                 {appId === "settings" && <SettingsApp />}
@@ -616,65 +604,73 @@ function Taskbar({
 /* APP 1 — DASHBOARD                                                   */
 /* ================================================================== */
 
-function DashboardApp({ stats }: { stats: any }) {
-    // Fallback to mocks if real data is still loading or empty
-    const metrics = stats ? {
-        mrr: stats.revenue / 100,
-        mrrDelta: 0,
-        users: stats.users,
-        usersDelta: 0,
-        churn: 0,
-        churnDelta: 0,
-        conversion: stats.conversions,
-        conversionDelta: 0,
-    } : adminMetrics;
+function DashboardApp({ stats, charges }: { stats: any; charges: any[] }) {
+    const revenue = stats?.revenue || 0;
+    const gmv = stats?.gmv || 0;
+    const users = stats?.users || 0;
+    const conversion = stats?.conversions || 0;
+    const totalCharges = stats?.totalCharges || 0;
+
+    // Derive status breakdown from real charges
+    const paid = charges.filter((c) => c.status === "paid").length;
+    const pending = charges.filter((c) => c.status === "pending").length;
+    const expired = charges.filter((c) => c.status === "expired").length;
+    const statusData = [
+        { label: "Pagas", value: paid || 1, color: "#9EEA6C" },
+        { label: "Pendentes", value: pending || 0, color: "#F59E0B" },
+        { label: "Expiradas", value: expired || 0, color: "#94A3B8" },
+    ].filter((s) => s.value > 0);
+
+    // Derive daily revenue from real charges (last 14 days)
+    const dailyRevenue: number[] = [];
+    for (let i = 13; i >= 0; i--) {
+        const d = new Date(); d.setDate(d.getDate() - i);
+        const dayStr = d.toISOString().slice(0, 10);
+        const total = charges
+            .filter((c) => c.status === "paid" && (c.created_at || c.createdAt || "").slice(0, 10) === dayStr)
+            .reduce((s: number, c: any) => s + (c.fee_cents || c.fee || 0), 0);
+        dailyRevenue.push(total);
+    }
 
     return (
         <div className="space-y-5">
             {/* KPIs */}
             <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
-                <KpiCard label="Receita Total (Taxas)" value={fmtBRL(metrics.mrr * 100)} delta={metrics.mrrDelta} icon={TrendUp} />
-                <KpiCard label="Usuários reais" value={String(metrics.users)} delta={metrics.usersDelta} icon={UsersFour} />
-                <KpiCard label="GMV Total" value={fmtBRL(stats?.gmv || 0)} delta={0} icon={TrendUp} />
-                <KpiCard label="Conversão" value={`${metrics.conversion.toFixed(1)}%`} delta={metrics.conversionDelta} icon={Pulse} />
+                <KpiCard label="Receita (Taxas)" value={fmtBRL(revenue)} delta={0} icon={TrendUp} />
+                <KpiCard label="Usuários cadastrados" value={String(users)} delta={0} icon={UsersFour} />
+                <KpiCard label="GMV Total" value={fmtBRL(gmv)} delta={0} icon={ChartBar} />
+                <KpiCard label="Conversão" value={`${conversion.toFixed(1)}%`} delta={0} icon={Pulse} />
             </div>
 
-            {/* Alertas */}
-            <Panel title="Alertas automáticos" icon={WarningCircle}>
+            {/* Resumo real */}
+            <Panel title="Resumo da plataforma" icon={WarningCircle}>
                 <div className="grid gap-2 md:grid-cols-3">
-                    {adminAlerts.map((a) => (
-                        <div key={a.id} className={`rounded-2xl border p-3 ${a.level === "high" ? "border-red-500/25 bg-red-500/10"
-                                : a.level === "medium" ? "border-amber-400/25 bg-amber-400/10"
-                                    : "border-white/10 bg-white/[0.03]"
-                            }`}>
-                            <div className="flex items-center justify-between">
-                                <span className={`text-[11px] font-bold uppercase tracking-wider ${a.level === "high" ? "text-red-300" : a.level === "medium" ? "text-amber-300" : "text-white/55"
-                                    }`}>{a.level === "high" ? "Crítico" : a.level === "medium" ? "Atenção" : "Info"}</span>
-                                <span className="font-mono text-[10px] text-white/40">{fmtDateTime(a.at)}</span>
-                            </div>
-                            <p className="mt-1.5 font-heading text-sm font-bold text-white">{a.title}</p>
-                            <p className="mt-1 font-body text-xs text-white/55">{a.description}</p>
-                        </div>
-                    ))}
+                    <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-3">
+                        <span className="text-[11px] font-bold uppercase tracking-wider text-white/55">Total de cobranças</span>
+                        <p className="mt-1.5 font-heading text-xl font-bold text-white">{totalCharges}</p>
+                    </div>
+                    <div className="rounded-2xl border border-lime-accent/25 bg-lime-accent/10 p-3">
+                        <span className="text-[11px] font-bold uppercase tracking-wider text-lime-accent">Pagas</span>
+                        <p className="mt-1.5 font-heading text-xl font-bold text-white">{paid}</p>
+                    </div>
+                    <div className="rounded-2xl border border-amber-400/25 bg-amber-400/10 p-3">
+                        <span className="text-[11px] font-bold uppercase tracking-wider text-amber-300">Pendentes</span>
+                        <p className="mt-1.5 font-heading text-xl font-bold text-white">{pending}</p>
+                    </div>
                 </div>
             </Panel>
 
-            {/* Charts grid */}
-            <div className="grid gap-4 xl:grid-cols-3">
-                <Panel title="Receita — últimos 30 dias" icon={ChartLineUp} className="xl:col-span-2">
-                    <LineChart data={revenueSeries.map((p) => p.value)} />
+            {/* Charts from REAL data */}
+            <div className="grid gap-4 xl:grid-cols-2">
+                <Panel title="Receita por dia (últimos 14 dias)" icon={ChartLineUp}>
+                    <LineChart data={dailyRevenue.some((v) => v > 0) ? dailyRevenue : [0, 0, 0]} />
                 </Panel>
-                <Panel title="Distribuição da receita" icon={ChartBar}>
-                    <Donut segments={revenueByPlan.map((p) => ({ value: p.value, color: p.color, label: p.label }))} />
-                </Panel>
-                <Panel title="Novos vs. Churned" icon={UsersFour}>
-                    <BarPairs data={newVsChurnSeries} />
-                </Panel>
-                <Panel title="Status de cobranças" icon={Receipt}>
-                    <BarsHorizontal data={chargeStatusBreakdown} />
-                </Panel>
-                <Panel title="Atividade por hora" icon={Pulse}>
-                    <Sparkbars data={hourlyActivity.map((p) => p.value)} />
+                <Panel title="Status das cobranças" icon={Receipt}>
+                    {statusData.length > 0 ? (
+                        <BarsHorizontal data={statusData} />
+                    ) : (
+                        <p className="py-8 text-center font-body text-sm text-white/40">Nenhuma cobrança registrada ainda.</p>
+                    )}
                 </Panel>
             </div>
         </div>
@@ -754,58 +750,6 @@ function LineChart({ data }: { data: number[] }) {
     );
 }
 
-function Donut({ segments }: { segments: { value: number; color: string; label: string }[] }) {
-    const total = segments.reduce((s, x) => s + x.value, 0);
-    let acc = 0;
-    const r = 38, cx = 50, cy = 50, c = 2 * Math.PI * r;
-    return (
-        <div className="flex items-center gap-4">
-            <svg viewBox="0 0 100 100" className="h-32 w-32 -rotate-90">
-                <circle cx={cx} cy={cy} r={r} fill="none" stroke="rgba(255,255,255,.05)" strokeWidth="14" />
-                {segments.map((s, i) => {
-                    const len = (s.value / total) * c;
-                    const dash = `${len} ${c - len}`;
-                    const offset = -acc;
-                    acc += len;
-                    return <circle key={i} cx={cx} cy={cy} r={r} fill="none" stroke={s.color} strokeWidth="14" strokeDasharray={dash} strokeDashoffset={offset} strokeLinecap="round" />;
-                })}
-            </svg>
-            <ul className="space-y-1.5 text-xs">
-                {segments.map((s) => (
-                    <li key={s.label} className="flex items-center gap-2 font-body text-white/70">
-                        <span className="h-2.5 w-2.5 rounded-sm" style={{ background: s.color }} />
-                        {s.label}
-                        <span className="ml-auto font-mono text-white/45">{Math.round((s.value / total) * 100)}%</span>
-                    </li>
-                ))}
-            </ul>
-        </div>
-    );
-}
-
-function BarPairs({ data }: { data: { month: string; newUsers: number; churned: number }[] }) {
-    const max = Math.max(...data.map((d) => Math.max(d.newUsers, d.churned)));
-    return (
-        <div className="space-y-2">
-            <div className="flex items-end gap-1.5">
-                {data.map((d) => (
-                    <div key={d.month} className="flex flex-1 flex-col items-center gap-1">
-                        <div className="flex h-32 w-full items-end gap-1">
-                            <div className="flex-1 rounded-t bg-lime-accent/80" style={{ height: `${(d.newUsers / max) * 100}%` }} />
-                            <div className="flex-1 rounded-t bg-red-400/70" style={{ height: `${(d.churned / max) * 100}%` }} />
-                        </div>
-                        <span className="font-mono text-[9px] text-white/40">{d.month}</span>
-                    </div>
-                ))}
-            </div>
-            <div className="flex gap-3 font-body text-[11px] text-white/55">
-                <span className="flex items-center gap-1"><span className="h-2 w-2 rounded-sm bg-lime-accent" /> Novos</span>
-                <span className="flex items-center gap-1"><span className="h-2 w-2 rounded-sm bg-red-400" /> Churned</span>
-            </div>
-        </div>
-    );
-}
-
 function BarsHorizontal({ data }: { data: { label: string; value: number; color: string }[] }) {
     const max = Math.max(...data.map((d) => d.value));
     return (
@@ -814,7 +758,7 @@ function BarsHorizontal({ data }: { data: { label: string; value: number; color:
                 <li key={d.label}>
                     <div className="mb-1 flex justify-between font-body text-[11px] text-white/55">
                         <span>{d.label}</span>
-                        <span className="font-mono">{d.value}%</span>
+                        <span className="font-mono">{d.value}</span>
                     </div>
                     <div className="h-2 overflow-hidden rounded-full bg-white/[0.05]">
                         <div className="h-full rounded-full transition-all duration-1000" style={{ width: `${(d.value / max) * 100}%`, background: d.color }} />
@@ -825,20 +769,7 @@ function BarsHorizontal({ data }: { data: { label: string; value: number; color:
     );
 }
 
-function Sparkbars({ data }: { data: number[] }) {
-    const max = Math.max(...data);
-    return (
-        <div className="flex h-32 items-end gap-1">
-            {data.map((v, i) => (
-                <div
-                    key={i}
-                    className="flex-1 rounded-t bg-gradient-to-t from-link-blue to-pago-violet"
-                    style={{ height: `${(v / max) * 100}%`, opacity: 0.5 + (v / max) * 0.5 }}
-                />
-            ))}
-        </div>
-    );
-}
+
 
 /* ================================================================== */
 /* APP 2 — USUÁRIOS                                                    */
@@ -848,7 +779,7 @@ function UsersApp({ users, onRefresh }: { users: any[], onRefresh: () => void })
     const [search, setSearch] = useState("");
     const [selected, setSelected] = useState<any | null>(null);
 
-    const dataToUse = users.length > 0 ? users : adminUsers;
+    const dataToUse = users;
 
     const filtered = dataToUse.filter((u: any) => {
         const name = u.full_name || u.name || "";
@@ -858,7 +789,7 @@ function UsersApp({ users, onRefresh }: { users: any[], onRefresh: () => void })
     });
 
     return (
-        <div className="grid gap-4 lg:grid-cols-[1fr_360px] h-full items-start">
+        <div className={`grid gap-4 h-full items-start ${selected ? "lg:grid-cols-[1fr_360px]" : ""}`}>
             <div className="flex flex-col h-full">
                 <div className="mb-3 flex flex-wrap items-center gap-2">
                     <SearchBox value={search} onChange={setSearch} placeholder="Buscar por nome, email..." />
@@ -949,11 +880,9 @@ function UserDrawer({ user, onClose }: { user: any; onClose: () => void }) {
 function ChargesApp({ charges }: { charges: any[] }) {
     const [search, setSearch] = useState("");
     const [status, setStatus] = useState<string>("all");
-    const [method, setMethod] = useState<string>("all");
-    const [type, setType] = useState<string>("all");
     const [selected, setSelected] = useState<any | null>(null);
 
-    const dataToUse = charges.length > 0 ? charges : adminCharges;
+    const dataToUse = charges;
 
     const filtered = dataToUse.filter((c: any) => {
         // Map status
@@ -969,13 +898,11 @@ function ChargesApp({ charges }: { charges: any[] }) {
     });
 
     return (
-        <div className="grid gap-4 lg:grid-cols-[1fr_360px] h-full items-start">
+        <div className={`grid gap-4 h-full items-start ${selected ? "lg:grid-cols-[1fr_360px]" : ""}`}>
             <div className="flex flex-col h-full">
                 <div className="mb-3 flex flex-wrap items-center gap-2">
                     <SearchBox value={search} onChange={setSearch} placeholder="Buscar por ID, email, CPF..." />
-                    <Pill options={["all", "Paga", "Pendente", "Expirada", "Reembolsada", "Fraude"]} value={status} onChange={setStatus} icon={Funnel} />
-                    <Pill options={["all", "PIX", "PIX QR", "Boleto"]} value={method} onChange={setMethod} icon={Funnel} />
-                    <Pill options={["all", "Cobrança", "Assinatura", "Reembolso"]} value={type} onChange={setType} icon={Funnel} />
+                    <Pill options={["all", "Paga", "Pendente", "Expirada"]} value={status} onChange={setStatus} icon={Funnel} />
                     <span className="ml-auto font-body text-xs text-white/40">{filtered.length} transações</span>
                 </div>
 
@@ -1058,29 +985,36 @@ function ChargeDrawer({ charge, onClose }: { charge: any; onClose: () => void })
 /* APP 4 — FINANCEIRO                                                  */
 /* ================================================================== */
 
-function FinanceApp({ stats }: { stats: any }) {
+function FinanceApp({ stats, charges }: { stats: any; charges: any[] }) {
     const totalReceita = stats?.revenue || 0;
     const gmv = stats?.gmv || 0;
     const conversao = stats?.conversions || 0;
+    const totalCharges = charges.length;
+    const paidCharges = charges.filter((c) => c.status === "paid");
+    const ticketMedio = paidCharges.length > 0 ? paidCharges.reduce((s: number, c: any) => s + (c.amount_cents || 0), 0) / paidCharges.length : 0;
 
     return (
         <div className="space-y-4">
-            <div className="grid gap-3 md:grid-cols-3">
-                <KpiCard label="Receita Total (Taxas)" value={fmtBRL(totalReceita)} delta={0} icon={TrendUp} />
-                <KpiCard label="Volume Total (GMV)" value={fmtBRL(gmv)} delta={0} icon={ChartBar} />
-                <KpiCard label="Taxa de Conversão" value={`${conversao.toFixed(1)}%`} delta={0} icon={Pulse} />
+            <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+                <KpiCard label="Receita (Taxas)" value={fmtBRL(totalReceita)} delta={0} icon={TrendUp} />
+                <KpiCard label="GMV Total" value={fmtBRL(gmv)} delta={0} icon={ChartBar} />
+                <KpiCard label="Conversão" value={`${conversao.toFixed(1)}%`} delta={0} icon={Pulse} />
+                <KpiCard label="Ticket Médio" value={fmtBRL(Math.round(ticketMedio))} delta={0} icon={Receipt} />
             </div>
 
-            <div className="grid gap-4 xl:grid-cols-2">
-                <Panel title="Receita acumulada (MOCK)" icon={ChartLineUp}>
-                    <LineChart data={revenueSeries.map((_, i) =>
-                        revenueSeries.slice(0, i + 1).reduce((s, x) => s + x.value, 0)
-                    )} />
-                </Panel>
-                <Panel title="Composição (MOCK)" icon={ChartBar}>
-                    <Donut segments={revenueByPlan.map((p) => ({ value: p.value, color: p.color, label: p.label }))} />
-                </Panel>
-            </div>
+            <Panel title="Detalhamento financeiro" icon={Database}>
+                <DataTable
+                    headers={["Métrica", "Valor"]}
+                    rows={[
+                        { key: "1", cells: ["Total de cobranças geradas", String(totalCharges)] },
+                        { key: "2", cells: ["Cobranças pagas", String(paidCharges.length)] },
+                        { key: "3", cells: ["Volume bruto processado (GMV)", fmtBRL(gmv)] },
+                        { key: "4", cells: ["Receita líquida (taxas)", fmtBRL(totalReceita)] },
+                        { key: "5", cells: ["Taxa aplicada", "2% por transação"] },
+                        { key: "6", cells: ["Ticket médio", fmtBRL(Math.round(ticketMedio))] },
+                    ]}
+                />
+            </Panel>
         </div>
     );
 }
@@ -1153,87 +1087,20 @@ function FilterField({ label, value }: { label: string; value: string }) {
 /* ================================================================== */
 
 function SupportApp() {
-    const [activeId, setActiveId] = useState(adminTickets[0].id);
-    const ticket = adminTickets.find((t) => t.id === activeId)!;
-    const [draft, setDraft] = useState("");
-
-    const quickReplies = [
-        "Reenviar recibo do último pagamento",
-        "Reembolsar cobrança",
-        "Resetar senha do usuário",
-        "Reverter status de fraude",
-    ];
-
     return (
-        <div className="grid gap-4 lg:grid-cols-[280px_1fr_240px]">
-            {/* Lista */}
-            <aside className="rounded-2xl border border-white/[0.06] bg-white/[0.02] p-2">
-                {adminTickets.map((t) => (
-                    <button
-                        key={t.id}
-                        onClick={() => setActiveId(t.id)}
-                        className={`flex w-full flex-col gap-1 rounded-xl p-3 text-left transition-all ${activeId === t.id ? "bg-lime-accent/10 ring-1 ring-lime-accent/25" : "hover:bg-white/[0.04]"
-                            }`}
-                    >
-                        <div className="flex items-center justify-between">
-                            <span className="font-heading text-sm font-bold text-white">{t.user}</span>
-                            {t.unread && <span className="h-2 w-2 rounded-full bg-lime-accent animate-pulse" />}
-                        </div>
-                        <span className="font-body text-[11px] text-white/55">{t.subject}</span>
-                        <span className="font-body text-[10px] text-white/35">{t.preview}</span>
-                    </button>
-                ))}
-            </aside>
-
-            {/* Chat */}
-            <div className="flex min-h-[480px] flex-col rounded-2xl border border-white/[0.06] bg-white/[0.02] p-4">
-                <div className="flex items-center justify-between border-b border-white/[0.06] pb-3">
-                    <div>
-                        <p className="font-heading text-sm font-bold text-white">{ticket.subject}</p>
-                        <p className="font-body text-[11px] text-white/45">{ticket.email}</p>
-                    </div>
-                    <ActionBtn icon={Eye} label="Acessar como cliente" small />
-                </div>
-
-                <div className="flex-1 space-y-3 overflow-y-auto py-4 custom-scrollbar">
-                    {ticket.messages.map((m, i) => (
-                        <div key={i} className={`flex ${m.who === "admin" ? "justify-end" : "justify-start"} animate-in slide-in-from-bottom-2 duration-300`}>
-                            <div className={`max-w-[80%] rounded-2xl px-4 py-2.5 font-body text-sm ${m.who === "admin" ? "rounded-tr-sm bg-lime-accent/15 text-white" : "rounded-tl-sm bg-white/[0.06] text-white/85"
-                                }`}>
-                                {m.text}
-                                <p className="mt-1 font-mono text-[9px] text-white/35">{fmtDateTime(m.at)}</p>
-                            </div>
-                        </div>
-                    ))}
-                </div>
-
-                <div className="border-t border-white/[0.06] pt-3">
-                    <div className="flex items-center gap-2">
-                        <input
-                            value={draft}
-                            onChange={(e) => setDraft(e.target.value)}
-                            placeholder="Escreva uma resposta..."
-                            className="h-10 flex-1 rounded-xl border border-white/[0.08] bg-white/[0.04] px-3 font-body text-sm text-white placeholder:text-white/30 focus:outline-none focus:ring-2 focus:ring-lime-accent/30"
-                        />
-                        <button className="rounded-xl bg-lime-accent px-4 py-2 font-heading text-sm font-black text-[#0a0a0a] transition-all active:scale-95">Enviar</button>
-                    </div>
+        <div className="flex h-full items-center justify-center">
+            <div className="text-center max-w-md animate-in fade-in duration-500">
+                <Headset size={48} weight="duotone" className="mx-auto text-white/20 mb-4" />
+                <h3 className="font-heading text-xl font-bold text-white mb-2">Central de Suporte</h3>
+                <p className="font-body text-sm text-white/45 mb-6">Nenhum ticket de suporte aberto no momento. Quando os usuários entrarem em contato, os chamados aparecerão aqui.</p>
+                <div className="rounded-2xl border border-white/[0.06] bg-white/[0.02] p-4 text-left">
+                    <p className="font-body text-[11px] font-bold uppercase tracking-wider text-white/40 mb-3">Canais de contato configurados</p>
+                    <ul className="space-y-2 font-body text-xs text-white/65">
+                        <li className="flex items-center gap-2"><CheckCircle size={14} className="text-lime-accent" /> Email de suporte (em breve)</li>
+                        <li className="flex items-center gap-2"><CheckCircle size={14} className="text-lime-accent" /> Chat interno (em breve)</li>
+                    </ul>
                 </div>
             </div>
-
-            {/* Ações rápidas */}
-            <aside className="rounded-2xl border border-white/[0.06] bg-white/[0.02] p-3">
-                <p className="mb-2 px-1 font-body text-[11px] font-bold uppercase tracking-wider text-white/40">Respostas rápidas</p>
-                <ul className="space-y-1.5">
-                    {quickReplies.map((r) => (
-                        <li key={r}>
-                            <button className="flex w-full items-center gap-2 rounded-xl border border-white/[0.05] bg-white/[0.02] p-3 text-left font-body text-xs text-white/75 transition-all hover:border-lime-accent/25 hover:bg-white/[0.06] active:scale-95">
-                                <Lightning size={14} weight="duotone" className="text-lime-accent" />
-                                {r}
-                            </button>
-                        </li>
-                    ))}
-                </ul>
-            </aside>
         </div>
     );
 }
@@ -1245,53 +1112,34 @@ function SupportApp() {
 function SettingsApp() {
     return (
         <div className="grid gap-4 xl:grid-cols-2">
-            <Panel title="Dados gerais" icon={GearSix}>
+            <Panel title="Dados da plataforma" icon={GearSix}>
                 <div className="space-y-3">
-                    <SettingRow label="Nome da plataforma" value="CloudePay" />
-                    <SettingRow label="Domínio" value="cloudepay.com.br" />
-                    <SettingRow label="Suporte" value="suporte@cloudepay.com.br" />
+                    <SettingRow label="Nome" value="CloudePay" />
+                    <SettingRow label="Domínio" value="cloudepay.vercel.app" />
+                    <SettingRow label="Ambiente" value="Produção (Vercel)" />
                     <SettingRow label="Fuso horário" value="America/Sao_Paulo (UTC−3)" />
-                </div>
-            </Panel>
-
-            <Panel title="Chaves de API" icon={Lock}>
-                <div className="space-y-3">
-                    <KeyRow label="Public Key" value="pk_live" suffix="a91c" />
-                    <KeyRow label="Secret Key" value="sk_live" suffix="•••• 7d2f" />
-                    <KeyRow label="Webhook Secret" value="whsec_" suffix="•••• 0fa3" />
-                    <p className="font-body text-[11px] text-white/40">Apenas os últimos 4 dígitos são exibidos por segurança.</p>
                 </div>
             </Panel>
 
             <Panel title="Integrações" icon={Database}>
                 <ul className="space-y-2">
-                    <Integration name="AbacatePay (PIX)" status="ok" />
-                    <Integration name="Resend (email)" status="ok" />
-                    <Integration name="Supabase Auth" status="ok" />
-                    <Integration name="Stripe (futuro)" status="pending" />
+                    <Integration name="Supabase (Auth + DB)" status="ok" />
+                    <Integration name="Vercel (Hosting)" status="ok" />
+                    <Integration name="Mercado Pago (Gateway)" status="pending" />
                 </ul>
             </Panel>
 
-            <Panel title="Taxas customizáveis" icon={ChartBar}>
+            <Panel title="Taxas do sistema" icon={ChartBar}>
                 <div className="space-y-3">
-                    <SettingRow label="Taxa padrão" value="2.0%" editable />
-                    <SettingRow label="Taxa Plano Pro" value="1.5%" editable />
-                    <SettingRow label="Taxa Business" value="1.0%" editable />
-                    <SettingRow label="Taxa boleto" value="R$ 2,49 por boleto" editable />
+                    <SettingRow label="Taxa padrão sobre transações" value="2%" />
+                    <SettingRow label="Método de pagamento" value="PIX" />
                 </div>
             </Panel>
 
-            <Panel title="Templates de email" icon={ChatCircleDots} className="xl:col-span-2">
-                <div className="grid gap-2 md:grid-cols-3">
-                    {["Comprovante de pagamento", "Boas-vindas", "Recuperação de senha", "Cobrança expirada", "Notificação de venda", "Resumo semanal"].map((t) => (
-                        <article key={t} className="rounded-2xl border border-white/[0.06] bg-white/[0.02] p-3 hover:border-white/10 transition-all">
-                            <div className="flex items-center justify-between">
-                                <span className="font-heading text-sm font-bold text-white">{t}</span>
-                                <ActionBtn icon={Eye} label="Editar" small />
-                            </div>
-                            <p className="mt-1 font-body text-[11px] text-white/45">Variáveis: {`{{ nome }}, {{ valor }}, {{ link }}`}</p>
-                        </article>
-                    ))}
+            <Panel title="Administradores" icon={Lock}>
+                <div className="space-y-3">
+                    <SettingRow label="Admin 1" value="matsoliveira11@gmail.com" />
+                    <SettingRow label="Admin 2" value="mats.oliveira11@gmail.com" />
                 </div>
             </Panel>
         </div>
@@ -1310,19 +1158,7 @@ function SettingRow({ label, value, editable }: { label: string; value: string; 
     );
 }
 
-function KeyRow({ label, value, suffix }: { label: string; value: string; suffix: string }) {
-    return (
-        <div className="flex items-center justify-between gap-3 rounded-xl border border-white/[0.05] bg-white/[0.02] px-3 py-2.5">
-            <div>
-                <p className="font-body text-[11px] text-white/45">{label}</p>
-                <p className="font-mono text-sm text-white/85">{value}{suffix}</p>
-            </div>
-            <button className="rounded-md border border-white/10 px-2.5 py-1 font-body text-[11px] text-white/65 hover:bg-white/[0.06] transition-all">
-                Revogar
-            </button>
-        </div>
-    );
-}
+
 
 function Integration({ name, status }: { name: string; status: "ok" | "pending" | "error" }) {
     const map = {
@@ -1346,41 +1182,20 @@ function Integration({ name, status }: { name: string; status: "ok" | "pending" 
 /* ================================================================== */
 
 function LogsApp() {
-    const [search, setSearch] = useState("");
-    const [type, setType] = useState<string>("all");
-    const [status, setStatus] = useState<string>("all");
-
-    const filtered = adminLogs.filter((l) => {
-        if (type !== "all" && l.type !== type) return false;
-        if (status !== "all" && l.status !== status) return false;
-        if (search && !`${l.user} ${l.ip} ${l.action}`.toLowerCase().includes(search.toLowerCase())) return false;
-        return true;
-    });
-
     return (
-        <div className="space-y-3">
-            <div className="flex flex-wrap items-center gap-2">
-                <SearchBox value={search} onChange={setSearch} placeholder="Buscar por email, IP, ação..." />
-                <Pill options={["all", "auth", "payment", "webhook", "admin", "system"]} value={type} onChange={setType} icon={Funnel} />
-                <Pill options={["all", "ok", "warn", "error"]} value={status} onChange={setStatus} icon={Funnel} />
-                <ActionBtn icon={DownloadSimple} label="Exportar" small />
-                <span className="ml-auto font-body text-xs text-white/40">{filtered.length} eventos</span>
+        <div className="flex h-full items-center justify-center">
+            <div className="text-center max-w-md animate-in fade-in duration-500">
+                <Database size={48} weight="duotone" className="mx-auto text-white/20 mb-4" />
+                <h3 className="font-heading text-xl font-bold text-white mb-2">Logs de Auditoria</h3>
+                <p className="font-body text-sm text-white/45 mb-4">O sistema de auditoria será alimentado automaticamente conforme as transações e eventos ocorrerem na plataforma.</p>
+                <div className="rounded-2xl border border-white/[0.06] bg-white/[0.02] p-4 text-left">
+                    <p className="font-body text-[11px] font-bold uppercase tracking-wider text-white/40 mb-3">Status do módulo</p>
+                    <ul className="space-y-2 font-body text-xs text-white/65">
+                        <li className="flex items-center gap-2"><CheckCircle size={14} className="text-lime-accent" /> Registro de transações ativo</li>
+                        <li className="flex items-center gap-2"><WarningCircle size={14} className="text-amber-300" /> Log detalhado em implantação</li>
+                    </ul>
+                </div>
             </div>
-
-            <DataTable
-                headers={["Timestamp", "Tipo", "Ação", "Usuário", "IP", "Status"]}
-                rows={filtered.map((l) => ({
-                    key: l.id,
-                    cells: [
-                        <span className="font-mono text-[11px] text-white/55">{fmtDateTime(l.timestamp)}</span>,
-                        <Tag>{l.type}</Tag>,
-                        <span className="font-body text-xs text-white/85">{l.action}</span>,
-                        <span className="font-body text-xs text-white/65">{l.user}</span>,
-                        <span className="font-mono text-[11px] text-white/45">{l.ip}</span>,
-                        <LogStatus status={l.status} />,
-                    ],
-                }))}
-            />
         </div>
     );
 }
@@ -1492,14 +1307,7 @@ function ChargeStatus({ status }: { status: string }) {
     );
 }
 
-function LogStatus({ status }: { status: "ok" | "warn" | "error" }) {
-    const map = {
-        ok: { color: "text-lime-accent", label: "OK" },
-        warn: { color: "text-amber-300", label: "Atenção" },
-        error: { color: "text-red-300", label: "Erro" },
-    }[status];
-    return <span className={`font-body text-[11px] font-black ${map.color}`}>{map.label}</span>;
-}
+
 
 function Stat({ label, value, highlight }: { label: string; value: string; highlight?: boolean }) {
     return (
