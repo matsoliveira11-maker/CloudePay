@@ -45,10 +45,10 @@ export default function Shell({ children, onNewCharge }: ShellProps) {
     if (!profile?.id) return;
 
     // Load recent paid charges
-    api.getCharges(profile.id).then(charges => {
+    api.listChargesByProfile(profile.id).then((charges: Charge[]) => {
       const paid = charges
-        .filter(c => c.status === "paid")
-        .sort((a,b) => new Date(b.paid_at || 0).getTime() - new Date(a.paid_at || 0).getTime())
+        .filter((c: Charge) => c.status === "paid")
+        .sort((a: Charge, b: Charge) => new Date(b.paid_at || 0).getTime() - new Date(a.paid_at || 0).getTime())
         .slice(0, 5);
       setNotifications(paid);
     });

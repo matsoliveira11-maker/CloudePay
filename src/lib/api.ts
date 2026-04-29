@@ -177,9 +177,9 @@ export async function createCharge(input: {
     throw new Error("Você precisa conectar sua conta do Mercado Pago nas Configurações para gerar cobranças reais.");
   }
 
-  // Sua comissão fixa de 1% (Split)
-  const myCommissionPercent = 0.01;
-  const application_fee = Number((input.amount_cents * myCommissionPercent / 100).toFixed(2));
+  // Sua comissão fixa de 1% (Split) (Desativada temporariamente)
+  // const myCommissionPercent = 0.01;
+  // const application_fee = Number((input.amount_cents * myCommissionPercent / 100).toFixed(2));
 
   // Taxa total exibida no Dashboard (Sua + Mercado Pago = 2%)
   const total_fee_rate = 0.02;
