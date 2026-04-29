@@ -3,7 +3,8 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.39.3'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-requested-with',
+  'Access-Control-Allow-Methods': 'POST, OPTIONS',
 }
 
 serve(async (req) => {
@@ -13,21 +14,20 @@ serve(async (req) => {
   }
 
   try {
-    const { code, redirect_uri } = await req.json()
-
-    // 1. Validar se o usuário que chamou a função está autenticado
+    const { code, redirect_uri, userId } = await req.json()
     const authHeader = req.headers.get('Authorization')!
+
     const supabaseUrl = Deno.env.get('SUPABASE_URL') ?? ''
-    const supabaseAnonKey = Deno.env.get('SUPABASE_ANON_KEY') ?? ''
+    const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
 
-    // Criar um cliente Supabase usando o token do usuário que fez a requisição
-    const supabaseClient = createClient(supabaseUrl, supabaseAnonKey, {
-      global: { headers: { Authorization: authHeader } }
-    })
+    // Criar cliente Admin para garantir o update
+    const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey)
 
-    const { data: { user }, error: userError } = await supabaseClient.auth.getUser()
-    if (userError || !user) {
-      throw new Error('Não autorizado. Faça login.')
+    // O ID do usuário vem direto do corpo da requisição enviada pelo frontend
+    const finalUserId = userId
+
+    if (!finalUserId) {
+      throw new Error('Identificação do usuário (userId) não encontrada no servidor.')
     }
 
     // 2. Chamar a API do Mercado Pago de forma segura no backend
@@ -76,7 +76,7 @@ serve(async (req) => {
         mp_user_id: tokenData.user_id.toString(),
         updated_at: new Date().toISOString()
       })
-      .eq('id', user.id)
+      .eq('id', finalUserId)
 
     if (updateError) {
       throw new Error('Erro ao salvar token no banco de dados.')

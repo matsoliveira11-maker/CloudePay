@@ -39,11 +39,13 @@ export default function AuthCallback() {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
-            "Authorization": `Bearer ${session.access_token}`
+            "Authorization": `Bearer ${session.access_token}`,
+            "apikey": (import.meta as any).env.VITE_SUPABASE_ANON_KEY
           },
           body: JSON.stringify({
             code,
-            redirect_uri: (import.meta as any).env.VITE_REDIRECT_URI
+            redirect_uri: (import.meta as any).env.VITE_REDIRECT_URI,
+            userId: profile?.id
           })
         });
 
