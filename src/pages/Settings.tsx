@@ -13,8 +13,8 @@ export default function Settings() {
   const { profile } = useAuth();
 
   const handleConnectMP = () => {
-    const clientId = "234353031012842";
-    const redirectUri = encodeURIComponent("https://cloudepay.vercel.app/auth/callback");
+    const clientId = (import.meta as any).env.VITE_MP_CLIENT_ID;
+    const redirectUri = encodeURIComponent((import.meta as any).env.VITE_REDIRECT_URI);
     
     // URL simplificada
     const authUrl = `https://auth.mercadopago.com.br/authorization?client_id=${clientId}&response_type=code&redirect_uri=${redirectUri}&state=${profile?.id}`;
