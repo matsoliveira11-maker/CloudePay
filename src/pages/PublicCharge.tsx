@@ -143,11 +143,6 @@ function PixStage({
     setTimeout(() => setCopied(false), 2000);
   }
 
-  async function simulate() {
-    await api.simulatePayment(charge.id);
-    const c = await api.getCharge(charge.id);
-    if (c?.status === "paid") onPaid(c);
-  }
 
   return (
     <motion.div 
@@ -222,10 +217,6 @@ function PixStage({
         <p className="text-[10px] text-white/20 uppercase tracking-[0.2em] font-heading font-bold">
           Aguardando Confirmação Automática...
         </p>
-        
-        <button onClick={simulate} className="mt-8 text-[9px] font-heading font-extrabold text-white/10 uppercase tracking-widest hover:text-[#9EEA6C]/40 transition-colors">
-          Simular Pagamento (Demo)
-        </button>
       </div>
     </motion.div>
   );
