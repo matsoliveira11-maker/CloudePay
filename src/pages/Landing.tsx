@@ -600,7 +600,7 @@ function Support() {
     <section className="section-frame grid border-t border-[#fecdd3] lg:grid-cols-2">
       <div className="support-image relative min-h-[360px] overflow-hidden border-b border-[#fecdd3] sm:min-h-[440px] lg:min-h-[520px] lg:border-b-0 lg:border-r">
         <img
-          src="https://images.unsplash.com/photo-1573497019940-1c28c88b4f3e?auto=format&fit=crop&q=80&w=1000"
+          src="/images/suporte.jpg"
           alt="Suporte CloudePay"
           className="absolute inset-0 h-full w-full object-cover"
           loading="lazy"
