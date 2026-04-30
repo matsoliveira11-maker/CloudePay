@@ -366,6 +366,9 @@ export default function Dashboard() {
                       <div className="mt-1 text-[10px] sm:text-[11px] text-neutral-400 dark:text-white/30 font-body">
                         {formatDateTime(c.created_at)} · {c.payer_name || "Cliente Final"}
                       </div>
+                      <div className="mt-1 text-[9px] font-mono text-neutral-300 dark:text-white/10">
+                        ID: {c.gateway_id}
+                      </div>
                     </td>
                     <td className="px-3 sm:px-4 py-3 sm:py-3.5">
                       <StatusBadge status={c.status} />
@@ -392,6 +395,9 @@ export default function Dashboard() {
                     <div className="truncate font-heading font-extrabold text-[#0a0a0a] dark:text-white text-[14px]">{c.service_name}</div>
                     <div className="mt-0.5 text-[11px] text-neutral-400 dark:text-white/30 font-body">
                       {formatDateTime(c.created_at)}
+                    </div>
+                    <div className="mt-1 text-[9px] font-mono text-neutral-300 dark:text-white/10 uppercase">
+                      ID: {c.gateway_id}
                     </div>
                   </div>
                   <StatusBadge status={c.status} />
