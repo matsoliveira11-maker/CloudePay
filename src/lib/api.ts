@@ -237,7 +237,13 @@ export async function createCharge(input: {
             first_name: firstName,
             last_name: lastName
           }
-        }
+        },
+        back_urls: {
+          success: window.location.origin,
+          failure: window.location.origin,
+          pending: window.location.origin
+        },
+        auto_return: "approved"
       })
     });
 
