@@ -132,6 +132,9 @@ function FormStage({
 
     setLoading(true);
     try {
+      const mp = (window as any).MercadoPago ? new (window as any).MercadoPago((import.meta as any).env.VITE_MP_PUBLIC_KEY || "APP_USR-8117604469613238") : null;
+      const deviceId = mp ? mp.getDeviceFingerprint() : undefined;
+
       const charge = await api.createFixedQRCodeCharge({
         profile_id: profile.id,
         slug: profile.slug!,
@@ -140,6 +143,7 @@ function FormStage({
         payer_cpf: payerCpf.replace(/\D/g, ""),
         payer_email: payerEmail.trim().toLowerCase(),
         description: description.trim() || null,
+        deviceId,
       });
       onSubmit(charge);
     } catch (err) {

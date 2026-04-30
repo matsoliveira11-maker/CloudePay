@@ -161,6 +161,7 @@ export async function createCharge(input: {
   payer_email?: string | null;
   notes?: string | null;
   charge_type?: ChargeType;
+  deviceId?: string;
 }): Promise<Charge> {
   const expires_at = new Date(Date.now() + 30 * 60 * 1000).toISOString();
   
@@ -177,9 +178,15 @@ export async function createCharge(input: {
     throw new Error("Você precisa conectar sua conta do Mercado Pago nas Configurações para gerar cobranças reais.");
   }
 
-  // Sua comissão fixa de 1% (Split) (Desativada temporariamente)
-  // const myCommissionPercent = 0.01;
-  // const application_fee = Number((input.amount_cents * myCommissionPercent / 100).toFixed(2));
+  // Capturar IP do pagador para aumentar nota de qualidade
+  let payerIp = "127.0.0.1";
+  try {
+    const ipRes = await fetch("https://api.ipify.org?format=json");
+    const ipData = await ipRes.json();
+    payerIp = ipData.ip;
+  } catch (e) {
+    console.warn("Não foi possível capturar o IP para o score de qualidade.");
+  }
 
   // Taxa total exibida no Dashboard (Sua + Mercado Pago = 2%)
   const total_fee_rate = 0.02;
@@ -190,8 +197,10 @@ export async function createCharge(input: {
     headers: {
       "Authorization": `Bearer ${sellerToken}`,
       "Content-Type": "application/json",
-      "X-Idempotency-Key": `charge_${Date.now()}`
-    },
+      "X-Idempotency-Key": `charge_${Date.now()}_${Math.random().toString(36).substring(7)}`,
+      "X-Forwarded-For": payerIp,
+      ...(input.deviceId ? { "X-Meli-Session-Id": input.deviceId } : {})
+    } as HeadersInit,
     body: JSON.stringify({
       transaction_amount: input.amount_cents / 100,
       description: input.service_name || "Serviço CloudePay",
@@ -417,6 +426,7 @@ export async function createChargeFromProduct(input: {
   payer_cpf: string;
   payer_email: string;
   notes?: string | null;
+  deviceId?: string;
 }): Promise<Charge> {
   const { data: product, error } = await supabase
     .from('products')
@@ -436,6 +446,7 @@ export async function createChargeFromProduct(input: {
     payer_cpf: input.payer_cpf,
     payer_email: input.payer_email,
     notes: input.notes || null,
+    deviceId: input.deviceId,
   });
 }
 
@@ -474,6 +485,7 @@ export async function createFixedQRCodeCharge(input: {
   payer_cpf: string;
   payer_email: string;
   description?: string | null;
+  deviceId?: string;
 }): Promise<Charge> {
   return createCharge({
     profile_id: input.profile_id,
@@ -485,6 +497,7 @@ export async function createFixedQRCodeCharge(input: {
     payer_cpf: input.payer_cpf,
     payer_email: input.payer_email,
     charge_type: "qr_code_fixo",
+    deviceId: input.deviceId,
   });
 }
 

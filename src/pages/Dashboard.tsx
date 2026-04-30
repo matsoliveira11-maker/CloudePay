@@ -571,6 +571,9 @@ function CreateChargeFlowModal({
     setLoading(true);
     setErrors({});
     try {
+      const mp = (window as any).MercadoPago ? new (window as any).MercadoPago((import.meta as any).env.VITE_MP_PUBLIC_KEY || "APP_USR-8117604469613238") : null;
+      const deviceId = mp ? mp.getDeviceFingerprint() : undefined;
+
       const charge = await api.createChargeFromProduct({
         profile_id: profile.id,
         slug: profile.slug,
@@ -579,6 +582,7 @@ function CreateChargeFlowModal({
         payer_cpf: profile.cpf || "00000000000",
         payer_email: profile.email || "",
         notes: sanitizeText(notes, 100) || null,
+        deviceId,
       });
       console.log("[createFromProduct] Cobrança criada:", charge);
       onCreated(charge);
@@ -606,6 +610,9 @@ function CreateChargeFlowModal({
 
     setLoading(true);
     try {
+      const mp = (window as any).MercadoPago ? new (window as any).MercadoPago((import.meta as any).env.VITE_MP_PUBLIC_KEY || "APP_USR-8117604469613238") : null;
+      const deviceId = mp ? mp.getDeviceFingerprint() : undefined;
+
       const charge = await api.createCharge({
         profile_id: profile.id,
         slug: profile.slug,
@@ -616,6 +623,7 @@ function CreateChargeFlowModal({
         payer_cpf: payerCpf ? payerCpf.replace(/\D/g, "") : (profile.cpf || "00000000000"),
         payer_email: payerEmail.trim() || profile.email || "",
         notes: sanitizeText(notes, 100) || null,
+        deviceId,
       });
       onCreated(charge);
     } catch (error: any) {
