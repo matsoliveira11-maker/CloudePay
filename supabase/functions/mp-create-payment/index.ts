@@ -125,9 +125,9 @@ serve(async (req) => {
         status: 'pending',
         gateway_id: mpData.id.toString(),
         pix_code: mpData.point_of_interaction.transaction_data.qr_code,
-        qr_code_image: mpData.point_of_interaction.transaction_data.qr_code_base64,
+        qr_code_image: `data:image/png;base64,${mpData.point_of_interaction.transaction_data.qr_code_base64}`,
         expires_at: expires_at,
-        charge_type: 'direct'
+        charge_type: 'avulsa'
       })
       .select()
       .single()
@@ -143,9 +143,10 @@ serve(async (req) => {
       status: 200,
     })
 
-  } catch (error: any) {
-    console.error("Erro na Function:", error.message)
-    return new Response(JSON.stringify({ error: error.message }), {
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "Erro desconhecido"
+    console.error("Erro na Function:", message)
+    return new Response(JSON.stringify({ error: message }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       status: 400,
     })
