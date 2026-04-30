@@ -210,7 +210,6 @@ export async function createCharge(input: {
         transaction_amount: input.amount_cents / 100,
         description: input.service_name || "Serviço CloudePay",
         external_reference: `charge_${Date.now()}`,
-        statement_descriptor: "CLOUDEPAY",
         payment_method_id: "pix",
         notification_url: "https://crmhkvvjrblajemgtrpz.supabase.co/functions/v1/mp-webhook",
         payer: {
@@ -237,13 +236,7 @@ export async function createCharge(input: {
             first_name: firstName,
             last_name: lastName
           }
-        },
-        back_urls: {
-          success: window.location.origin,
-          failure: window.location.origin,
-          pending: window.location.origin
-        },
-        auto_return: "approved"
+        }
       })
     });
 
