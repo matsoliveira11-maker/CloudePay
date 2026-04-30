@@ -162,6 +162,7 @@ export async function createCharge(input: {
   notes?: string | null;
   charge_type?: ChargeType;
   deviceId?: string;
+  product_id?: string;
 }): Promise<Charge> {
   const expires_at = new Date(Date.now() + 30 * 60 * 1000).toISOString();
   
@@ -192,32 +193,53 @@ export async function createCharge(input: {
   const total_fee_rate = 0.02;
   const fee_cents = Math.round(input.amount_cents * total_fee_rate);
 
-  const response = await fetch("https://api.mercadopago.com/v1/payments", {
-    method: "POST",
-    headers: {
-      "Authorization": `Bearer ${sellerToken}`,
-      "Content-Type": "application/json",
-      "X-Idempotency-Key": `charge_${Date.now()}_${Math.random().toString(36).substring(7)}`,
-      "X-Forwarded-For": payerIp,
-      ...(input.deviceId ? { "X-Meli-Session-Id": input.deviceId } : {})
-    } as HeadersInit,
-    body: JSON.stringify({
-      transaction_amount: input.amount_cents / 100,
-      description: input.service_name || "Serviço CloudePay",
-      payment_method_id: "pix",
-      notification_url: "https://crmhkvvjrblajemgtrpz.supabase.co/functions/v1/mp-webhook",
-      // O application_fee foi temporariamente removido pois o App MP do usuário não tem permissão de Split ainda.
-      // application_fee: application_fee > 0 ? application_fee : undefined,
-      payer: {
-        email: input.payer_email || "pagamento@cloudepay.app",
-        first_name: input.payer_name || "Cliente",
-        identification: {
-          type: "CPF",
-          number: input.payer_cpf.replace(/\D/g, "")
+    const nameParts = (input.payer_name || "Cliente Final").trim().split(" ");
+    const firstName = nameParts[0] || "Cliente";
+    const lastName = nameParts.length > 1 ? nameParts.slice(1).join(" ") : "Final";
+
+    const response = await fetch("https://api.mercadopago.com/v1/payments", {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${sellerToken}`,
+        "Content-Type": "application/json",
+        "X-Idempotency-Key": `charge_${Date.now()}_${Math.random().toString(36).substring(7)}`,
+        "X-Forwarded-For": payerIp,
+        ...(input.deviceId ? { "X-Meli-Session-Id": input.deviceId } : {})
+      } as HeadersInit,
+      body: JSON.stringify({
+        transaction_amount: input.amount_cents / 100,
+        description: input.service_name || "Serviço CloudePay",
+        external_reference: `charge_${Date.now()}`,
+        statement_descriptor: "CLOUDEPAY",
+        payment_method_id: "pix",
+        notification_url: "https://crmhkvvjrblajemgtrpz.supabase.co/functions/v1/mp-webhook",
+        payer: {
+          email: input.payer_email || "pagamento@cloudepay.app",
+          first_name: firstName,
+          last_name: lastName,
+          identification: {
+            type: "CPF",
+            number: input.payer_cpf.replace(/\D/g, "")
+          }
+        },
+        additional_info: {
+          items: [
+            {
+              id: input.product_id || "custom_charge",
+              title: input.service_name || "Serviço",
+              description: input.description || "Pagamento via CloudePay",
+              category_id: "services",
+              quantity: 1,
+              unit_price: input.amount_cents / 100
+            }
+          ],
+          payer: {
+            first_name: firstName,
+            last_name: lastName
+          }
         }
-      }
-    })
-  });
+      })
+    });
 
   if (!response.ok) {
     let errorData: any;
@@ -447,6 +469,7 @@ export async function createChargeFromProduct(input: {
     payer_email: input.payer_email,
     notes: input.notes || null,
     deviceId: input.deviceId,
+    product_id: input.product_id,
   });
 }
 
