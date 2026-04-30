@@ -229,7 +229,7 @@ export default function Dashboard() {
       <main className="min-h-screen bg-[#fffafa] text-[#4c0519] antialiased page-grid">
         <header className="sticky top-0 z-40 border-b border-[#fecdd3] bg-white/90 backdrop-blur-xl">
           <div className="mx-auto flex h-16 max-w-[1280px] items-center justify-between px-4 sm:px-6 lg:h-20 lg:px-8">
-            <Link to="/dashboard" onClick={() => setTab("dashboard")} className="inline-flex"><Logo /></Link>
+            <Link to="/painel" onClick={() => setTab("dashboard")} className="inline-flex"><Logo /></Link>
             <div className="flex items-center gap-2">
               <span className="hidden rounded-full border border-[#fecdd3] bg-white px-4 py-2 text-sm font-semibold text-[#881337] sm:inline-flex">
                 cloudepay.com.br/{profile?.slug || "carregando"}
@@ -257,7 +257,7 @@ export default function Dashboard() {
           <aside className="hidden lg:block">
             <div className="sticky top-28 rounded-3xl border border-[#fecdd3] bg-white/90 p-3 shadow-[0_24px_70px_rgba(136,19,55,0.08)]">
               {[
-                { key: "dashboard" as const, label: "Dashboard", Icon: PanelIcon, path: "/dashboard" },
+                { key: "dashboard" as const, label: "Dashboard", Icon: PanelIcon, path: "/painel" },
                 { key: "produtos" as const, label: "Produtos", Icon: ProductIcon, path: "/produtos" },
                 { key: "perfil" as const, label: "Meu perfil", Icon: UserIcon, path: "/configuracoes" },
               ].map(({ key, label, Icon, path }) => (
@@ -431,7 +431,7 @@ export default function Dashboard() {
         <nav className="fixed inset-x-0 bottom-0 z-50 border-t border-[#fecdd3] bg-white/92 px-3 pb-[calc(env(safe-area-inset-bottom)+0.7rem)] pt-2 shadow-[0_-18px_45px_rgba(136,19,55,0.08)] backdrop-blur-xl lg:hidden">
           <div className="mx-auto grid max-w-md grid-cols-3 gap-2">
             {[
-              { key: "dashboard" as const, label: "Dashboard", Icon: PanelIcon, path: "/dashboard" },
+              { key: "dashboard" as const, label: "Dashboard", Icon: PanelIcon, path: "/painel" },
               { key: "produtos" as const, label: "Produtos", Icon: ProductIcon, path: "/produtos" },
               { key: "perfil" as const, label: "Meu perfil", Icon: UserIcon, path: "/configuracoes" },
             ].map(({ key, label, Icon, path }) => (
