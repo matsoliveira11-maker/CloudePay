@@ -1,27 +1,115 @@
-import { useEffect, useMemo, useRef, useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
-import Logo from "../components/Logo";
-import Button from "../components/Button";
-import Input from "../components/Input";
+import { useState, useEffect, useRef } from "react";
+import { useParams, Link } from "react-router-dom";
 import * as api from "../lib/api";
-import type { Charge, Profile } from "../lib/mockBackend";
 import { formatBRL, maskBRLInput, parseBRLToCents, maskCPFInput } from "../lib/format";
 import { isValidCPF, sanitizeText } from "../lib/validators";
-import {
-  QrCode,
-  CopySimple,
-  CheckCircle,
-} from "phosphor-react";
+
+// --- Icons ---
+
+function Logo({ variant = "dark" }: { variant?: "dark" | "light" }) {
+  const textColor = variant === "light" ? "text-white" : "text-[#4c0519]";
+  return (
+    <div className="flex items-center gap-2.5">
+      <span className="logo-mark relative inline-flex h-9 w-9 items-center justify-center">
+        <svg viewBox="0 0 40 40" className="h-9 w-9" aria-hidden="true">
+          <defs>
+            <linearGradient id="logoGrad" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0%" stopColor="#fb7185" />
+              <stop offset="55%" stopColor="#e11d48" />
+              <stop offset="100%" stopColor="#881337" />
+            </linearGradient>
+            <linearGradient id="logoGloss" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor="#ffffff" stopOpacity="0.55" />
+              <stop offset="60%" stopColor="#ffffff" stopOpacity="0" />
+            </linearGradient>
+          </defs>
+          <path
+            d="M20 2.4c2.7 0 4.5 2.4 7.4 3.5 2.9 1.1 6.4.3 8 2.4 1.6 2.1.3 5.4 1.4 8.3 1.1 2.9 4.3 4.6 4.3 7.4 0 2.7-3.2 4.5-4.3 7.4-1.1 2.9.2 6.2-1.4 8.3-1.6 2.1-5.1 1.3-8 2.4-2.9 1.1-4.7 3.5-7.4 3.5s-4.5-2.4-7.4-3.5c-2.9-1.1-6.4-.3-8-2.4-1.6-2.1-.3-5.4-1.4-8.3C2.1 28.5-1 26.7-1 24c0-2.7 3.2-4.5 4.3-7.4 1.1-2.9-.2-6.2 1.4-8.3 1.6-2.1 5.1-1.3 8-2.4C15.5 4.8 17.3 2.4 20 2.4Z"
+            fill="url(#logoGrad)"
+            transform="translate(0 -2)"
+          />
+          <path
+            d="M14.5 16.8c1.5-2.6 4.4-4.3 7.6-4.3 4.9 0 8.9 3.9 8.9 8.7 0 4.9-4 8.7-8.9 8.7-3.2 0-6.1-1.6-7.6-4.3"
+            stroke="#fff"
+            strokeWidth="2.6"
+            strokeLinecap="round"
+            fill="none"
+          />
+          <circle cx="14.4" cy="21.2" r="2.2" fill="#fff" />
+          <path
+            d="M2 6c4 1 8 5 9 10"
+            stroke="url(#logoGloss)"
+            strokeWidth="2"
+            strokeLinecap="round"
+            fill="none"
+          />
+        </svg>
+      </span>
+      <span className={`text-xl font-semibold tracking-[-0.045em] ${textColor}`}>
+        Cloude<span className="text-[#e11d48]">Pay</span>
+      </span>
+    </div>
+  );
+}
+
+function ShieldIcon() {
+  return (
+    <svg className="h-4 w-4 text-[#e11d48]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+    </svg>
+  );
+}
+
+function CopyIcon() {
+  return (
+    <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
+      <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
+    </svg>
+  );
+}
+
+function ClockIcon() {
+  return (
+    <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="12" cy="12" r="10" />
+      <polyline points="12 6 12 12 16 14" />
+    </svg>
+  );
+}
+
+function Field({ label, id, children }: { label: string; id: string; children: React.ReactNode }) {
+  return (
+    <div>
+      <label htmlFor={id} className="mb-1.5 block text-xs font-semibold uppercase tracking-[0.16em] text-[#9f1239]">
+        {label}
+      </label>
+      {children}
+    </div>
+  );
+}
+
+// --- Page Component ---
 
 type Stage = "loading" | "form" | "paying" | "success" | "notfound";
 
 export default function FixedQRCode() {
   const { slug } = useParams<{ slug: string }>();
-  const nav = useNavigate();
-
-  const [profile, setProfile] = useState<Profile | null>(null);
+  const [profile, setProfile] = useState<any>(null);
   const [stage, setStage] = useState<Stage>("loading");
-  const [charge, setCharge] = useState<Charge | null>(null);
+  const [charge, setCharge] = useState<any>(null);
+
+  // Form State
+  const [amount, setAmount] = useState("");
+  const [payerName, setPayerName] = useState("");
+  const [payerCpf, setPayerCpf] = useState("");
+  const [payerEmail, setPayerEmail] = useState("");
+  const [description, setDescription] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+
+  const [copied, setCopied] = useState(false);
+  const intervalRef = useRef<number | null>(null);
 
   useEffect(() => {
     async function load() {
@@ -34,107 +122,32 @@ export default function FixedQRCode() {
     load();
   }, [slug]);
 
-  // Not found
-  if (stage === "notfound") {
-    return (
-      <div className="flex min-h-screen flex-col items-center justify-center bg-neutral-50 px-5 text-center">
-        <Logo />
-        <h1 className="mt-8 text-2xl font-bold text-neutral-900">Profissional não encontrado</h1>
-        <p className="mt-2 max-w-sm text-sm text-neutral-600">
-          Esse profissional não existe ou o link é inválido.
-        </p>
-        <Button onClick={() => nav("/")} className="mt-6">Ir para o início</Button>
-      </div>
-    );
-  }
+  useEffect(() => {
+    if (stage !== "paying" || !charge?.id) return;
 
-  // Loading
-  if (stage === "loading" || !profile) {
-    return (
-      <div className="flex min-h-screen items-center justify-center bg-neutral-50">
-        <div className="h-8 w-8 animate-spin rounded-full border-4 border-brand-200 border-t-brand-600" />
-      </div>
-    );
-  }
+    intervalRef.current = window.setInterval(async () => {
+      const c = await api.getCharge(charge.id);
+      if (c && c.status === "paid") {
+        setCharge(c);
+        setStage("success");
+        if (intervalRef.current) clearInterval(intervalRef.current);
+      }
+    }, 5000);
 
-  // Form
-  if (stage === "form") {
-    return (
-      <FormStage
-        profile={profile}
-        onSubmit={(c) => { setCharge(c); setStage("paying"); }}
-      />
-    );
-  }
-
-  // Paying
-  if (stage === "paying" && charge) {
-    return (
-      <PixStage
-        charge={charge}
-        profile={profile}
-        onPaid={(c) => { setCharge(c); setStage("success"); }}
-        onExpired={() => setStage("notfound")}
-      />
-    );
-  }
-
-  // Success
-  if (stage === "success" && charge) {
-    return <SuccessStage charge={charge} profile={profile} />;
-  }
-
-  return null;
-}
-
-// ---------- FORM (entrada de dados) ----------
-
-function FormStage({
-  profile, onSubmit
-}: {
-  profile: Profile;
-  onSubmit: (c: Charge) => void;
-}) {
-  const [amount, setAmount] = useState("");
-  const [payerName, setPayerName] = useState("");
-  const [payerCpf, setPayerCpf] = useState("");
-  const [payerEmail, setPayerEmail] = useState("");
-  const [description, setDescription] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
+    return () => { if (intervalRef.current) clearInterval(intervalRef.current); };
+  }, [stage, charge?.id]);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError("");
-
-    // Validações
     const amountCents = parseBRLToCents(amount);
-    if (amountCents <= 0) {
-      setError("Digite um valor válido");
-      return;
-    }
-    if (!payerName.trim()) {
-      setError("Digite seu nome");
-      return;
-    }
-    if (!payerCpf.trim()) {
-      setError("Digite seu CPF");
-      return;
-    }
-    if (!isValidCPF(payerCpf)) {
-      setError("CPF inválido");
-      return;
-    }
-    if (!payerEmail.trim()) {
-      setError("Digite seu email");
-      return;
-    }
+    if (amountCents < 100) { setError("Valor mínimo: R$ 1,00"); return; }
+    if (!isValidCPF(payerCpf)) { setError("CPF inválido"); return; }
+    if (!payerEmail.includes("@")) { setError("Email inválido"); return; }
 
     setLoading(true);
     try {
-      const deviceId = (window as any).MPDeviceSessionId;
-
-      const charge = await api.createFixedQRCodeCharge({
+      const c = await api.createFixedQRCodeCharge({
         profile_id: profile.id,
         slug: profile.slug!,
         amount_cents: amountCents,
@@ -142,320 +155,153 @@ function FormStage({
         payer_cpf: payerCpf.replace(/\D/g, ""),
         payer_email: payerEmail.trim().toLowerCase(),
         description: description.trim() || null,
-        deviceId,
       });
-      onSubmit(charge);
+      setCharge(c);
+      setStage("paying");
     } catch (err) {
-      setError("Erro ao criar cobrança. Tente novamente.");
+      setError("Erro ao processar. Tente novamente.");
     } finally {
       setLoading(false);
     }
   }
 
-  return (
-    <div className="min-h-screen bg-neutral-50">
-      <header className="border-b border-neutral-200 bg-white">
-        <div className="mx-auto flex max-w-md items-center justify-center px-5 py-4">
-          <Logo size="sm" />
-        </div>
-      </header>
-
-      <main className="mx-auto max-w-md px-5 py-6 sm:py-8 space-y-5">
-        {/* Info do profissional */}
-        <div className="rounded-2xl border border-neutral-200 bg-white p-5 text-center shadow-sm">
-          <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-brand-50">
-            <QrCode size={28} weight="duotone" className="text-brand-600" />
-          </div>
-          <h1 className="mt-3 text-lg font-bold text-neutral-900">{profile.full_name}</h1>
-          <p className="text-sm font-medium text-brand-700">{profile.service_name || "Profissional"}</p>
-          {profile.description && <p className="mt-1 text-sm text-neutral-500">{profile.description}</p>}
-        </div>
-
-        {/* Formulário */}
-        <form onSubmit={handleSubmit} className="rounded-2xl border border-neutral-200 bg-white p-5 shadow-sm space-y-4">
-          <div>
-            <label className="text-xs font-semibold uppercase tracking-wide text-neutral-500">
-              Valor a pagar
-            </label>
-            <Input
-              type="text"
-              value={amount}
-              onChange={(e) => setAmount(maskBRLInput(e.target.value))}
-              placeholder="R$ 0,00"
-              inputMode="decimal"
-              className="mt-2"
-              disabled={loading}
-            />
-          </div>
-
-          <div>
-            <label className="text-xs font-semibold uppercase tracking-wide text-neutral-500">
-              Seu nome
-            </label>
-            <Input
-              type="text"
-              value={payerName}
-              onChange={(e) => setPayerName(sanitizeText(e.target.value))}
-              placeholder="João Silva"
-              className="mt-2"
-              disabled={loading}
-            />
-          </div>
-
-          <div>
-            <label className="text-xs font-semibold uppercase tracking-wide text-neutral-500">
-              CPF
-            </label>
-            <Input
-              type="text"
-              value={payerCpf}
-              onChange={(e) => setPayerCpf(maskCPFInput(e.target.value))}
-              placeholder="000.000.000-00"
-              inputMode="numeric"
-              className="mt-2"
-              disabled={loading}
-            />
-          </div>
-
-          <div>
-            <label className="text-xs font-semibold uppercase tracking-wide text-neutral-500">
-              Email
-            </label>
-            <Input
-              type="email"
-              value={payerEmail}
-              onChange={(e) => setPayerEmail(e.target.value)}
-              placeholder="seu@email.com"
-              className="mt-2"
-              disabled={loading}
-            />
-          </div>
-
-          <div>
-            <label className="text-xs font-semibold uppercase tracking-wide text-neutral-500">
-              Descrição (opcional)
-            </label>
-            <Input
-              type="text"
-              value={description}
-              onChange={(e) => setDescription(sanitizeText(e.target.value))}
-              placeholder="Ex: Sessão de fotografia"
-              className="mt-2"
-              disabled={loading}
-            />
-          </div>
-
-          {error && (
-            <div className="rounded-lg bg-red-50 p-3 text-sm text-red-700 font-medium">
-              {error}
-            </div>
-          )}
-
-          <Button
-            type="submit"
-            size="lg"
-            className="w-full"
-            disabled={loading}
-          >
-            {loading ? "Processando..." : "Gerar QR Code PIX"}
-          </Button>
-        </form>
-      </main>
-    </div>
-  );
-}
-
-// ---------- PIX (pagando) ----------
-
-function PixStage({
-  charge: initial, profile, onPaid, onExpired,
-}: {
-  charge: Charge;
-  profile: Profile;
-  onPaid: (c: Charge) => void;
-  onExpired: () => void;
-}) {
-  const [charge, setCharge] = useState(initial);
-  const [copied, setCopied] = useState(false);
-  const [now, setNow] = useState(Date.now());
-  const intervalRef = useRef<number | null>(null);
-
-  // Tick para o contador
-  useEffect(() => {
-    const t = window.setInterval(() => setNow(Date.now()), 1000);
-    return () => clearInterval(t);
-  }, []);
-
-  // Polling a cada 5s
-  useEffect(() => {
-    intervalRef.current = window.setInterval(async () => {
-      const c = await api.getCharge(charge.id);
-      if (!c) return;
-      if (c.status === "paid") {
-        if (intervalRef.current) clearInterval(intervalRef.current);
-        onPaid(c);
-      } else if (c.status === "expired") {
-        if (intervalRef.current) clearInterval(intervalRef.current);
-        onExpired();
-      } else {
-        setCharge(c);
-      }
-    }, 5000);
-    return () => { if (intervalRef.current) clearInterval(intervalRef.current); };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [charge.id]);
-
-  const remaining = useMemo(() => {
-    const ms = new Date(charge.expires_at).getTime() - now;
-    return Math.max(0, Math.floor(ms / 1000));
-  }, [charge.expires_at, now]);
-
-  const mm = String(Math.floor(remaining / 60)).padStart(2, "0");
-  const ss = String(remaining % 60).padStart(2, "0");
-
-  async function copyPix() {
-    await navigator.clipboard.writeText(charge.pix_code);
+  const copyPix = () => {
+    if (!charge?.pix_code) return;
+    navigator.clipboard.writeText(charge.pix_code);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
+  };
+
+  if (stage === "loading") {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-[#fffafa]">
+        <div className="h-8 w-8 animate-spin rounded-full border-4 border-[#fecdd3] border-t-[#e11d48]" />
+      </div>
+    );
   }
 
-  async function simulate() {
-    await api.simulatePayment(charge.id);
-    const c = await api.getCharge(charge.id);
-    if (c?.status === "paid") onPaid(c);
+  if (stage === "notfound") {
+    return (
+      <div className="flex min-h-screen flex-col items-center justify-center bg-[#fffafa] p-6 text-center">
+        <Logo />
+        <h1 className="mt-8 text-2xl font-bold text-[#4c0519]">Profissional não encontrado</h1>
+        <p className="mt-2 text-[#881337]">O link pode estar incorreto ou a conta foi desativada.</p>
+        <Link to="/" className="mt-6 font-semibold text-[#e11d48]">Ir para o início</Link>
+      </div>
+    );
   }
 
   return (
-    <div className="min-h-screen bg-neutral-50">
-      <header className="border-b border-neutral-200 bg-white">
-        <div className="mx-auto flex max-w-md items-center justify-center px-5 py-4">
-          <Logo size="sm" />
-        </div>
-      </header>
-
-      <main className="mx-auto max-w-md px-5 py-6 sm:py-8 space-y-5">
-        {/* Info do profissional */}
-        <div className="rounded-2xl border border-neutral-200 bg-white p-5 text-center shadow-sm">
-          <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-brand-50">
-            <QrCode size={28} weight="duotone" className="text-brand-600" />
-          </div>
-          <h1 className="mt-3 text-lg font-bold text-neutral-900">{profile.full_name}</h1>
-          <p className="text-sm font-medium text-brand-700">{charge.service_name}</p>
-          {charge.description && <p className="mt-1 text-sm text-neutral-500">{charge.description}</p>}
-          {charge.payer_name && (
-            <p className="mt-1 text-xs text-neutral-400">Para: {charge.payer_name}</p>
-          )}
-        </div>
-
-        {/* Valor + status */}
-        <div className="rounded-2xl border border-neutral-200 bg-white p-5 text-center shadow-sm">
-          <div className="text-3xl font-bold text-neutral-900">{formatBRL(charge.amount_cents)}</div>
-          <div className="mt-3 inline-flex items-center gap-2 rounded-full bg-amber-50 px-3 py-1 text-xs font-semibold text-amber-700">
-            <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-amber-500" />
-            Aguardando pagamento • {mm}:{ss}
+    <main className="min-h-screen bg-[#fffafa] text-[#4c0519] antialiased page-grid flex flex-col items-center py-10 px-4">
+      <div className="w-full max-w-md">
+        <div className="mb-8 flex flex-col items-center text-center">
+          <Logo />
+          <div className="mt-4 flex items-center gap-2 rounded-full bg-white px-3 py-1 text-[10px] font-bold uppercase tracking-widest text-[#e11d48] shadow-sm border border-[#fecdd3]">
+            <ShieldIcon /> Pagamento 100% Seguro
           </div>
         </div>
 
-        {/* QR + copia-e-cola */}
-        <div className="rounded-2xl border border-neutral-200 bg-white p-5 shadow-sm">
-          <ol className="mb-4 space-y-2 text-sm text-neutral-700">
-            <li><span className="font-semibold">1.</span> Abra o app do seu banco</li>
-            <li><span className="font-semibold">2.</span> Escaneie o QR ou cole o código</li>
-            <li><span className="font-semibold">3.</span> Confirme o pagamento</li>
-          </ol>
-
-          <div className="flex justify-center">
-            <img
-              src={charge.qr_code_image}
-              alt="QR Code PIX"
-              className="h-64 w-64 rounded-xl border border-neutral-200"
-            />
-          </div>
-
-          <div className="mt-5">
-            <div className="text-xs font-semibold uppercase tracking-wide text-neutral-500">
-              Código PIX copia-e-cola
+        {stage === "form" && (
+          <section className="rounded-[2.5rem] border border-[#fecdd3] bg-white p-6 shadow-[0_32px_80px_rgba(76,5,25,0.12)]">
+            <div className="mb-6 text-center">
+                <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-[#fff1f2] text-[#e11d48] mb-3">
+                    <UserIcon className="h-8 w-8" />
+                </div>
+              <h1 className="text-xl font-semibold tracking-tight text-[#4c0519]">{profile.full_name}</h1>
+              <p className="text-sm text-[#881337]">{profile.service_name || "Profissional"}</p>
             </div>
-            <div className="mt-2 break-all rounded-xl bg-neutral-50 p-3 font-mono text-[11px] text-neutral-700">
-              {charge.pix_code}
+
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <Field label="Valor a pagar" id="f-amount">
+                <input className="auth-input text-2xl font-bold" placeholder="R$ 0,00" value={amount} onChange={e => setAmount(maskBRLInput(e.target.value))} required />
+              </Field>
+              <Field label="Seu nome" id="f-name">
+                <input className="auth-input" placeholder="Seu nome completo" value={payerName} onChange={e => setPayerName(e.target.value)} required />
+              </Field>
+              <div className="grid grid-cols-2 gap-3">
+                <Field label="CPF" id="f-cpf">
+                  <input className="auth-input" placeholder="000.000.000-00" value={payerCpf} onChange={e => setPayerCpf(maskCPFInput(e.target.value))} required />
+                </Field>
+                <Field label="Email" id="f-email">
+                  <input className="auth-input" placeholder="seu@email.com" value={payerEmail} onChange={e => setPayerEmail(e.target.value)} required />
+                </Field>
+              </div>
+              <Field label="Descrição (opcional)" id="f-desc">
+                <input className="auth-input" placeholder="Ex: Pagamento serviço" value={description} onChange={e => setDescription(e.target.value)} />
+              </Field>
+
+              {error && <p className="text-xs font-semibold text-red-500">{error}</p>}
+
+              <button type="submit" disabled={loading} className="cta-button w-full rounded-2xl bg-[#e11d48] py-4 text-sm font-semibold text-white shadow-[0_14px_30px_rgba(225,29,72,0.22)] transition hover:-translate-y-0.5">
+                {loading ? "Processando..." : "Gerar QR Code PIX"}
+              </button>
+            </form>
+          </section>
+        )}
+
+        {stage === "paying" && (
+          <section className="rounded-[2.5rem] border border-[#fecdd3] bg-white p-6 shadow-[0_32px_80px_rgba(76,5,25,0.12)] text-center">
+            <p className="text-[10px] font-bold uppercase tracking-widest text-[#9f1239]">Pagar agora</p>
+            <div className="mt-2 text-4xl font-semibold tracking-tight text-[#4c0519]">{formatBRL(charge.amount_cents)}</div>
+            
+            <div className="mt-6 flex justify-center">
+                <div className="rounded-2xl border border-[#fecdd3] bg-[#fffafa] p-3">
+                    <img src={charge.qr_code_image} alt="QR Code" className="h-48 w-48" />
+                </div>
             </div>
-            <Button onClick={copyPix} size="lg" className="mt-3 w-full inline-flex items-center justify-center gap-2">
-              <CopySimple size={18} weight="duotone" />
-              {copied ? "Copiado!" : "Copiar código PIX"}
-            </Button>
-          </div>
 
-          <div className="mt-4 text-center text-xs text-neutral-500">
-            Verificando o pagamento automaticamente a cada 5 segundos…
-          </div>
-        </div>
+            <div className="mt-8 space-y-3">
+              <button
+                onClick={copyPix}
+                className={`flex w-full items-center justify-center gap-2 rounded-2xl py-4 text-sm font-semibold transition ${
+                  copied ? "bg-[#16a34a] text-white" : "bg-[#e11d48] text-white shadow-[0_14px_30px_rgba(225,29,72,0.22)]"
+                }`}
+              >
+                {copied ? "Copiado!" : <><CopyIcon /> Copiar código PIX</>}
+              </button>
+              <div className="flex items-center justify-center gap-2 text-[11px] font-bold uppercase tracking-widest text-[#881337]">
+                <ClockIcon /> Aguardando pagamento...
+              </div>
+            </div>
+          </section>
+        )}
 
-        {/* Painel de teste */}
-        <div className="rounded-2xl border border-dashed border-neutral-300 bg-white/60 p-4 text-center">
-          <div className="text-[11px] font-semibold uppercase tracking-wide text-neutral-500">
-            Modo demonstração
-          </div>
-          <p className="mt-1 text-xs text-neutral-600">
-            O gateway real ainda não está conectado.
-          </p>
-          <Button onClick={simulate} variant="secondary" className="mt-3">
-            Simular pagamento confirmado
-          </Button>
-        </div>
-      </main>
-    </div>
-  );
-}
+        {stage === "success" && (
+          <section className="rounded-[2.5rem] border border-[#fecdd3] bg-white p-8 text-center shadow-[0_32px_80px_rgba(76,5,25,0.12)]">
+            <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-full bg-[#9EEA6C]/20 text-[#006400]">
+              <svg className="h-10 w-10" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M5 13l4 4L19 7" />
+              </svg>
+            </div>
+            <h1 className="mt-6 text-3xl font-semibold tracking-tight text-[#4c0519]">Pago!</h1>
+            <p className="mt-2 text-[#881337]">Obrigado pelo seu pagamento.</p>
+            <div className="mt-8 space-y-2 text-left">
+              <div className="flex justify-between border-b border-[#fecdd3] pb-2 text-sm">
+                <span className="text-[#881337]">Valor</span>
+                <span className="font-bold">{formatBRL(charge.amount_cents)}</span>
+              </div>
+              <div className="flex justify-between border-b border-[#fecdd3] pb-2 text-sm">
+                <span className="text-[#881337]">Para</span>
+                <span className="font-bold">{profile.full_name}</span>
+              </div>
+            </div>
+            <p className="mt-8 text-xs text-[#881337]/50">Você já pode fechar esta página.</p>
+          </section>
+        )}
 
-// ---------- SUCCESS ----------
-
-function SuccessStage({ charge, profile }: { charge: Charge; profile: Profile }) {
-  return (
-    <div className="min-h-screen bg-neutral-50">
-      <header className="border-b border-neutral-200 bg-white">
-        <div className="mx-auto flex max-w-md items-center justify-center px-5 py-4">
-          <Logo size="sm" />
-        </div>
-      </header>
-
-      <main className="mx-auto max-w-md px-5 py-6 sm:py-8 space-y-5">
-        <div className="rounded-2xl border border-brand-200 bg-white p-6 text-center shadow-sm">
-          <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-brand-600">
-            <CheckCircle size={36} weight="duotone" className="text-white" />
-          </div>
-          <h1 className="mt-4 text-2xl font-heading font-bold text-neutral-900">Pagamento confirmado!</h1>
-          <p className="mt-1 text-sm text-neutral-600 font-body">
-            Enviamos um comprovante para <span className="font-medium text-neutral-900">{charge.payer_email}</span>.
-          </p>
-        </div>
-
-        <div className="rounded-2xl border border-neutral-200 bg-white p-5 shadow-sm">
-          <Row label="Comprovante nº" value={charge.receipt_number ?? "—"} mono />
-          <Row label="Valor" value={formatBRL(charge.amount_cents)} />
-          <Row label="Pago para" value={profile.full_name} />
-          <Row label="Serviço" value={charge.service_name} />
-          <Row
-            label="Data"
-            value={charge.paid_at ? new Date(charge.paid_at).toLocaleString("pt-BR") : "—"}
-          />
-          {charge.notes && <Row label="Obs" value={charge.notes} />}
-        </div>
-
-        <p className="text-center text-xs text-neutral-500">
-          Você já pode fechar esta página com segurança.
+        <p className="mt-10 text-center text-[10px] font-bold uppercase tracking-[0.2em] text-[#881337]/40">
+          Powered by CloudePay Network
         </p>
-      </main>
-    </div>
+      </div>
+    </main>
   );
 }
 
-function Row({ label, value, mono }: { label: string; value: string; mono?: boolean }) {
+function UserIcon({ className = "h-4 w-4" }: { className?: string }) {
   return (
-    <div className="flex items-center justify-between gap-3 border-b border-neutral-100 py-2.5 last:border-0">
-      <span className="text-sm text-neutral-500">{label}</span>
-      <span className={`text-right text-sm font-semibold text-neutral-900 ${mono ? "font-mono" : ""}`}>
-        {value}
-      </span>
-    </div>
+    <svg viewBox="0 0 24 24" className={className} fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" />
+      <circle cx="12" cy="7" r="4" />
+    </svg>
   );
 }

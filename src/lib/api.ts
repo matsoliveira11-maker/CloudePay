@@ -148,6 +148,17 @@ export async function getProfileBySlug(slug: string): Promise<Profile | null> {
   return data as Profile;
 }
 
+export async function getProfileById(id: string): Promise<Profile | null> {
+  const { data, error } = await supabase
+    .from('profiles')
+    .select('*')
+    .eq('id', id)
+    .single();
+
+  if (error || !data) return null;
+  return data as Profile;
+}
+
 // ---------- CHARGES REAL ----------
 
 export async function createCharge(input: {

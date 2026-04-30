@@ -1,113 +1,77 @@
 import { useEffect, useMemo, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { ArrowLeft, ArrowRight, Check, House, Lightning, Package, QrCode, Receipt, Rocket, Shield, Sparkle, User, X } from "phosphor-react";
 import { useAuth } from "../context/AuthContext";
-import { useTheme } from "../context/ThemeContext";
+
+// --- Icons ---
+
+function SparkleIcon({ className = "h-4 w-4" }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" className={className} fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z" />
+      <path d="M5 3v4" /><path d="M19 17v4" /><path d="M3 5h4" /><path d="M17 19h4" />
+    </svg>
+  );
+}
+
+function CloseIcon({ className = "h-4 w-4" }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" className={className} fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M18 6 6 18M6 6l12 12" />
+    </svg>
+  );
+}
+
+// --- Component ---
 
 interface TourStep {
   id: string;
   title: string;
   description: string;
-  icon: React.ElementType;
   route?: string;
   targetId?: string;
-  actionLabel?: string;
 }
 
 const tourSteps: TourStep[] = [
   {
     id: "welcome",
     title: "Bem-vindo ao CloudePay",
-    description: "Vamos te guiar por cada area importante de forma simples e objetiva.",
-    icon: Sparkle,
+    description: "Vamos te guiar por cada área importante de forma simples e objetiva.",
     route: "/painel",
   },
   {
     id: "dashboard",
-    title: "Dashboard",
-    description: "Aqui voce acompanha resultados, status e movimentacao das cobrancas.",
-    icon: House,
+    title: "Painel de Controle",
+    description: "Aqui você acompanha seus resultados, taxas e movimentação em tempo real.",
     route: "/painel",
     targetId: "tour-dashboard",
   },
   {
     id: "products",
-    title: "Produtos",
-    description: "Cadastre produtos para gerar cobrancas mais rapido e com menos erros.",
-    icon: Package,
+    title: "Seus Produtos",
+    description: "Cadastre seus serviços para gerar links de cobrança com um clique.",
     route: "/produtos",
     targetId: "tour-products",
-    actionLabel: "Abrir produtos",
-  },
-  {
-    id: "new-charge",
-    title: "Nova cobranca",
-    description: "Este e o atalho para criar um novo link PIX em segundos.",
-    icon: QrCode,
-    route: "/painel",
-    targetId: "tour-new-charge",
-    actionLabel: "Testar criacao",
-  },
-  {
-    id: "charges",
-    title: "Historico",
-    description: "Veja rapidamente cobrancas pagas, pendentes e expiradas.",
-    icon: Receipt,
-    route: "/painel",
-    targetId: "tour-charges",
   },
   {
     id: "profile",
-    title: "Perfil publico",
-    description: "Configure seu link unico e os dados que o cliente vai visualizar.",
-    icon: User,
+    title: "Perfil Público",
+    description: "Configure seu link único e os dados que o seu cliente vai visualizar.",
     route: "/configuracoes",
     targetId: "tour-profile",
-    actionLabel: "Abrir perfil",
-  },
-  {
-    id: "security",
-    title: "Seguranca",
-    description: "Seus dados e cobrancas ficam sob seu controle com fluxo protegido.",
-    icon: Shield,
-    route: "/painel",
-  },
-  {
-    id: "ready",
-    title: "Tudo pronto",
-    description: "Agora voce pode usar a plataforma com autonomia. Vamos comecar.",
-    icon: Rocket,
-    route: "/painel",
   },
 ];
 
 export default function OnboardingTour() {
   const { profile, needsOnboarding, onboardingStep, updateOnboarding } = useAuth();
-  const { theme } = useTheme();
   const navigate = useNavigate();
   const location = useLocation();
 
   const [isOpen, setIsOpen] = useState(false);
   const [currentStep, setCurrentStep] = useState(0);
-  const [targetElement, setTargetElement] = useState<HTMLElement | null>(null);
-  const [targetStatus, setTargetStatus] = useState<"idle" | "searching" | "found" | "missing">("idle");
-  const [viewportWidth, setViewportWidth] = useState(1280);
-
-  const step = tourSteps[currentStep];
-  const isDark = theme === "dark";
-  const isMobile = viewportWidth < 768;
-  const Icon = step.icon;
-
-  useEffect(() => {
-    const onResize = () => setViewportWidth(window.innerWidth);
-    onResize();
-    window.addEventListener("resize", onResize);
-    return () => window.removeEventListener("resize", onResize);
-  }, []);
 
   useEffect(() => {
     if (!profile || !needsOnboarding) return;
-    const timer = setTimeout(() => setIsOpen(true), 350);
+    const timer = setTimeout(() => setIsOpen(true), 1000);
     return () => clearTimeout(timer);
   }, [profile?.id, needsOnboarding]);
 
@@ -116,246 +80,60 @@ export default function OnboardingTour() {
     setCurrentStep(Math.min(Math.max(onboardingStep, 0), tourSteps.length - 1));
   }, [profile?.id, onboardingStep, needsOnboarding]);
 
-  useEffect(() => {
-    const handleOpenTour = () => {
-      setCurrentStep(0);
-      setTargetElement(null);
-      setTargetStatus("idle");
-      setIsOpen(true);
-    };
-    window.addEventListener("open-onboarding-tour", handleOpenTour as EventListener);
-    return () => window.removeEventListener("open-onboarding-tour", handleOpenTour as EventListener);
-  }, []);
-
-  useEffect(() => {
-    if (!isOpen || !step.route) return;
-    if (location.pathname !== step.route) {
-      navigate(step.route, { replace: true });
-    }
-  }, [isOpen, location.pathname, navigate, step.route]);
-
-  useEffect(() => {
-    const prev = document.querySelector(".tour-target-active");
-    if (prev) prev.classList.remove("tour-target-active");
-
-    if (!isOpen || !step.targetId) {
-      setTargetElement(null);
-      setTargetStatus("idle");
-      return;
-    }
-
-    setTargetStatus("searching");
-    let attempts = 0;
-    let cancelled = false;
-    const maxAttempts = 20;
-
-    const lookup = () => {
-      if (cancelled) return;
-      const el = document.getElementById(step.targetId || "") as HTMLElement | null;
-      if (el) {
-        el.classList.add("tour-target-active");
-        setTargetElement(el);
-        setTargetStatus("found");
-        el.scrollIntoView({ behavior: "smooth", block: "center", inline: "nearest" });
-        return;
-      }
-      attempts += 1;
-      if (attempts >= maxAttempts) {
-        setTargetElement(null);
-        setTargetStatus("missing");
-        return;
-      }
-      setTimeout(lookup, 120);
-    };
-
-    const timer = setTimeout(lookup, 120);
-    return () => {
-      cancelled = true;
-      clearTimeout(timer);
-      const active = document.querySelector(".tour-target-active");
-      if (active) active.classList.remove("tour-target-active");
-    };
-  }, [isOpen, currentStep, location.pathname, step.targetId]);
-
-  const progress = useMemo(
-    () => `${Math.round(((currentStep + 1) / tourSteps.length) * 100)}%`,
-    [currentStep]
-  );
-
-  const persistStep = async (index: number) => {
-    await updateOnboarding({ currentStep: index });
-  };
-
-  const closeAsSkipped = async () => {
-    await updateOnboarding({ skipped: true });
-    setIsOpen(false);
-  };
-
-  const completeTour = async () => {
-    await updateOnboarding({ completed: true, currentStep: tourSteps.length - 1 });
-    setIsOpen(false);
-  };
+  const step = tourSteps[currentStep];
 
   const nextStep = async () => {
     if (currentStep < tourSteps.length - 1) {
       const next = currentStep + 1;
       setCurrentStep(next);
-      await persistStep(next);
-      return;
-    }
-    await completeTour();
-  };
-
-  const prevStep = async () => {
-    if (currentStep === 0) return;
-    const prev = currentStep - 1;
-    setCurrentStep(prev);
-    await persistStep(prev);
-  };
-
-  const goToCurrentArea = () => {
-    if (targetElement) {
-      targetElement.scrollIntoView({ behavior: "smooth", block: "center", inline: "nearest" });
-      return;
-    }
-    if (step.route) navigate(step.route);
-  };
-
-  const runPrimaryAction = async () => {
-    if (step.id === "products") {
-      navigate("/produtos");
-    } else if (step.id === "profile") {
-      navigate("/configuracoes");
-    } else if (step.id === "new-charge") {
-      navigate("/painel");
-      window.dispatchEvent(new CustomEvent("open-create-charge"));
+      if (tourSteps[next].route) navigate(tourSteps[next].route);
+      await updateOnboarding({ currentStep: next });
     } else {
-      goToCurrentArea();
+      await updateOnboarding({ completed: true });
+      setIsOpen(false);
     }
-    await nextStep();
+  };
+
+  const skipTour = async () => {
+    await updateOnboarding({ skipped: true, completed: true });
+    setIsOpen(false);
   };
 
   if (!isOpen || !profile) return null;
 
   return (
-    <div className="pointer-events-none fixed inset-0 z-[9999]">
-      <aside
-        className={`pointer-events-auto fixed border shadow-2xl ${
-          isDark ? "border-white/10 bg-[#121212]" : "border-neutral-200 bg-white"
-        } ${
-          isMobile
-            ? "safe-bottom bottom-0 left-0 right-0 mx-2 mb-2 rounded-2xl p-4"
-            : "bottom-4 right-4 w-[390px] rounded-3xl p-5"
-        }`}
-      >
-        <div className="mb-4 h-1 overflow-hidden rounded-full bg-neutral-100 dark:bg-white/10">
-          <div className="h-full rounded-full bg-[#9EEA6C] transition-all duration-300" style={{ width: progress }} />
-        </div>
-
-        <div className="mb-4 flex items-start justify-between gap-3">
-          <div className="flex items-start gap-3">
-            <div className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl ${isDark ? "bg-[#9EEA6C]/20" : "bg-[#9EEA6C]/10"}`}>
-              <Icon size={22} weight="bold" className="text-[#9EEA6C]" />
-            </div>
-            <div>
-              <p className="text-[10px] font-heading font-bold uppercase tracking-wide text-[#9EEA6C]">
-                Etapa {currentStep + 1} de {tourSteps.length}
-              </p>
-              <h3 className={`mt-1 text-[18px] font-heading font-extrabold leading-tight ${isDark ? "text-white" : "text-[#0a0a0a]"}`}>
-                {step.title}
-              </h3>
-            </div>
+    <div className="pointer-events-none fixed inset-0 z-[1000] flex items-end justify-center p-4 sm:items-center sm:justify-end">
+      <aside className="pointer-events-auto w-full max-w-sm rounded-[2rem] border border-[#fecdd3] bg-white p-6 shadow-[0_32px_80px_rgba(76,5,25,0.18)]">
+        <div className="mb-4 flex items-center justify-between">
+          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#fff1f2] text-[#e11d48]">
+            <SparkleIcon className="h-5 w-5" />
           </div>
-
-          <button
-            onClick={() => void closeAsSkipped()}
-            className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-neutral-400 transition-colors hover:text-neutral-600 dark:hover:text-white/70"
-          >
-            <X size={16} weight="bold" />
+          <button onClick={skipTour} className="rounded-lg p-2 text-[#881337]/40 hover:bg-[#fff1f2] hover:text-[#e11d48]">
+            <CloseIcon className="h-5 w-5" />
           </button>
         </div>
 
-        <p className={`text-[13px] leading-relaxed ${isDark ? "text-white/65" : "text-neutral-600"}`}>{step.description}</p>
-
-        {step.targetId && (
-          <div className={`mt-3 rounded-xl border px-3 py-2 text-[11px] font-heading font-bold uppercase tracking-wide ${
-            targetStatus === "found"
-              ? "border-[#9EEA6C]/40 bg-[#9EEA6C]/10 text-[#9EEA6C]"
-              : targetStatus === "searching"
-              ? "border-amber-500/30 bg-amber-500/10 text-amber-500"
-              : "border-neutral-200 text-neutral-400 dark:border-white/10 dark:text-white/40"
-          }`}>
-            {targetStatus === "found" && "Area destacada na tela"}
-            {targetStatus === "searching" && "Localizando area do passo atual..."}
-            {targetStatus === "missing" && "Nao encontrei esta area. Toque em ir para area."}
-          </div>
-        )}
-
-        <div className="mt-4 flex items-center gap-2">
-          <button
-            onClick={goToCurrentArea}
-            className={`rounded-xl border px-3 py-2 text-[12px] font-heading font-bold transition-all ${
-              isDark
-                ? "border-white/10 text-white/70 hover:bg-white/5"
-                : "border-neutral-200 text-neutral-600 hover:bg-neutral-50"
-            }`}
-          >
-            Ir para area
-          </button>
-
-          {step.actionLabel && (
-            <button
-              onClick={() => void runPrimaryAction()}
-              className="flex items-center gap-2 rounded-xl bg-[#9EEA6C] px-3 py-2 text-[12px] font-heading font-extrabold text-[#0a0a0a] transition-all hover:brightness-110"
-            >
-              <Lightning size={14} weight="bold" />
-              {step.actionLabel}
-            </button>
-          )}
+        <div>
+          <p className="text-[10px] font-bold uppercase tracking-widest text-[#e11d48]">Passo {currentStep + 1} de {tourSteps.length}</p>
+          <h3 className="mt-1 text-xl font-semibold tracking-tight text-[#4c0519]">{step.title}</h3>
+          <p className="mt-2 text-sm leading-relaxed text-[#881337]">{step.description}</p>
         </div>
 
-        <div className="mt-4 flex items-center justify-between gap-3">
+        <div className="mt-6 flex items-center justify-between gap-3">
+          <button onClick={skipTour} className="text-xs font-semibold text-[#881337]/60 hover:text-[#e11d48]">Pular</button>
           <button
-            onClick={() => void prevStep()}
-            disabled={currentStep === 0}
-            className={`flex items-center gap-1 rounded-xl border px-3 py-2 text-[12px] font-heading font-bold ${
-              currentStep === 0
-                ? "invisible"
-                : isDark
-                ? "border-white/10 text-white/70 hover:bg-white/5"
-                : "border-neutral-200 text-neutral-600 hover:bg-neutral-50"
-            }`}
+            onClick={nextStep}
+            className="rounded-full bg-[#e11d48] px-6 py-2.5 text-sm font-semibold text-white shadow-[0_10px_24px_rgba(225,29,72,0.24)] transition hover:-translate-y-0.5"
           >
-            <ArrowLeft size={14} weight="bold" />
-            Anterior
-          </button>
-
-          <button
-            onClick={() => void nextStep()}
-            className="ml-auto flex items-center gap-1 rounded-xl bg-[#9EEA6C] px-4 py-2 text-[12px] font-heading font-extrabold text-[#0a0a0a] transition-all hover:brightness-110"
-          >
-            {currentStep === tourSteps.length - 1 ? (
-              <>
-                <Check size={14} weight="bold" />
-                Concluir
-              </>
-            ) : (
-              <>
-                Proximo
-                <ArrowRight size={14} weight="bold" />
-              </>
-            )}
+            {currentStep === tourSteps.length - 1 ? "Começar agora" : "Próximo"}
           </button>
         </div>
 
-        <button
-          onClick={() => void closeAsSkipped()}
-          className={`mt-3 w-full text-[11px] font-heading font-bold uppercase tracking-wide transition-colors ${
-            isDark ? "text-white/30 hover:text-white/50" : "text-neutral-400 hover:text-neutral-600"
-          }`}
-        >
-          Pular tutorial por enquanto
-        </button>
+        <div className="mt-5 flex gap-1.5">
+          {tourSteps.map((_, i) => (
+            <div key={i} className={`h-1 flex-1 rounded-full transition-colors ${i === currentStep ? "bg-[#e11d48]" : "bg-[#fecdd3]"}`} />
+          ))}
+        </div>
       </aside>
     </div>
   );

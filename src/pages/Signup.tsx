@@ -1,272 +1,300 @@
-import { FormEvent, useState } from "react";
-import { Link, useLocation, useNavigate } from "react-router-dom";
-import { useAuth } from "../context/AuthContext";
-import * as api from "../lib/api";
-import { formatCPF, isValidCPF, isValidEmail, sanitizeText } from "../lib/validators";
-import { 
-  User, 
-  EnvelopeSimple, 
-  LockSimple, 
-  IdentificationCard, 
-  ArrowRight,
-  Scissors, 
-  Camera, 
-  Barbell, 
-  GraduationCap, 
-  PawPrint, 
-  QrCode, 
-  LinkSimple, 
-  CurrencyDollar, 
-  WhatsappLogo, 
-  ShieldCheck,
-  House
-} from "phosphor-react";
+import { useState } from "react";
+import { useNavigate, Link } from "react-router-dom";
+
+function Logo({ variant = "dark" }: { variant?: "dark" | "light" }) {
+  const textColor = variant === "light" ? "text-white" : "text-[#4c0519]";
+  return (
+    <div className="flex items-center gap-2.5">
+      <span className="logo-mark relative inline-flex h-9 w-9 items-center justify-center">
+        <svg viewBox="0 0 40 40" className="h-9 w-9" aria-hidden="true">
+          <defs>
+            <linearGradient id="logoGrad" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0%" stopColor="#fb7185" />
+              <stop offset="55%" stopColor="#e11d48" />
+              <stop offset="100%" stopColor="#881337" />
+            </linearGradient>
+            <linearGradient id="logoGloss" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor="#ffffff" stopOpacity="0.55" />
+              <stop offset="60%" stopColor="#ffffff" stopOpacity="0" />
+            </linearGradient>
+          </defs>
+          <path
+            d="M20 2.4c2.7 0 4.5 2.4 7.4 3.5 2.9 1.1 6.4.3 8 2.4 1.6 2.1.3 5.4 1.4 8.3 1.1 2.9 4.3 4.6 4.3 7.4 0 2.7-3.2 4.5-4.3 7.4-1.1 2.9.2 6.2-1.4 8.3-1.6 2.1-5.1 1.3-8 2.4-2.9 1.1-4.7 3.5-7.4 3.5s-4.5-2.4-7.4-3.5c-2.9-1.1-6.4-.3-8-2.4-1.6-2.1-.3-5.4-1.4-8.3C2.1 28.5-1 26.7-1 24c0-2.7 3.2-4.5 4.3-7.4 1.1-2.9-.2-6.2 1.4-8.3 1.6-2.1 5.1-1.3 8-2.4C15.5 4.8 17.3 2.4 20 2.4Z"
+            fill="url(#logoGrad)"
+            transform="translate(0 -2)"
+          />
+          <path
+            d="M14.5 16.8c1.5-2.6 4.4-4.3 7.6-4.3 4.9 0 8.9 3.9 8.9 8.7 0 4.9-4 8.7-8.9 8.7-3.2 0-6.1-1.6-7.6-4.3"
+            stroke="#fff"
+            strokeWidth="2.6"
+            strokeLinecap="round"
+            fill="none"
+          />
+          <circle cx="14.4" cy="21.2" r="2.2" fill="#fff" />
+          <path
+            d="M2 6c4 1 8 5 9 10"
+            stroke="url(#logoGloss)"
+            strokeWidth="2"
+            strokeLinecap="round"
+            fill="none"
+          />
+        </svg>
+      </span>
+      <span className={`text-xl font-semibold tracking-[-0.045em] ${textColor}`}>
+        Cloude<span className="text-[#e11d48]">Pay</span>
+      </span>
+    </div>
+  );
+}
+
+function ArrowIcon() {
+  return (
+    <svg className="h-4 w-4" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+      <path d="M5 10h9M10 6l4 4-4 4" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
+function Field({ label, id, hint, children }: { label: string; id: string; hint?: string; children: React.ReactNode }) {
+  return (
+    <div>
+      <label htmlFor={id} className="mb-1.5 block text-xs font-semibold uppercase tracking-[0.16em] text-[#9f1239]">
+        {label}
+      </label>
+      {children}
+      {hint && <p className="mt-1.5 text-[11px] text-[#9f1239]/80">{hint}</p>}
+    </div>
+  );
+}
 
 export default function Signup() {
-  const nav = useNavigate();
-  const location = useLocation();
-  const { refresh } = useAuth();
-  const [full_name, setName] = useState("");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [cpf, setCpf] = useState("");
-  const [errors, setErrors] = useState<Record<string, string>>({});
-  const [loading, setLoading] = useState(false);
-  const [serverError, setServerError] = useState<string | null>(null);
+  const [showPassword, setShowPassword] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [done, setDone] = useState(false);
+  const navigate = useNavigate();
 
-  function validate() {
-    const e: Record<string, string> = {};
-    if (sanitizeText(full_name).length < 3) e.full_name = "Informe seu nome completo.";
-    if (!isValidEmail(email)) e.email = "Email inválido.";
-    if (password.length < 6) e.password = "Senha precisa ter ao menos 6 caracteres.";
-    if (!isValidCPF(cpf)) e.cpf = "CPF inválido.";
-    setErrors(e);
-    return Object.keys(e).length === 0;
+  function formatCPF(value: string) {
+    const digits = value.replace(/\D/g, "").slice(0, 11);
+    return digits
+      .replace(/(\d{3})(\d)/, "$1.$2")
+      .replace(/(\d{3})(\d)/, "$1.$2")
+      .replace(/(\d{3})(\d{1,2})$/, "$1-$2");
   }
 
-  async function onSubmit(ev: FormEvent) {
-    ev.preventDefault();
-    setServerError(null);
-    if (!validate()) return;
-    setLoading(true);
-    const res = await api.signUp({
-      full_name: sanitizeText(full_name, 80),
-      email,
-      password,
-      cpf,
-    });
-    setLoading(false);
-    if (!res.ok) {
-      setServerError(res.error);
-      return;
-    }
-    refresh();
-    const fromPath = (location.state as { from?: { pathname?: string } } | null)?.from?.pathname;
-    nav(fromPath || "/painel", { replace: true });
+  function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setSubmitting(true);
+    setTimeout(() => {
+      setSubmitting(false);
+      setDone(true);
+      setTimeout(() => {
+        navigate("/dashboard");
+      }, 650);
+    }, 1100);
   }
 
   return (
-    <AuthShell 
-      title={(
-        <>
-          Criar sua conta no <br/>
-          <span className="text-lime-accent">CloudePay.</span>
-        </>
-      )} 
-      subtitle="Em menos de 30 segundos você terá seu link pronto para receber."
-    >
-      <form onSubmit={onSubmit} className="space-y-3 sm:space-y-5" noValidate>
-        <div className="space-y-3 sm:space-y-4">
-          {/* Nome */}
-          <div className="group space-y-1.5">
-            <label className="text-[11px] sm:text-[13px] font-medium text-white/40 ml-1">Nome completo</label>
-            <div className="relative">
-              <User size={16} className="absolute left-3 sm:left-4 top-1/2 -translate-y-1/2 text-white/20 group-focus-within:text-lime-accent transition-colors" />
-              <input
-                type="text"
-                placeholder="Seu nome"
-                className={`w-full rounded-lg sm:rounded-xl border ${errors.full_name ? "border-red-500/50" : "border-white/5"} bg-white/[0.03] py-2.5 sm:py-3.5 pl-10 sm:pl-12 pr-3 sm:pr-4 text-[13px] sm:text-sm text-white placeholder:text-white/20 focus:border-lime-accent/30 focus:bg-white/[0.05] focus:outline-none transition-all`}
-                value={full_name}
-                onChange={(e) => setName(e.target.value)}
-                autoComplete="name"
-              />
-            </div>
-            {errors.full_name && <p className="text-[11px] text-red-400 ml-1">{errors.full_name}</p>}
-          </div>
+    <main className="auth-page relative min-h-screen overflow-hidden bg-white text-[#4c0519] antialiased">
+      <div className="auth-aurora absolute inset-0 -z-10" aria-hidden="true" />
+      <div className="auth-orb auth-orb-a absolute -left-24 top-20 h-72 w-72 rounded-full" aria-hidden="true" />
+      <div className="auth-orb auth-orb-b absolute -right-32 bottom-10 h-[420px] w-[420px] rounded-full" aria-hidden="true" />
+      <div className="auth-grid absolute inset-0 -z-10 opacity-60" aria-hidden="true" />
 
-          {/* Email */}
-          <div className="group space-y-1.5">
-            <label className="text-[11px] sm:text-[13px] font-medium text-white/40 ml-1">E-mail</label>
-            <div className="relative">
-              <EnvelopeSimple size={16} className="absolute left-3 sm:left-4 top-1/2 -translate-y-1/2 text-white/20 group-focus-within:text-lime-accent transition-colors" />
-              <input
-                type="email"
-                placeholder="voce@exemplo.com"
-                className={`w-full rounded-lg sm:rounded-xl border ${errors.email ? "border-red-500/50" : "border-white/5"} bg-white/[0.03] py-2.5 sm:py-3.5 pl-10 sm:pl-12 pr-3 sm:pr-4 text-[13px] sm:text-sm text-white placeholder:text-white/20 focus:border-lime-accent/30 focus:bg-white/[0.05] focus:outline-none transition-all`}
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                autoComplete="email"
-              />
-            </div>
-            {errors.email && <p className="text-[11px] text-red-400 ml-1">{errors.email}</p>}
+      <header className="relative z-10 border-b border-[#fecdd3]/70 bg-white/85 backdrop-blur-xl">
+        <div className="mx-auto flex h-16 max-w-[1140px] items-center justify-between gap-3 px-4 sm:px-6 md:h-20 md:px-9">
+          <Link to="/" className="inline-flex"><Logo /></Link>
+          <div className="flex items-center gap-2 sm:gap-3">
+            <Link
+              to="/admin"
+              className="inline-flex items-center gap-2 rounded-full border border-[#4c0519]/15 bg-gradient-to-r from-[#4c0519] to-[#7f1235] px-3 py-2 text-[11px] font-semibold text-white shadow-[0_10px_24_rgba(76,5,25,0.28)] transition hover:-translate-y-0.5 sm:px-4 sm:py-2.5 sm:text-xs"
+            >
+              <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <path d="M12 3 4 6v6c0 4.5 3.4 8.5 8 9 4.6-.5 8-4.5 8-9V6l-8-3Z" />
+              </svg>
+              Painel do fundador
+            </Link>
+            <Link to="/" className="inline-flex items-center gap-2 text-xs font-semibold text-[#4c0519] transition hover:text-[#e11d48] sm:text-sm">
+              <svg className="h-4 w-4" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+                <path d="M15 10H6m0 0 4-4m-4 4 4 4" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+              <span className="hidden sm:inline">Voltar pro site</span>
+            </Link>
           </div>
+        </div>
+      </header>
 
-          {/* Senha */}
-          <div className="group space-y-1.5">
-            <label className="text-[11px] sm:text-[13px] font-medium text-white/40 ml-1">Crie uma senha</label>
-            <div className="relative">
-              <LockSimple size={16} className="absolute left-3 sm:left-4 top-1/2 -translate-y-1/2 text-white/20 group-focus-within:text-lime-accent transition-colors" />
-              <input
-                type="password"
-                placeholder="Mínimo 6 caracteres"
-                className={`w-full rounded-lg sm:rounded-xl border ${errors.password ? "border-red-500/50" : "border-white/5"} bg-white/[0.03] py-2.5 sm:py-3.5 pl-10 sm:pl-12 pr-3 sm:pr-4 text-[13px] sm:text-sm text-white placeholder:text-white/20 focus:border-lime-accent/30 focus:bg-white/[0.05] focus:outline-none transition-all`}
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                autoComplete="new-password"
-              />
-            </div>
-            {errors.password && <p className="text-[11px] text-red-400 ml-1">{errors.password}</p>}
-          </div>
+      <section className="relative z-10 mx-auto grid max-w-[1140px] gap-8 px-4 py-10 sm:px-6 sm:py-12 md:px-9 lg:min-h-[calc(100vh-5rem)] lg:grid-cols-[1.05fr_1fr] lg:items-center lg:gap-10 lg:py-14">
+        <div className="relative">
+          <span className="inline-flex items-center gap-2 rounded-full border border-[#fecdd3] bg-white px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.18em] text-[#4c0519]">
+            Plataforma
+          </span>
+          <h1 className="mt-6 text-4xl font-semibold leading-[1] tracking-[-0.065em] text-[#4c0519] sm:text-5xl md:mt-7 md:text-6xl">
+            Comece a cobrar em <span className="text-[#e11d48]">2 minutos.</span>
+          </h1>
+          <p className="mt-5 max-w-[440px] text-base leading-7 text-[#881337] sm:mt-6 sm:text-lg sm:leading-8">
+            Cria sua conta só com CPF, configura seu link único e já manda pro primeiro cliente. Sem CNPJ, sem mensalidade.
+          </p>
 
-          {/* CPF */}
-          <div className="group space-y-1.5">
-            <label className="text-[11px] sm:text-[13px] font-medium text-white/40 ml-1">Seu CPF</label>
-            <div className="relative">
-              <IdentificationCard size={16} className="absolute left-3 sm:left-4 top-1/2 -translate-y-1/2 text-white/20 group-focus-within:text-lime-accent transition-colors" />
-              <input
-                type="text"
-                placeholder="000.000.000-00"
-                maxLength={14}
-                className={`w-full rounded-lg sm:rounded-xl border ${errors.cpf ? "border-red-500/50" : "border-white/5"} bg-white/[0.03] py-2.5 sm:py-3.5 pl-10 sm:pl-12 pr-3 sm:pr-4 text-[13px] sm:text-sm text-white placeholder:text-white/20 focus:border-lime-accent/30 focus:bg-white/[0.05] focus:outline-none transition-all`}
-                value={cpf}
-                onChange={(e) => setCpf(formatCPF(e.target.value))}
-                autoComplete="off"
-              />
+          <div className="card-tilt-right mt-10 hidden max-w-[420px] rounded-2xl border border-[#fecdd3] bg-white p-6 shadow-[0_30px_70px_rgba(136,19,55,0.14)] md:block">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-semibold uppercase tracking-[0.2em] text-[#9f1239]">PIX recebido</span>
+              <span className="flex h-9 w-9 items-center justify-center rounded-full bg-[#e11d48] text-white">
+                <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                  <path d="m5 12 4 4L19 6" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+              </span>
             </div>
-            {errors.cpf && <p className="text-[11px] text-red-400 ml-1">{errors.cpf}</p>}
+            <p className="mt-3 text-3xl font-semibold tracking-[-0.06em] text-[#4c0519]">R$ 1.176,00</p>
+            <p className="mt-2 text-sm text-[#881337]">de Maria Santos · 14:32</p>
+            <div className="mt-5 grid grid-cols-3 gap-2 text-[11px] text-[#881337]">
+              <span className="rounded-lg bg-[#fff5f5] py-2 text-center">Cliente OK</span>
+              <span className="rounded-lg bg-[#fff5f5] py-2 text-center">Comprovante</span>
+              <span className="rounded-lg bg-[#fff5f5] py-2 text-center">Painel</span>
+            </div>
           </div>
         </div>
 
-        {serverError && (
-          <div className="rounded-lg sm:rounded-xl border border-red-500/20 bg-red-500/10 px-3 sm:px-4 py-2.5 sm:py-3 text-[12px] sm:text-sm text-red-400">
-            {serverError}
-          </div>
-        )}
+        <div className="auth-card-wrap relative">
+          <div className="auth-card relative z-10 rounded-3xl border border-[#fecdd3] bg-white p-5 shadow-[0_26px_70px_rgba(136,19,55,0.14)] sm:p-7 md:p-10 md:shadow-[0_40px_100px_rgba(136,19,55,0.18)]">
+            <div className="mb-7 grid grid-cols-2 gap-1 rounded-full bg-[#fff1f2] p-1 text-sm font-semibold">
+              <Link
+                to="/entrar"
+                className="rounded-full px-4 py-2.5 transition text-[#9f1239] hover:text-[#4c0519] flex items-center justify-center"
+              >
+                Entrar
+              </Link>
+              <button
+                type="button"
+                className="rounded-full px-4 py-2.5 transition bg-white text-[#4c0519] shadow-sm"
+              >
+                Criar conta
+              </button>
+            </div>
 
-        <button 
-          type="submit" 
-          disabled={loading}
-          className="flex w-full items-center justify-center gap-1.5 sm:gap-2 rounded-lg sm:rounded-xl bg-lime-accent py-3 sm:py-4 text-[13px] sm:text-sm font-heading font-bold text-[#0a0a0a] hover:brightness-110 active:scale-[0.98] transition-all disabled:opacity-50"
-        >
-          {loading ? "Criando..." : "Começar agora"}
-          <ArrowRight size={16} weight="bold" />
-        </button>
-
-        <p className="text-center text-[13px] sm:text-sm text-white/40 font-body">
-          Já tem conta?{" "}
-          <Link to="/entrar" className="font-bold text-white hover:text-lime-accent transition-colors">
-            Fazer login
-          </Link>
-        </p>
-
-        <p className="mt-4 sm:mt-6 text-center text-[9px] sm:text-[10px] leading-snug sm:leading-relaxed text-white/20 font-body px-3 sm:px-8">
-          Ao se cadastrar, você concorda com nossos termos de uso e política de privacidade.
-        </p>
-      </form>
-    </AuthShell>
-  );
-}
-
-export function AuthShell({
-  title,
-  subtitle,
-  children,
-}: {
-  title: string | React.ReactNode;
-  subtitle?: string;
-  children: React.ReactNode;
-}) {
-  return (
-    <div className="min-h-screen bg-[#0a0a0a] text-white overflow-hidden relative selection:bg-lime-accent/30 selection:text-lime-accent">
-      {/* Background Grid & Glows */}
-      <div aria-hidden className="pointer-events-none fixed inset-0 z-0">
-        <div
-          className="absolute inset-0 opacity-[0.03]"
-          style={{
-            backgroundImage: "linear-gradient(rgba(255,255,255,.4) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.4) 1px, transparent 1px)",
-            backgroundSize: "48px 48px",
-          }}
-        />
-        <div className="absolute left-1/4 top-1/4 h-[500px] w-[500px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-lime-accent/10 blur-[120px]" />
-        <div className="absolute right-1/4 bottom-1/4 h-[500px] w-[500px] translate-x-1/2 translate-y-1/2 rounded-full bg-brand-600/10 blur-[120px]" />
-      </div>
-
-      <div className="relative z-10 mx-auto flex min-h-screen max-w-[1400px] items-center justify-center px-4 sm:px-6 py-6 sm:py-12">
-        {/* Left Chips (Desktop Only) */}
-        <div className="absolute left-12 top-1/2 hidden -translate-y-1/2 flex-col gap-12 lg:flex">
-          <FloatingChip icon={Scissors} label="Cabeleireiro" delay="0s" x={20} />
-          <FloatingChip icon={Camera} label="Fotógrafo" delay="1s" x={-10} />
-          <FloatingChip icon={Barbell} label="Personal" delay="0.5s" x={30} />
-          <FloatingChip icon={GraduationCap} label="Professor" delay="1.5s" x={-20} />
-          <FloatingChip icon={PawPrint} label="Pet Sitter" delay="0.8s" x={10} />
-        </div>
-
-        {/* Right Chips (Desktop Only) */}
-        <div className="absolute right-12 top-1/2 hidden -translate-y-1/2 flex-col gap-10 items-end lg:flex">
-          <FloatingChip icon={QrCode} label="PIX Instantâneo" delay="0.2s" x={-10} accent />
-          <FloatingChip icon={LinkSimple} label="Link Único" delay="1.2s" x={15} />
-          <FloatingChip icon={CurrencyDollar} label="Taxa 2%" delay="0.7s" x={-25} accent />
-          <FloatingChip icon={WhatsappLogo} label="WhatsApp" delay="1.8s" x={10} />
-          <FloatingChip icon={ShieldCheck} label="Seguro" delay="0.4s" x={-15} accent />
-          <FloatingChip icon={House} label="Painel" delay="1s" x={20} />
-        </div>
-
-        {/* Auth Card */}
-        <div className="w-full max-w-[440px] sm:max-w-[480px]">
-          <div className="rounded-2xl sm:rounded-[32px] border border-white/10 bg-[#121212]/80 p-4 sm:p-8 shadow-2xl backdrop-blur-xl sm:p-10">
-            <header className="text-center mb-4 sm:mb-8">
-              <h1 className="text-[30px] leading-[0.95] sm:text-3xl font-heading font-extrabold tracking-tight text-white">
-                {title}
-              </h1>
-              {subtitle && (
-                <p className="mt-2 sm:mt-3 text-[12px] sm:text-sm text-white/50 font-body leading-snug sm:leading-relaxed max-w-[280px] sm:max-w-[300px] mx-auto">
-                  {subtitle}
+            {done ? (
+              <div className="py-6 text-center">
+                <span className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-[#e11d48] text-white">
+                  <svg className="h-7 w-7" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                    <path d="m5 12 4 4L19 6" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
+                </span>
+                <h3 className="mt-5 text-2xl font-semibold tracking-[-0.04em] text-[#4c0519]">
+                  Conta criada!
+                </h3>
+                <p className="mt-3 text-sm text-[#881337]">
+                  Já dá pra gerar seu primeiro link de cobrança.
                 </p>
-              )}
-            </header>
-            
-            {children}
+              </div>
+            ) : (
+              <form onSubmit={handleSubmit} className="space-y-4">
+                <Field label="Nome completo" id="nome">
+                  <input
+                    id="nome"
+                    type="text"
+                    autoComplete="name"
+                    required
+                    placeholder="Como seus clientes te conhecem"
+                    className="auth-input"
+                  />
+                </Field>
+
+                <Field label="Email" id="email">
+                  <input
+                    id="email"
+                    type="email"
+                    autoComplete="email"
+                    required
+                    placeholder="voce@email.com"
+                    className="auth-input"
+                  />
+                </Field>
+
+                <Field label="CPF" id="cpf" hint="Sem CNPJ, é com seu CPF mesmo.">
+                  <input
+                    id="cpf"
+                    type="text"
+                    inputMode="numeric"
+                    required
+                    placeholder="000.000.000-00"
+                    maxLength={14}
+                    onChange={(event) => {
+                      event.currentTarget.value = formatCPF(event.currentTarget.value);
+                    }}
+                    className="auth-input"
+                  />
+                </Field>
+
+                <Field label="Senha" id="senha">
+                  <div className="relative">
+                    <input
+                      id="senha"
+                      type={showPassword ? "text" : "password"}
+                      autoComplete="new-password"
+                      required
+                      minLength={6}
+                      placeholder="••••••••"
+                      className="auth-input pr-12"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword((s) => !s)}
+                      aria-label={showPassword ? "Ocultar senha" : "Mostrar senha"}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 rounded-full p-1.5 text-[#9f1239] transition hover:bg-[#fff1f2]"
+                    >
+                      {showPassword ? (
+                        <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                          <path d="M3 3 21 21" />
+                          <path d="M10.6 6.1A10 10 0 0 1 22 12c-1 2-2.5 3.7-4.4 4.9M6.7 6.7C4.6 7.9 3 9.8 2 12c1.8 3.6 5.5 6 10 6 1.6 0 3.1-.3 4.4-.9" />
+                          <path d="M14 14a3 3 0 0 1-4-4" />
+                        </svg>
+                      ) : (
+                        <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                          <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7Z" />
+                          <circle cx="12" cy="12" r="3" />
+                        </svg>
+                      )}
+                    </button>
+                  </div>
+                </Field>
+
+                <label className="flex items-start gap-3 text-xs leading-5 text-[#881337]">
+                  <input type="checkbox" required className="auth-checkbox mt-0.5" />
+                  <span>
+                    Eu li e aceito os{" "}
+                    <a href="#" className="font-semibold text-[#e11d48] hover:underline">Termos de uso</a>{" "}
+                    e a{" "}
+                    <a href="#" className="font-semibold text-[#e11d48] hover:underline">Política de Privacidade</a>.
+                  </span>
+                </label>
+
+                <button
+                  type="submit"
+                  disabled={submitting}
+                  className="cta-button mt-2 inline-flex w-full items-center justify-center gap-2 rounded-full bg-[#e11d48] px-6 py-4 text-sm font-semibold text-white shadow-[0_18px_40px_rgba(225,29,72,0.4)] transition hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-70"
+                >
+                  {submitting ? (
+                    <>
+                      <svg className="h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                        <circle cx="12" cy="12" r="9" stroke="currentColor" strokeOpacity="0.3" strokeWidth="3" />
+                        <path d="M21 12a9 9 0 0 1-9 9" stroke="currentColor" strokeWidth="3" strokeLinecap="round" />
+                      </svg>
+                      Carregando...
+                    </>
+                  ) : (
+                    <>
+                      Acessar Plataforma <ArrowIcon />
+                    </>
+                  )}
+                </button>
+
+                <p className="pt-4 text-center text-xs text-[#881337]">
+                  Já tem uma conta? <Link to="/entrar" className="font-semibold text-[#e11d48] hover:underline">Entrar</Link>
+                </p>
+              </form>
+            )}
           </div>
         </div>
-      </div>
-    </div>
+      </section>
+    </main>
   );
 }
-
-function FloatingChip({ 
-  icon: Icon, 
-  label, 
-  delay = "0s", 
-  x = 0, 
-  accent = false 
-}: { 
-  icon: any, 
-  label: string, 
-  delay?: string, 
-  x?: number, 
-  accent?: boolean 
-}) {
-  return (
-    <div 
-      className="flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.03] px-3 py-1.5 text-[12px] font-medium text-white/60 shadow-xl backdrop-blur-sm animate-float-slow"
-      style={{ animationDelay: delay, transform: `translateX(${x}px)` }}
-    >
-      <div className={`flex h-5 w-5 items-center justify-center rounded-full ${accent ? "bg-lime-accent/20 text-lime-accent" : "bg-white/10 text-white/40"}`}>
-        <Icon size={12} weight="duotone" />
-      </div>
-      {label}
-    </div>
-  );
-}
-
-

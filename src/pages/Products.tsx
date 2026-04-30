@@ -1,32 +1,137 @@
-import { useEffect, useState } from "react";
-import Shell from "../components/Shell";
+import { useState, useEffect, useCallback } from "react";
+import { Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import * as api from "../lib/api";
-import type { Product } from "../lib/types";
 import { formatBRL, maskBRLInput, parseBRLToCents } from "../lib/format";
 import { sanitizeText } from "../lib/validators";
-import { Package, PencilSimple, Trash, Plus, Tag, Coins, Info } from "phosphor-react";
+
+// --- Icons ---
+
+function Logo({ variant = "dark" }: { variant?: "dark" | "light" }) {
+  const textColor = variant === "light" ? "text-white" : "text-[#4c0519]";
+  return (
+    <div className="flex items-center gap-2.5">
+      <span className="logo-mark relative inline-flex h-9 w-9 items-center justify-center">
+        <svg viewBox="0 0 40 40" className="h-9 w-9" aria-hidden="true">
+          <defs>
+            <linearGradient id="logoGrad" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0%" stopColor="#fb7185" />
+              <stop offset="55%" stopColor="#e11d48" />
+              <stop offset="100%" stopColor="#881337" />
+            </linearGradient>
+            <linearGradient id="logoGloss" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor="#ffffff" stopOpacity="0.55" />
+              <stop offset="60%" stopColor="#ffffff" stopOpacity="0" />
+            </linearGradient>
+          </defs>
+          <path
+            d="M20 2.4c2.7 0 4.5 2.4 7.4 3.5 2.9 1.1 6.4.3 8 2.4 1.6 2.1.3 5.4 1.4 8.3 1.1 2.9 4.3 4.6 4.3 7.4 0 2.7-3.2 4.5-4.3 7.4-1.1 2.9.2 6.2-1.4 8.3-1.6 2.1-5.1 1.3-8 2.4-2.9 1.1-4.7 3.5-7.4 3.5s-4.5-2.4-7.4-3.5c-2.9-1.1-6.4-.3-8-2.4-1.6-2.1-.3-5.4-1.4-8.3C2.1 28.5-1 26.7-1 24c0-2.7 3.2-4.5 4.3-7.4 1.1-2.9-.2-6.2 1.4-8.3 1.6-2.1 5.1-1.3 8-2.4C15.5 4.8 17.3 2.4 20 2.4Z"
+            fill="url(#logoGrad)"
+            transform="translate(0 -2)"
+          />
+          <path
+            d="M14.5 16.8c1.5-2.6 4.4-4.3 7.6-4.3 4.9 0 8.9 3.9 8.9 8.7 0 4.9-4 8.7-8.9 8.7-3.2 0-6.1-1.6-7.6-4.3"
+            stroke="#fff"
+            strokeWidth="2.6"
+            strokeLinecap="round"
+            fill="none"
+          />
+          <circle cx="14.4" cy="21.2" r="2.2" fill="#fff" />
+          <path
+            d="M2 6c4 1 8 5 9 10"
+            stroke="url(#logoGloss)"
+            strokeWidth="2"
+            strokeLinecap="round"
+            fill="none"
+          />
+        </svg>
+      </span>
+      <span className={`text-xl font-semibold tracking-[-0.045em] ${textColor}`}>
+        Cloude<span className="text-[#e11d48]">Pay</span>
+      </span>
+    </div>
+  );
+}
+
+function HelpIcon({ className = "h-4 w-4" }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" className={className} fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <circle cx="12" cy="12" r="9" />
+      <path d="M9.5 9.5a2.5 2.5 0 1 1 3.5 2.3c-.7.3-1 .8-1 1.7" />
+      <circle cx="12" cy="17" r=".7" fill="currentColor" />
+    </svg>
+  );
+}
+
+function PanelIcon({ className = "h-4 w-4" }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" className={className} fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <rect x="3" y="3" width="18" height="18" rx="2" />
+      <path d="M9 3v18M3 9h18" />
+    </svg>
+  );
+}
+
+function ProductIcon({ className = "h-4 w-4" }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" className={className} fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z" />
+      <path d="m3.3 7 8.7 5 8.7-5M12 22V12" />
+    </svg>
+  );
+}
+
+function UserIcon({ className = "h-4 w-4" }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" className={className} fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" />
+      <circle cx="12" cy="7" r="4" />
+    </svg>
+  );
+}
+
+function ArrowIcon() {
+  return (
+    <svg className="h-4 w-4" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+      <path d="M5 10h9M10 6l4 4-4 4" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
+function Field({ label, id, hint, children }: { label: string; id: string; hint?: string; children: React.ReactNode }) {
+  return (
+    <div>
+      <label htmlFor={id} className="mb-1.5 block text-xs font-semibold uppercase tracking-[0.16em] text-[#9f1239]">
+        {label}
+      </label>
+      {children}
+      {hint && <p className="mt-1.5 text-[11px] text-[#9f1239]/80">{hint}</p>}
+    </div>
+  );
+}
+
+// --- Page Component ---
 
 export default function Products() {
-  const { profile } = useAuth();
-  const [products, setProducts] = useState<Product[]>([]);
+  const { profile, signOut } = useAuth();
+  const [products, setProducts] = useState<any[]>([]);
   const [name, setName] = useState("");
   const [amountStr, setAmountStr] = useState("");
   const [description, setDescription] = useState("");
-  const [editingId, setEditingId] = useState<string | null>(null);
-  const [errors, setErrors] = useState<{ name?: string; amount?: string }>({});
+  const [loading, setLoading] = useState(false);
+  const [tab, setTab] = useState<"dashboard" | "produtos" | "perfil">("produtos");
 
-  async function reload() {
+  const reload = useCallback(async () => {
     if (!profile) return;
     const data = await api.listProductsByProfile(profile.id);
     setProducts(data);
-  }
+  }, [profile]);
 
   useEffect(() => {
     reload();
-  }, [profile?.id]);
+  }, [reload]);
 
-  async function onSubmit(e: React.FormEvent) {
+  async function handleCreate(e: React.FormEvent) {
     e.preventDefault();
     if (!profile) return;
 
@@ -34,229 +139,155 @@ export default function Products() {
     const amountCents = parseBRLToCents(amountStr);
     const cleanDesc = sanitizeText(description, 180) || null;
 
-    const newErrors: { name?: string; amount?: string } = {};
-    if (cleanName.length < 2) newErrors.name = "Nome deve ter pelo menos 2 caracteres.";
-    if (amountCents < 100) newErrors.amount = "Valor mínimo é R$ 1,00.";
-    setErrors(newErrors);
-    if (Object.keys(newErrors).length > 0) return;
+    if (cleanName.length < 2 || amountCents < 100) return;
 
-    if (editingId) {
-      await api.updateProduct(editingId, {
-        name: cleanName,
-        amount_cents: amountCents,
-        description: cleanDesc,
-      });
-      setEditingId(null);
-    } else {
+    setLoading(true);
+    try {
       await api.createProduct({
         profile_id: profile.id,
         name: cleanName,
         amount_cents: amountCents,
         description: cleanDesc,
       });
-    }
-
-    setName("");
-    setAmountStr("");
-    setDescription("");
-    setErrors({});
-    reload();
-  }
-
-  function startEdit(p: Product) {
-    setEditingId(p.id);
-    setName(p.name);
-    setAmountStr(maskBRLInput((p.amount_cents / 100).toFixed(2).replace(".", ",")));
-    setDescription(p.description || "");
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  }
-
-  async function removeProduct(id: string) {
-    await api.deleteProduct(id);
-    if (editingId === id) {
-      setEditingId(null);
       setName("");
       setAmountStr("");
       setDescription("");
+      reload();
+    } finally {
+      setLoading(false);
     }
+  }
+
+  async function handleDelete(id: string) {
+    if (!confirm("Deseja excluir este produto?")) return;
+    await api.deleteProduct(id);
     reload();
   }
 
   return (
-    <Shell>
-      <div className="max-w-4xl mx-auto">
-        <div id="tour-products" className="mb-6 sm:mb-10">
-          <p className="text-[10px] sm:text-[11px] font-medium text-neutral-400 dark:text-white/30 font-body mb-1 uppercase tracking-widest">Catálogo de Serviços</p>
-          <h1 className="text-[28px] sm:text-[36px] leading-tight font-heading font-black text-[#0a0a0a] dark:text-white uppercase tracking-tighter">
-            Produtos
-          </h1>
+    <main className="min-h-screen bg-[#fffafa] text-[#4c0519] antialiased page-grid">
+      <header className="sticky top-0 z-40 border-b border-[#fecdd3] bg-white/90 backdrop-blur-xl">
+        <div className="mx-auto flex h-16 max-w-[1280px] items-center justify-between px-4 sm:px-6 lg:h-20 lg:px-8">
+          <Link to="/dashboard" className="inline-flex"><Logo /></Link>
+          <div className="flex items-center gap-2">
+            <span className="hidden rounded-full border border-[#fecdd3] bg-white px-4 py-2 text-sm font-semibold text-[#881337] sm:inline-flex">
+              cloudepay.com.br/{profile?.slug || "carregando"}
+            </span>
+            <button
+              type="button"
+              className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-[#fecdd3] bg-white text-[#4c0519] transition hover:border-[#e11d48] hover:text-[#e11d48] sm:w-auto sm:gap-2 sm:px-4 sm:text-sm sm:font-semibold"
+            >
+              <HelpIcon className="h-4 w-4" />
+              <span className="hidden sm:inline">Suporte</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => signOut()}
+              className="inline-flex h-10 items-center gap-2 rounded-full bg-[#4c0519] px-4 text-xs font-semibold text-white transition hover:bg-[#7f1235] sm:text-sm"
+            >
+              Sair
+            </button>
+          </div>
         </div>
+      </header>
 
-        <div className="grid gap-6 lg:grid-cols-[1fr_1.5fr]">
-          {/* FORMULÁRIO */}
-          <aside className="lg:sticky lg:top-8 h-fit">
-            <section className="rounded-[28px] sm:rounded-[32px] border border-neutral-200 dark:border-white/5 bg-white dark:bg-[#121212] p-6 sm:p-8 shadow-sm">
-              <div className="flex items-center gap-3 mb-6 sm:mb-8">
-                <div className="w-10 h-10 rounded-2xl bg-[#9EEA6C]/10 flex items-center justify-center text-[#9EEA6C] border border-[#9EEA6C]/20 shadow-inner">
-                  {editingId ? <PencilSimple size={20} weight="duotone" /> : <Plus size={20} weight="bold" />}
-                </div>
-                <h2 className="text-lg font-heading font-black text-[#0a0a0a] dark:text-white uppercase tracking-tight">
-                  {editingId ? "Editar Produto" : "Novo Produto"}
-                </h2>
-              </div>
+      <div className="mx-auto grid max-w-[1280px] gap-6 px-4 pb-28 pt-5 sm:px-6 sm:pt-6 lg:grid-cols-[240px_1fr] lg:px-8 lg:py-8">
+        <aside className="hidden lg:block">
+          <div className="sticky top-28 rounded-3xl border border-[#fecdd3] bg-white/90 p-3 shadow-[0_24px_70px_rgba(136,19,55,0.08)]">
+            {[
+              { key: "dashboard" as const, label: "Dashboard", Icon: PanelIcon, path: "/dashboard" },
+              { key: "produtos" as const, label: "Produtos", Icon: ProductIcon, path: "/produtos" },
+              { key: "perfil" as const, label: "Meu perfil", Icon: UserIcon, path: "/configuracoes" },
+            ].map(({ key, label, Icon, path }) => (
+              <Link
+                key={key}
+                to={path}
+                onClick={() => setTab(key)}
+                className={`mb-2 flex w-full items-center gap-3 rounded-2xl px-4 py-3 text-left text-sm font-semibold transition last:mb-0 ${
+                  tab === key ? "bg-[#e11d48] text-white shadow-[0_12px_26px_rgba(225,29,72,0.22)]" : "text-[#881337] hover:bg-[#fff1f2] hover:text-[#4c0519]"
+                }`}
+              >
+                <Icon className="h-4 w-4" /> {label}
+              </Link>
+            ))}
+          </div>
+        </aside>
 
-              <form onSubmit={onSubmit} className="space-y-4">
-                <div>
-                  <label className="text-[9px] font-heading font-black uppercase tracking-widest text-neutral-400 dark:text-white/20 mb-2 block">Nome Comercial</label>
-                  <div className="relative">
-                    <Tag size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-300 dark:text-white/10" />
-                    <input
-                      value={name}
-                      onChange={(e) => {
-                        setName(e.target.value);
-                        if (errors.name) setErrors(prev => ({ ...prev, name: undefined }));
-                      }}
-                      placeholder="Ex: Consultoria VIP"
-                      className={`w-full rounded-xl border bg-neutral-50 dark:bg-white/[0.02] pl-10 pr-4 py-3 text-[14px] outline-none transition-all focus:border-[#9EEA6C]/50 ${
-                        errors.name ? "border-red-500" : "border-neutral-200 dark:border-white/10"
-                      }`}
-                    />
-                  </div>
-                  {errors.name && <p className="mt-1.5 text-[10px] text-red-500 font-heading font-extrabold uppercase tracking-wide">{errors.name}</p>}
-                </div>
-
-                <div>
-                  <label className="text-[9px] font-heading font-black uppercase tracking-widest text-neutral-400 dark:text-white/20 mb-2 block">Valor de Venda</label>
-                  <div className="relative">
-                    <Coins size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-300 dark:text-white/10" />
-                    <input
-                      value={amountStr}
-                      onChange={(e) => {
-                        setAmountStr(maskBRLInput(e.target.value));
-                        if (errors.amount) setErrors(prev => ({ ...prev, amount: undefined }));
-                      }}
-                      placeholder="R$ 0,00"
-                      className={`w-full rounded-xl border bg-neutral-50 dark:bg-white/[0.02] pl-10 pr-4 py-3 text-[14px] outline-none transition-all focus:border-[#9EEA6C]/50 ${
-                        errors.amount ? "border-red-500" : "border-neutral-200 dark:border-white/10"
-                      }`}
-                    />
-                  </div>
-                  {errors.amount && <p className="mt-1.5 text-[10px] text-red-500 font-heading font-extrabold uppercase tracking-wide">{errors.amount}</p>}
-                </div>
-
-                <div>
-                  <label className="text-[9px] font-heading font-black uppercase tracking-widest text-neutral-400 dark:text-white/20 mb-2 block">Descrição Breve</label>
-                  <textarea
-                    value={description}
-                    onChange={(e) => setDescription(e.target.value)}
-                    placeholder="O que está incluso neste produto?"
-                    className="min-h-[100px] w-full rounded-xl border border-neutral-200 dark:border-white/10 bg-neutral-50 dark:bg-white/[0.02] px-4 py-3 text-[14px] outline-none transition-all focus:border-[#9EEA6C]/50 resize-none"
-                  />
-                </div>
-
-                <div className="pt-2">
-                  <button
-                    type="submit"
-                    className="w-full rounded-xl bg-[#9EEA6C] py-4 text-[11px] font-heading font-black text-[#0a0a0a] uppercase tracking-[0.2em] shadow-lg shadow-[#9EEA6C]/10 hover:brightness-110 active:scale-[0.98] transition-all flex items-center justify-center gap-2"
-                  >
-                    {editingId ? <PencilSimple size={16} weight="bold" /> : <Plus size={16} weight="bold" />}
-                    {editingId ? "Salvar Alterações" : "Cadastrar Produto"}
+        <section className="min-w-0">
+          <div className="space-y-5 sm:space-y-6">
+            <div>
+              <p className="text-sm font-semibold uppercase tracking-[0.18em] text-[#e11d48]">Produtos</p>
+              <h1 className="mt-3 text-3xl font-semibold tracking-[-0.065em] text-[#4c0519] sm:text-5xl">Cadastre valores prontos.</h1>
+              <p className="mt-4 max-w-[560px] text-base leading-7 text-[#881337]">Use produtos pré-definidos quando for gerar uma cobrança. Menos digitação, mais velocidade.</p>
+            </div>
+            <div className="grid gap-6 lg:grid-cols-[380px_1fr]">
+              <section className="rounded-3xl border border-[#fecdd3] bg-white p-4 shadow-[0_14px_36px_rgba(136,19,55,0.06)] sm:p-6 sm:shadow-[0_18px_50px_rgba(136,19,55,0.07)]">
+                <h2 className="text-xl font-semibold tracking-[-0.04em] text-[#4c0519]">Novo produto</h2>
+                <form className="mt-5 space-y-4" onSubmit={handleCreate}>
+                  <Field label="Nome" id="produto-nome">
+                    <input className="auth-input" placeholder="Ex: Aula particular" value={name} onChange={e => setName(e.target.value)} required />
+                  </Field>
+                  <Field label="Valor" id="produto-valor">
+                    <input className="auth-input" placeholder="R$ 80,00" value={amountStr} onChange={e => setAmountStr(maskBRLInput(e.target.value))} required />
+                  </Field>
+                  <Field label="Descrição" id="produto-desc">
+                    <textarea className="auth-input min-h-28 resize-none" placeholder="Detalhe o que o cliente está pagando." value={description} onChange={e => setDescription(e.target.value)} />
+                  </Field>
+                  <button type="submit" disabled={loading} className="inline-flex w-full items-center justify-center gap-2 rounded-full bg-[#e11d48] px-6 py-4 text-sm font-semibold text-white shadow-[0_18px_40px_rgba(225,29,72,0.28)]">
+                    {loading ? "Cadastrando..." : "Cadastrar produto"} <ArrowIcon />
                   </button>
-                  {editingId && (
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setEditingId(null);
-                        setName("");
-                        setAmountStr("");
-                        setDescription("");
-                        setErrors({});
-                      }}
-                      className="w-full mt-3 text-[10px] font-heading font-black text-neutral-400 uppercase tracking-widest hover:text-red-400 transition-colors"
-                    >
-                      Cancelar Edição
-                    </button>
+                </form>
+              </section>
+              <section className="rounded-3xl border border-[#fecdd3] bg-white p-4 shadow-[0_14px_36px_rgba(136,19,55,0.06)] sm:p-6 sm:shadow-[0_18px_50px_rgba(136,19,55,0.07)]">
+                <h2 className="text-xl font-semibold tracking-[-0.04em] text-[#4c0519]">Produtos cadastrados</h2>
+                <div className="mt-5 grid gap-3">
+                  {products.length === 0 ? (
+                    <p className="py-8 text-center text-sm text-[#881337]/50">Nenhum produto cadastrado ainda.</p>
+                  ) : (
+                    products.map((product) => (
+                      <article key={product.id} className="group relative rounded-2xl border border-[#fecdd3] bg-[#fffafa] p-4 transition hover:border-[#e11d48]">
+                        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                          <div>
+                            <h3 className="font-semibold text-[#4c0519]">{product.name}</h3>
+                            <p className="mt-1 text-sm text-[#881337]">{product.description || "Sem descrição"}</p>
+                          </div>
+                          <div className="flex items-center gap-4">
+                            <span className="text-xl font-semibold tracking-[-0.04em] text-[#e11d48]">{formatBRL(product.amount_cents)}</span>
+                            <button onClick={() => handleDelete(product.id)} className="opacity-0 transition group-hover:opacity-100 text-red-500 hover:text-red-700">
+                                <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                            </button>
+                          </div>
+                        </div>
+                      </article>
+                    ))
                   )}
                 </div>
-              </form>
-            </section>
-          </aside>
-
-          {/* LISTAGEM */}
-          <div className="space-y-4">
-            <div className="flex items-center justify-between mb-4 px-2">
-              <h2 className="text-[13px] font-heading font-black text-[#0a0a0a] dark:text-white uppercase tracking-[0.2em]">
-                Catálogo <span className="text-[#9EEA6C] ml-1">({products.length})</span>
-              </h2>
+              </section>
             </div>
-
-            {products.length === 0 ? (
-              <div className="rounded-[32px] border border-dashed border-neutral-200 dark:border-white/5 bg-neutral-50/50 dark:bg-white/[0.01] p-12 text-center">
-                <Package size={40} weight="duotone" className="mx-auto text-neutral-300 dark:text-white/10 mb-4" />
-                <p className="text-[13px] font-heading font-bold text-neutral-400 dark:text-white/20 uppercase tracking-widest">Nenhum produto cadastrado</p>
-                <p className="text-[11px] text-neutral-400/60 dark:text-white/10 mt-2">Os produtos que você cadastrar aparecerão aqui.</p>
-              </div>
-            ) : (
-              <div className="grid gap-3 sm:gap-4">
-                {products.map((p) => (
-                  <div 
-                    key={p.id} 
-                    className="group bg-white dark:bg-[#121212] border border-neutral-200 dark:border-white/5 rounded-[24px] sm:rounded-[28px] p-5 sm:p-6 shadow-sm hover:shadow-md hover:border-[#9EEA6C]/20 transition-all flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4"
-                  >
-                    <div className="flex items-center gap-4 min-w-0">
-                      <div className="h-12 w-12 sm:h-14 sm:w-14 rounded-2xl bg-neutral-50 dark:bg-white/5 flex items-center justify-center text-[#9EEA6C] border border-neutral-100 dark:border-white/10 shrink-0">
-                        <Package size={24} weight="duotone" />
-                      </div>
-                      <div className="min-w-0">
-                        <h3 className="text-[15px] sm:text-[17px] font-heading font-black text-[#0a0a0a] dark:text-white truncate uppercase tracking-tight">{p.name}</h3>
-                        {p.description ? (
-                          <p className="text-[11px] sm:text-[12px] text-neutral-400 dark:text-white/30 font-medium line-clamp-1 mt-0.5">{p.description}</p>
-                        ) : (
-                          <p className="text-[11px] text-neutral-300 dark:text-white/10 font-medium mt-0.5 italic">Sem descrição</p>
-                        )}
-                      </div>
-                    </div>
-
-                    <div className="flex items-center justify-between sm:justify-end w-full sm:w-auto gap-4 sm:gap-6 border-t sm:border-t-0 border-neutral-50 dark:border-white/5 pt-4 sm:pt-0">
-                      <div className="text-right shrink-0">
-                        <p className="text-[9px] font-heading font-black text-[#9EEA6C] uppercase tracking-widest mb-0.5">Venda</p>
-                        <p className="text-[16px] sm:text-[18px] font-heading font-black text-[#0a0a0a] dark:text-white">{formatBRL(p.amount_cents)}</p>
-                      </div>
-
-                      <div className="flex items-center gap-2">
-                        <button
-                          onClick={() => startEdit(p)}
-                          className="h-9 w-9 sm:h-10 sm:w-10 rounded-xl bg-neutral-50 dark:bg-white/5 border border-neutral-100 dark:border-white/10 flex items-center justify-center text-neutral-500 dark:text-white/40 hover:text-[#9EEA6C] hover:border-[#9EEA6C]/30 transition-all"
-                          title="Editar"
-                        >
-                          <PencilSimple size={18} weight="bold" />
-                        </button>
-                        <button
-                          onClick={() => removeProduct(p.id)}
-                          className="h-9 w-9 sm:h-10 sm:w-10 rounded-xl bg-red-500/[0.03] border border-red-500/10 flex items-center justify-center text-red-500/40 hover:text-red-500 hover:bg-red-500/10 hover:border-red-500/30 transition-all"
-                          title="Excluir"
-                        >
-                          <Trash size={18} weight="bold" />
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
           </div>
-        </div>
-
-        <div className="mt-8 sm:mt-12 p-6 bg-[#0a0a0a] dark:bg-white/5 rounded-[28px] border border-white/10 flex items-center gap-4">
-          <div className="h-10 w-10 rounded-full bg-[#9EEA6C]/10 flex items-center justify-center text-[#9EEA6C]">
-            <Info size={20} weight="bold" />
-          </div>
-          <div>
-            <p className="text-[13px] font-heading font-black text-white uppercase tracking-tight leading-none">Produtos do Catálogo</p>
-            <p className="text-[11px] text-white/40 font-medium mt-1">Produtos cadastrados aqui aparecem como opções rápidas ao criar uma nova cobrança.</p>
-          </div>
-        </div>
+        </section>
       </div>
-    </Shell>
+
+      <nav className="fixed inset-x-0 bottom-0 z-50 border-t border-[#fecdd3] bg-white/92 px-3 pb-[calc(env(safe-area-inset-bottom)+0.7rem)] pt-2 shadow-[0_-18px_45px_rgba(136,19,55,0.08)] backdrop-blur-xl lg:hidden">
+        <div className="mx-auto grid max-w-md grid-cols-3 gap-2">
+          {[
+            { key: "dashboard" as const, label: "Dashboard", Icon: PanelIcon, path: "/dashboard" },
+            { key: "produtos" as const, label: "Produtos", Icon: ProductIcon, path: "/produtos" },
+            { key: "perfil" as const, label: "Meu perfil", Icon: UserIcon, path: "/configuracoes" },
+          ].map(({ key, label, Icon, path }) => (
+            <Link
+              key={key}
+              to={path}
+              className={`flex flex-col items-center justify-center gap-1 rounded-2xl px-2 py-2.5 text-[11px] font-semibold transition ${
+                tab === key ? "bg-[#e11d48] text-white shadow-[0_10px_24px_rgba(225,29,72,0.24)]" : "text-[#881337] hover:bg-[#fff1f2]"
+              }`}
+            >
+              <Icon className="h-5 w-5" />
+              <span>{label}</span>
+            </Link>
+          ))}
+        </div>
+      </nav>
+    </main>
   );
 }

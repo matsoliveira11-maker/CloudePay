@@ -2,53 +2,63 @@ import { Link } from "react-router-dom";
 
 interface Props {
   size?: "sm" | "md" | "lg";
-  variant?: "default" | "white" | "black";
+  variant?: "dark" | "light";
   asLink?: boolean;
   iconOnly?: boolean;
 }
 
-export default function Logo({ size = "md", variant = "default", asLink = false, iconOnly = false }: Props) {
-  const isWhite = variant === "white";
-  const isBlack = variant === "black";
-
-  const textSizes = { sm: "text-[18px]", md: "text-[22px]", lg: "text-[28px]" }[size];
-  const iconSizes = { sm: 22, md: 26, lg: 32 }[size];
-
+export default function Logo({ size = "md", variant = "dark", asLink = false, iconOnly = false }: Props) {
+  const textColor = variant === "light" ? "text-white" : "text-[#4c0519]";
+  const scale = { sm: "scale-75", md: "scale-100", lg: "scale-125" }[size];
+  
   const content = (
-    <span className="inline-flex items-center gap-2">
-      <CloudSymbol size={iconSizes} white={isWhite} black={isBlack} />
-      {iconOnly ? null : (
-        <span className={`font-heading font-extrabold tracking-tighter ${textSizes}`}>
-          <span className={isWhite ? "text-white" : isBlack ? "text-black" : "text-link-blue"}>Cloude</span>
-          <span className={isWhite ? "text-white/90" : isBlack ? "text-black" : "text-node-violet"}>Pay</span>
+    <div className={`flex items-center gap-2.5 origin-left ${scale}`}>
+      <span className="logo-mark relative inline-flex h-9 w-9 items-center justify-center">
+        <svg viewBox="0 0 40 40" className="h-9 w-9" aria-hidden="true">
+          <defs>
+            <linearGradient id="logoGrad" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0%" stopColor="#fb7185" />
+              <stop offset="55%" stopColor="#e11d48" />
+              <stop offset="100%" stopColor="#881337" />
+            </linearGradient>
+            <linearGradient id="logoGloss" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor="#ffffff" stopOpacity="0.55" />
+              <stop offset="60%" stopColor="#ffffff" stopOpacity="0" />
+            </linearGradient>
+          </defs>
+          <path
+            d="M20 2.4c2.7 0 4.5 2.4 7.4 3.5 2.9 1.1 6.4.3 8 2.4 1.6 2.1.3 5.4 1.4 8.3 1.1 2.9 4.3 4.6 4.3 7.4 0 2.7-3.2 4.5-4.3 7.4-1.1 2.9.2 6.2-1.4 8.3-1.6 2.1-5.1 1.3-8 2.4-2.9 1.1-4.7 3.5-7.4 3.5s-4.5-2.4-7.4-3.5c-2.9-1.1-6.4-.3-8-2.4-1.6-2.1-.3-5.4-1.4-8.3C2.1 28.5-1 26.7-1 24c0-2.7 3.2-4.5 4.3-7.4 1.1-2.9-.2-6.2 1.4-8.3 1.6-2.1 5.1-1.3 8-2.4C15.5 4.8 17.3 2.4 20 2.4Z"
+            fill="url(#logoGrad)"
+            transform="translate(0 -2)"
+          />
+          <path
+            d="M14.5 16.8c1.5-2.6 4.4-4.3 7.6-4.3 4.9 0 8.9 3.9 8.9 8.7 0 4.9-4 8.7-8.9 8.7-3.2 0-6.1-1.6-7.6-4.3"
+            stroke="#fff"
+            strokeWidth="2.6"
+            strokeLinecap="round"
+            fill="none"
+          />
+          <circle cx="14.4" cy="21.2" r="2.2" fill="#fff" />
+          <path
+            d="M2 6c4 1 8 5 9 10"
+            stroke="url(#logoGloss)"
+            strokeWidth="2"
+            strokeLinecap="round"
+            fill="none"
+          />
+        </svg>
+      </span>
+      {!iconOnly && (
+        <span className={`text-xl font-semibold tracking-[-0.045em] ${textColor}`}>
+          Cloude<span className="text-[#e11d48]">Pay</span>
         </span>
       )}
-    </span>
+    </div>
   );
 
   if (asLink) {
-    return <Link to="/" className="inline-block transition-transform hover:scale-[1.02] active:scale-[0.98]">{content}</Link>;
+    return <Link to="/">{content}</Link>;
   }
 
   return content;
-}
-
-function CloudSymbol({ size = 26, white = false, black = false }: { size?: number; white?: boolean; black?: boolean }) {
-  const cloud = white ? "#ffffff" : black ? "#0a0a0a" : "#3B82F6";
-
-  return (
-    <svg
-      width={size}
-      height={size}
-      viewBox="0 0 42 30"
-      fill="none"
-      xmlns="http://www.w3.org/2000/svg"
-      aria-hidden
-    >
-      <path
-        d="M13.5 24.5H30.5C35.7467 24.5 40 20.2467 40 15C40 9.75329 35.7467 5.5 30.5 5.5C29.7708 5.5 29.0618 5.58217 28.3812 5.73775C26.6996 2.36391 23.2068 0 19.15 0C13.8932 0 9.58 3.98287 9.06 9.1C8.07265 8.40852 6.87199 8 5.575 8C2.49626 8 0 10.4963 0 13.575C0 16.6537 2.49626 19.15 5.575 19.15H6.5C7.28756 22.2092 10.0666 24.5 13.5 24.5Z"
-        fill={cloud}
-      />
-    </svg>
-  );
 }
