@@ -178,9 +178,17 @@ export async function createCharge(input: {
     }
   });
 
-  if (functionError || !data) {
+  if (functionError) {
+    // Tentar extrair a mensagem de erro do corpo da resposta, se disponível
+    let errorMsg = "Erro no servidor de pagamentos.";
+    try {
+      const body = await functionError.context?.json();
+      errorMsg = body?.error || body?.message || functionError.message;
+    } catch {
+      errorMsg = functionError.message;
+    }
     console.error("[Edge Function Error]", functionError);
-    throw new Error(functionError?.message || "Erro ao processar pagamento no servidor.");
+    throw new Error(errorMsg);
   }
 
   return data as Charge;
