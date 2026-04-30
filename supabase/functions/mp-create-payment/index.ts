@@ -74,7 +74,7 @@ serve(async (req) => {
           last_name: lastName,
           identification: {
             type: "CPF",
-            number: payer_cpf.replace(/\D/g, "")
+            number: (payer_cpf || "00000000000").replace(/\D/g, "")
           }
         },
         additional_info: {
