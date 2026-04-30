@@ -810,7 +810,12 @@ function Footer({ onShowManifest }: { onShowManifest: () => void }) {
           Feito com carinho pra quem trabalha por conta própria. - © 2026 CloudePay
         </p>
         <p className="mt-2 text-[10px] uppercase tracking-widest text-[#881337]/50 font-bold">
-          por <button onClick={onShowManifest} className="hover:text-[#e11d48] transition-colors">Havigah Umbrella</button>
+          por <span 
+                onClick={(e) => { e.preventDefault(); e.stopPropagation(); onShowManifest(); }} 
+                className="hover:text-[#e11d48] transition-colors cursor-pointer underline underline-offset-2 decoration-[#fecdd3]"
+              >
+                Havigah Umbrella
+              </span>
         </p>
       </div>
     </footer>
