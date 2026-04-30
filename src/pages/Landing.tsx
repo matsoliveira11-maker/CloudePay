@@ -694,18 +694,49 @@ function Footer() {
       <div className="grid gap-9 px-5 py-14 sm:px-7 md:grid-cols-5 md:px-20 md:py-20">
         <div>
           <h4 className="mb-5 text-sm font-semibold text-[#4c0519]">Conta</h4>
-          <a className="mb-3 block text-[#881337]" href="/entrar">Criar conta grátis</a>
-          <a className="block text-[#881337]" href="/entrar">Acessar plataforma</a>
+          <a className="mb-3 block text-sm text-[#881337] hover:text-[#e11d48] transition-colors" href="/entrar">Criar conta grátis</a>
+          <a className="block text-sm text-[#881337] hover:text-[#e11d48] transition-colors" href="/entrar">Acessar plataforma</a>
         </div>
         <div>
           <h4 className="mb-5 text-sm font-semibold text-[#4c0519]">Suporte</h4>
-          <a className="mb-3 block text-[#881337]" href="#">ajuda@cloudepay.com.br</a>
-          <a className="block text-[#881337]" href="#">WhatsApp</a>
+          <a className="mb-3 block text-sm text-[#881337] hover:text-[#e11d48] transition-colors" href="mailto:ajuda@cloudepay.com.br">ajuda@cloudepay.com.br</a>
+          <a className="mb-3 block text-sm text-[#881337] hover:text-[#e11d48] transition-colors" href="#">WhatsApp</a>
+          <a className="block text-sm text-[#881337] hover:text-[#e11d48] transition-colors" href="#">Central de ajuda</a>
         </div>
-        <div className="md:col-span-2">
+        <div>
+          <h4 className="mb-5 text-sm font-semibold text-[#4c0519]">Produto</h4>
+          <a className="mb-3 block text-sm text-[#881337] hover:text-[#e11d48] transition-colors" href="#">Link de cobrança</a>
+          <a className="mb-3 block text-sm text-[#881337] hover:text-[#e11d48] transition-colors" href="#">PIX automático</a>
+          <a className="mb-3 block text-sm text-[#881337] hover:text-[#e11d48] transition-colors" href="#">Card visual</a>
+          <a className="mb-3 block text-sm text-[#881337] hover:text-[#e11d48] transition-colors" href="#">Painel completo</a>
+          <a className="block text-sm text-[#881337] hover:text-[#e11d48] transition-colors" href="#">Comprovante automático</a>
+        </div>
+        <div>
+          <h4 className="mb-5 text-sm font-semibold text-[#4c0519]">Site</h4>
+          <a className="mb-3 block text-sm text-[#881337] hover:text-[#e11d48] transition-colors" href="#suite">Para quem é</a>
+          <a className="mb-3 block text-sm text-[#881337] hover:text-[#e11d48] transition-colors" href="#feature-strip">Como funciona</a>
+          <a className="mb-3 block text-sm text-[#881337] hover:text-[#e11d48] transition-colors" href="#pricing">Taxas</a>
+          <a className="mb-3 block text-sm text-[#881337] hover:text-[#e11d48] transition-colors" href="#faq">FAQ</a>
+          <a className="mb-3 block text-sm text-[#881337] hover:text-[#e11d48] transition-colors" href="#">Termos de uso</a>
+          <a className="block text-sm text-[#881337] hover:text-[#e11d48] transition-colors" href="#">Privacidade</a>
+        </div>
+        <div>
+          <h4 className="mb-5 text-sm font-semibold text-[#4c0519]">CloudePay</h4>
+          <p className="text-sm leading-6 text-[#881337]">
+            A forma mais simples do autônomo brasileiro receber por PIX. Sem CNPJ, sem mensalidade, sem maquininha.
+          </p>
+        </div>
+      </div>
+      <div className="border-t border-[#fecdd3]/50 px-5 py-10 text-center sm:px-7 md:px-20">
+        <div className="flex justify-center mb-6">
           <Logo />
-          <p className="mt-7 text-sm text-[#881337]">Feito com carinho pra quem trabalha por conta própria. · © 2026 CloudePay</p>
         </div>
+        <p className="text-xs font-medium text-[#881337]">
+          Feito com carinho pra quem trabalha por conta própria. - © 2026 CloudePay
+        </p>
+        <p className="mt-2 text-[10px] uppercase tracking-widest text-[#881337]/50 font-bold">
+          por Havigah Umbrella
+        </p>
       </div>
     </footer>
   );
