@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect, useMemo } from "react";
 
 function Logo({ centered = false, variant = "dark" }: { centered?: boolean; variant?: "dark" | "light" }) {
   const textColor = variant === "light" ? "text-white" : "text-[#4c0519]";

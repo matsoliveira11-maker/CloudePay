@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 
 // --- Icons ---
@@ -64,7 +64,6 @@ const tourSteps: TourStep[] = [
 export default function OnboardingTour() {
   const { profile, needsOnboarding, onboardingStep, updateOnboarding } = useAuth();
   const navigate = useNavigate();
-  const location = useLocation();
 
   const [isOpen, setIsOpen] = useState(false);
   const [currentStep, setCurrentStep] = useState(0);

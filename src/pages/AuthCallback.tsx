@@ -114,7 +114,7 @@ export default function AuthCallback() {
   return (
     <div className="min-h-screen bg-[#fffafa] text-[#4c0519] antialiased page-grid flex items-center justify-center p-4">
       <div className="w-full max-w-md bg-white border border-[#fecdd3] rounded-[2.5rem] p-12 text-center shadow-[0_32px_80px_rgba(76,5,25,0.12)]">
-        <Logo className="mx-auto mb-8" />
+        <Logo variant="dark" />
 
         {status === "loading" && (
           <>

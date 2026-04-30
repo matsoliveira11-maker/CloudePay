@@ -195,7 +195,7 @@ export default function Admin() {
                 <div className="w-full max-w-sm">
                     <div className="mb-12 text-center animate-in fade-in slide-in-from-top-8 duration-700">
                         <div className="mx-auto w-16 h-16 rounded-2xl bg-white/[0.03] border border-white/10 flex items-center justify-center mb-6">
-                            <Logo size="md" variant="white" iconOnly />
+                            <Logo variant="light" />
                         </div>
                         <h1 className="text-3xl font-heading font-black text-white mb-2 tracking-tight">Cofre de Fundadores</h1>
                         <p className="text-neutral-500 text-sm">Autenticação de nível 01 requerida para prosseguir.</p>
@@ -319,7 +319,7 @@ export default function Admin() {
             <div className="relative z-30 flex items-center justify-between px-4 py-3 sm:px-6">
                 <div className="flex items-center gap-3">
                     <div className="rounded-xl border border-white/10 bg-white/[0.04] p-1.5 backdrop-blur">
-                        <Logo size="sm" variant="white" />
+                        <Logo variant="light" />
                     </div>
                     <div className="hidden items-center gap-2 rounded-full border border-white/10 bg-white/[0.04] px-3 py-1.5 font-body text-xs text-white/60 backdrop-blur sm:flex">
                         <Lock size={13} weight="duotone" />
@@ -560,7 +560,7 @@ function Taskbar({
                         }`}
                 >
                     <div className={startActive ? "brightness-0" : ""}>
-                        <Logo size="sm" variant="white" iconOnly />
+                        <Logo variant="light" />
                     </div>
                 </button>
                 <div className="mx-1 hidden h-7 w-px shrink-0 bg-white/[0.08] sm:block" />

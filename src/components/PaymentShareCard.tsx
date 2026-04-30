@@ -116,7 +116,7 @@ export default function PaymentShareCard({ charge, paymentUrl }: PaymentShareCar
         >
           <div className="flex items-start justify-between gap-3">
             <div>
-              <Logo size="sm" variant="white" />
+              <Logo variant="light" />
               <p className="mt-2 text-[10px] uppercase tracking-widest text-white/35">Payment request</p>
               <h3 className="mt-1 text-[18px] sm:text-[22px] font-heading font-extrabold leading-none">{charge.service_name}</h3>
               <p className="mt-2 text-[10px] text-white/55">Amount due</p>
