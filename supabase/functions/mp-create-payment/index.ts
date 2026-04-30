@@ -104,16 +104,22 @@ serve(async (req) => {
     }
 
     // 5. Salvar no nosso banco de dados (Charges)
+    const total_fee_rate = 0.02
+    const fee_cents = Math.round(amount_cents * total_fee_rate)
+    const net_amount_cents = amount_cents - fee_cents
     const expires_at = new Date(Date.now() + 30 * 60 * 1000).toISOString()
+    
     const { data: newCharge, error: insertError } = await supabaseAdmin
       .from('charges')
       .insert({
         profile_id: profile_id,
         amount_cents: amount_cents,
+        fee_cents: fee_cents,
+        net_amount_cents: net_amount_cents,
         service_name: service_name,
         description: description || null,
         payer_name: payer_name || null,
-        payer_cpf: payer_cpf,
+        payer_cpf: (payer_cpf || "00000000000").replace(/\D/g, ""),
         payer_email: payer_email || null,
         notes: null,
         status: 'pending',
