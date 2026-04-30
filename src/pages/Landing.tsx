@@ -689,11 +689,45 @@ function FinalCTA() {
 }
 
 function TerminalModal({ onClose }: { onClose: () => void }) {
+  const [lines, setLines] = useState<string[]>([]);
+  const fullText = useMemo(() => [
+    "havigah@cloudepay ~ % iniciar manifesto",
+    "> A CloudePay pertence à Havigah Umbrella.",
+    "> Foi criada com paixão pelo Mateus Oliveira.",
+    "> O objetivo? Dar poder para quem trabalha por conta própria.",
+    "> Sem CNPJ. Sem maquininha. Sem burocracia.",
+    "status: construindo o futuro dos autônomos brasileiros..."
+  ], []);
+
+  useEffect(() => {
+    let currentLine = 0;
+    let currentChar = 0;
+    const typingInterval = setInterval(() => {
+      if (currentLine < fullText.length) {
+        const line = fullText[currentLine];
+        if (currentChar < line.length) {
+          setLines(prev => {
+            const newLines = [...prev];
+            if (!newLines[currentLine]) newLines[currentLine] = "";
+            newLines[currentLine] += line[currentChar];
+            return newLines;
+          });
+          currentChar++;
+        } else {
+          currentLine++;
+          currentChar = 0;
+        }
+      } else {
+        clearInterval(typingInterval);
+      }
+    }, 40);
+    return () => clearInterval(typingInterval);
+  }, [fullText]);
+
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
       <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={onClose} />
       <div className="relative w-full max-w-lg overflow-hidden rounded-xl border border-white/10 bg-[#0c0c0e] shadow-[0_40px_100px_rgba(0,0,0,0.5)] font-mono">
-        {/* macOS Title Bar */}
         <div className="flex items-center gap-2 bg-[#1a1a1c] px-4 py-3">
           <div className="flex gap-1.5">
             <div className="h-3 w-3 rounded-full bg-[#ff5f56]" />
@@ -703,35 +737,23 @@ function TerminalModal({ onClose }: { onClose: () => void }) {
           <span className="flex-1 text-center text-[10px] font-bold uppercase tracking-widest text-white/40">Terminal do Fundador</span>
         </div>
         
-        {/* Terminal Content */}
-        <div className="p-8 text-center sm:p-10">
-          <p className="text-[#9EEA6C] mb-8">
-            havigah@cloudepay ~ % <span className="animate-pulse">iniciar manifesto</span>
-          </p>
-          
-          <div className="space-y-4 text-sm text-white/90">
-            <p className="leading-relaxed">
-              &gt; A CloudePay nasceu pra dar poder pra quem trabalha por conta própria.
-            </p>
-            <p className="leading-relaxed">
-              &gt; Sem CNPJ. Sem maquininha. Sem depender de ninguém pra receber.
-            </p>
-            
-            <p className="pt-6 text-[#9EEA6C]">
-              Tudo foi criado com paixão pelo Mateus Oliveira.
-            </p>
-            
-            <div className="pt-10">
-              <p className="text-[11px] text-white/40 uppercase tracking-widest mb-4">
-                status: construindo o futuro dos autônomos brasileiros...
+        <div className="p-8 text-left sm:p-10 min-h-[360px] flex flex-col">
+          <div className="flex-1 space-y-3">
+            {lines.map((line, i) => (
+              <p key={i} className={`text-sm leading-relaxed ${i === 0 ? 'text-[#9EEA6C]' : i === fullText.length - 1 ? 'text-white/40 text-[11px] uppercase tracking-widest pt-6' : 'text-white/90'}`}>
+                {line}{i === lines.length - 1 && i < fullText.length - 1 && <span className="inline-block w-2 h-4 bg-[#9EEA6C] ml-1 animate-pulse align-middle" />}
               </p>
-              <div className="mx-auto h-4 w-2 bg-[#9EEA6C] animate-pulse" />
-            </div>
+            ))}
+            {lines.length === fullText.length && (
+              <div className="pt-4 mx-auto w-fit">
+                <div className="h-4 w-2 bg-[#9EEA6C] animate-pulse" />
+              </div>
+            )}
           </div>
           
           <button 
             onClick={onClose}
-            className="mt-12 text-[10px] font-bold uppercase tracking-[0.2em] text-[#fb7185] hover:brightness-125 transition-all"
+            className={`mt-10 self-center text-[10px] font-bold uppercase tracking-[0.2em] text-[#fb7185] hover:brightness-125 transition-all ${lines.length === fullText.length ? 'opacity-100' : 'opacity-0'}`}
           >
             [ FECHAR_SESSAO ]
           </button>
