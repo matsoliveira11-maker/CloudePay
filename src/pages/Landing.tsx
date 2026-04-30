@@ -688,7 +688,60 @@ function FinalCTA() {
   );
 }
 
-function Footer() {
+function TerminalModal({ onClose }: { onClose: () => void }) {
+  return (
+    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+      <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={onClose} />
+      <div className="relative w-full max-w-lg overflow-hidden rounded-xl border border-white/10 bg-[#0c0c0e] shadow-[0_40px_100px_rgba(0,0,0,0.5)] font-mono">
+        {/* macOS Title Bar */}
+        <div className="flex items-center gap-2 bg-[#1a1a1c] px-4 py-3">
+          <div className="flex gap-1.5">
+            <div className="h-3 w-3 rounded-full bg-[#ff5f56]" />
+            <div className="h-3 w-3 rounded-full bg-[#ffbd2e]" />
+            <div className="h-3 w-3 rounded-full bg-[#27c93f]" />
+          </div>
+          <span className="flex-1 text-center text-[10px] font-bold uppercase tracking-widest text-white/40">Terminal do Fundador</span>
+        </div>
+        
+        {/* Terminal Content */}
+        <div className="p-8 text-center sm:p-10">
+          <p className="text-[#9EEA6C] mb-8">
+            havigah@cloudepay ~ % <span className="animate-pulse">iniciar manifesto</span>
+          </p>
+          
+          <div className="space-y-4 text-sm text-white/90">
+            <p className="leading-relaxed">
+              &gt; A CloudePay nasceu pra dar poder pra quem trabalha por conta própria.
+            </p>
+            <p className="leading-relaxed">
+              &gt; Sem CNPJ. Sem maquininha. Sem depender de ninguém pra receber.
+            </p>
+            
+            <p className="pt-6 text-[#9EEA6C]">
+              Tudo foi criado com paixão pelo Mateus Oliveira.
+            </p>
+            
+            <div className="pt-10">
+              <p className="text-[11px] text-white/40 uppercase tracking-widest mb-4">
+                status: construindo o futuro dos autônomos brasileiros...
+              </p>
+              <div className="mx-auto h-4 w-2 bg-[#9EEA6C] animate-pulse" />
+            </div>
+          </div>
+          
+          <button 
+            onClick={onClose}
+            className="mt-12 text-[10px] font-bold uppercase tracking-[0.2em] text-[#fb7185] hover:brightness-125 transition-all"
+          >
+            [ FECHAR_SESSAO ]
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function Footer({ onShowManifest }: { onShowManifest: () => void }) {
   return (
     <footer className="section-frame border-t border-[#fecdd3]">
       <div className="grid gap-9 px-5 py-14 sm:px-7 md:grid-cols-5 md:px-20 md:py-20">
@@ -735,7 +788,7 @@ function Footer() {
           Feito com carinho pra quem trabalha por conta própria. - © 2026 CloudePay
         </p>
         <p className="mt-2 text-[10px] uppercase tracking-widest text-[#881337]/50 font-bold">
-          por Havigah Umbrella
+          por <button onClick={onShowManifest} className="hover:text-[#e11d48] transition-colors">Havigah Umbrella</button>
         </p>
       </div>
     </footer>
@@ -743,6 +796,8 @@ function Footer() {
 }
 
 export default function Landing() {
+  const [showManifest, setShowManifest] = useState(false);
+
   return (
     <div className="min-h-screen bg-white text-[#4c0519] antialiased page-grid">
       <Header />
@@ -759,7 +814,8 @@ export default function Landing() {
         <FAQ />
         <FinalCTA />
       </main>
-      <Footer />
+      <Footer onShowManifest={() => setShowManifest(true)} />
+      {showManifest && <TerminalModal onClose={() => setShowManifest(false)} />}
       <a href="/entrar" aria-label="Acessar plataforma" className="fixed bottom-4 right-4 z-50 flex h-12 w-12 items-center justify-center rounded-full bg-[#e11d48] text-[#fff] shadow-[0_12px_30px_rgba(225,29,72,0.32)] transition hover:scale-105 sm:bottom-7 sm:right-7 sm:h-14 sm:w-14 sm:shadow-[0_15px_40px_rgba(225,29,72,0.38)]">
         <ArrowIcon />
       </a>
