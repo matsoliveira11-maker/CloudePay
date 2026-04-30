@@ -571,8 +571,7 @@ function CreateChargeFlowModal({
     setLoading(true);
     setErrors({});
     try {
-      const mp = (window as any).MercadoPago ? new (window as any).MercadoPago((import.meta as any).env.VITE_MP_PUBLIC_KEY || "APP_USR-8117604469613238") : null;
-      const deviceId = mp ? mp.getDeviceFingerprint() : undefined;
+      const deviceId = (window as any).MPDeviceSessionId;
 
       const charge = await api.createChargeFromProduct({
         profile_id: profile.id,
@@ -610,8 +609,7 @@ function CreateChargeFlowModal({
 
     setLoading(true);
     try {
-      const mp = (window as any).MercadoPago ? new (window as any).MercadoPago((import.meta as any).env.VITE_MP_PUBLIC_KEY || "APP_USR-8117604469613238") : null;
-      const deviceId = mp ? mp.getDeviceFingerprint() : undefined;
+      const deviceId = (window as any).MPDeviceSessionId;
 
       const charge = await api.createCharge({
         profile_id: profile.id,
