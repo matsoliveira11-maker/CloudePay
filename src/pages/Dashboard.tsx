@@ -514,7 +514,6 @@ function CreateChargeFlowModal({
   const [serviceName, setServiceName] = useState("");
   const [payerName, setPayerName] = useState("");
   const [notes] = useState("");
-  const [errors, setErrors] = useState<Record<string, string>>({});
 
   useEffect(() => {
     if (!profile) return;
@@ -547,7 +546,7 @@ function CreateChargeFlowModal({
       });
       onCreated(charge);
     } catch (error: any) {
-      setErrors({ general: error.message });
+      console.error(error);
     } finally {
       setLoading(false);
     }
@@ -571,7 +570,7 @@ function CreateChargeFlowModal({
       });
       onCreated(charge);
     } catch (error: any) {
-      setErrors({ general: error.message });
+      console.error(error);
     } finally {
       setLoading(false);
     }

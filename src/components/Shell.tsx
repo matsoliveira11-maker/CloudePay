@@ -95,7 +95,7 @@ export default function Shell({ children, onNewCharge }: ShellProps) {
       {/* --- SIDEBAR (RIGHT) --- */}
       <aside id="tour-profile" className="hidden lg:flex w-[260px] xl:w-[280px] flex-col bg-[#0a0a0a] text-white p-5 xl:p-6 shrink-0 border-l border-white/5 shadow-2xl relative z-50">
         <div className="mb-10">
-          <Logo variant="white" size="sm" />
+          <Logo variant="light" size="sm" />
           {!isAdminPath && (
             <>
               <p className="mt-3 text-[10px] leading-relaxed text-white/40 font-body font-medium">
@@ -182,12 +182,7 @@ export default function Shell({ children, onNewCharge }: ShellProps) {
         <header className={`sticky top-0 z-40 backdrop-blur-xl px-4 sm:px-6 lg:px-8 py-3 sm:py-4 ${isAdminPath ? 'bg-[#060606]/80 border-b border-white/5' : 'bg-[#f8fafc]/80 dark:bg-[#060606]/80'}`}>
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4 sm:gap-6">
-              <div className="lg:hidden">
-                <Logo size="sm" variant={isAdminPath || theme === "dark" ? "white" : "black"} iconOnly />
-              </div>
-              <div className="hidden lg:flex h-8 w-8 items-center justify-center">
-                <Logo size="sm" variant={isAdminPath || theme === "dark" ? "white" : "black"} iconOnly />
-              </div>
+                <Logo size="sm" variant={isAdminPath || theme === "dark" ? "light" : "dark"} iconOnly />
               {isAdminPath && (
                 <div className="flex items-center gap-2">
                   <div className="h-2 w-2 rounded-full bg-[#9EEA6C] animate-pulse shadow-[0_0_8px_#9EEA6C]" />

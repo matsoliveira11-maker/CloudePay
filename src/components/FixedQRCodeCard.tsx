@@ -100,7 +100,7 @@ export default function FixedQRCodeCard({
                 >
                   <div className="grid grid-cols-[1fr_auto] items-center gap-6 sm:gap-8">
                     <div className="min-w-0">
-                      <Logo size="sm" variant="white" />
+                      <Logo size="sm" variant="light" />
                       <div className="mt-5 sm:mt-8 space-y-5">
                         <div className="min-w-0">
                           <p className="text-[8px] sm:text-[9px] uppercase tracking-[0.2em] text-white/35 font-bold">Link Permanente</p>
