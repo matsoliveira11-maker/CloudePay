@@ -194,6 +194,7 @@ export default function Signup() {
                 <Field label="Nome completo" id="nome">
                   <input
                     id="nome"
+                    name="nome"
                     type="text"
                     autoComplete="name"
                     required
@@ -205,6 +206,7 @@ export default function Signup() {
                 <Field label="Email" id="email">
                   <input
                     id="email"
+                    name="email"
                     type="email"
                     autoComplete="email"
                     required
@@ -216,6 +218,7 @@ export default function Signup() {
                 <Field label="CPF" id="cpf" hint="Sem CNPJ, é com seu CPF mesmo.">
                   <input
                     id="cpf"
+                    name="cpf"
                     type="text"
                     inputMode="numeric"
                     required
@@ -232,6 +235,7 @@ export default function Signup() {
                   <div className="relative">
                     <input
                       id="senha"
+                      name="senha"
                       type={showPassword ? "text" : "password"}
                       autoComplete="new-password"
                       required

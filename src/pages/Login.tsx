@@ -204,6 +204,7 @@ export default function Login() {
                 <Field label="Email" id="email">
                   <input
                     id="email"
+                    name="email"
                     type="email"
                     autoComplete="email"
                     required
@@ -216,6 +217,7 @@ export default function Login() {
                   <div className="relative">
                     <input
                       id="senha"
+                      name="senha"
                       type={showPassword ? "text" : "password"}
                       autoComplete="current-password"
                       required
