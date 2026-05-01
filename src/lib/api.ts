@@ -286,19 +286,31 @@ export async function simulatePayment(charge_id: string) {
   }
 }
 
-export async function getMonthTotalCents(profile_id: string): Promise<number> {
-  const now = new Date();
-  const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
-
+export async function getMonthTotalCents(profile_id: string): Promise<{ net: number; gross: number }> {
+  // Busca TODAS as cobranças pagas do perfil (sem filtro de data no banco)
+  // pois paid_at pode ser NULL em algumas cobranças mais antigas
   const { data, error } = await supabase
     .from('charges')
-    .select('net_amount_cents')
+    .select('net_amount_cents, amount_cents, fee_cents, paid_at, created_at, status')
     .eq('profile_id', profile_id)
-    .eq('status', 'paid')
-    .gte('paid_at', startOfMonth);
+    .eq('status', 'paid');
 
-  if (error || !data) return 0;
-  return data.reduce((sum, c) => sum + c.net_amount_cents, 0);
+  if (error || !data) return { net: 0, gross: 0 };
+
+  // Filtrar pelo mês atual no frontend (mais robusto que no banco)
+  const now = new Date();
+  const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+
+  const monthCharges = data.filter(c => {
+    // Usa paid_at se existir, senão created_at
+    const dateStr = c.paid_at || c.created_at;
+    if (!dateStr) return false;
+    return new Date(dateStr) >= startOfMonth;
+  });
+
+  const net = monthCharges.reduce((sum, c) => sum + (c.net_amount_cents || 0), 0);
+  const gross = monthCharges.reduce((sum, c) => sum + (c.amount_cents || 0), 0);
+  return { net, gross };
 }
 
 // ---------- PRODUCTS REAL ----------

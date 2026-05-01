@@ -17,7 +17,8 @@ import { MoneyIcon, ChargeIcon, FilterIcon, ArrowIcon, WhatsAppIcon, LinkIcon, P
 export default function Dashboard() {
   const { profile } = useAuth();
   const [charges, setCharges] = useState<Charge[]>([]);
-  const [monthTotal, setMonthTotal] = useState(0);
+  const [monthNet, setMonthNet] = useState(0);
+  const [monthGross, setMonthGross] = useState(0);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [createdCharge, setCreatedCharge] = useState<Charge | null>(null);
 
@@ -40,17 +41,13 @@ export default function Dashboard() {
 
   const reload = useCallback(async () => {
     if (!profile) return;
-    const [list] = await Promise.all([
+    const [list, totals] = await Promise.all([
       api.listChargesByProfile(profile.id),
+      api.getMonthTotalCents(profile.id),
     ]);
     setCharges(list);
-    // Calcular total do mês a partir dos dados reais (net_amount_cents já descontado pelo banco)
-    const now = new Date();
-    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
-    const monthNet = list
-      .filter(c => c.status === 'paid' && new Date(c.paid_at || c.created_at) >= startOfMonth)
-      .reduce((sum, c) => sum + (c.net_amount_cents || 0), 0);
-    setMonthTotal(monthNet);
+    setMonthNet(totals.net);
+    setMonthGross(totals.gross);
   }, [profile]);
 
   useEffect(() => {
@@ -76,12 +73,13 @@ export default function Dashboard() {
   const paidCharges = charges.filter((c) => c.status === "paid");
   const pendingCharges = charges.filter((c) => c.status === "pending");
 
-  // monthTotal já é o net_amount_cents (líquido real do banco)
-  const monthNetTotal = monthTotal;
-  // Bruto do mês para exibição secundária
-  const monthGrossTotal = paidCharges
-    .filter(c => { const now = new Date(); return new Date(c.paid_at || c.created_at) >= new Date(now.getFullYear(), now.getMonth(), 1); })
-    .reduce((sum, c) => sum + c.amount_cents, 0);
+  // Ticket médio: média do bruto de todas as cobranças pagas (todos os tempos)
+  const allTimePaidGross = paidCharges.reduce((sum, c) => sum + c.amount_cents, 0);
+  const avgTicket = paidCharges.length > 0 ? allTimePaidGross / paidCharges.length : 0;
+
+  // monthNet e monthGross vêm direto do banco via getMonthTotalCents
+  const monthNetTotal = monthNet;
+  const monthGrossTotal = monthGross;
 
   // Chart Logic (Simple approximation of inspiration chart)
   const chartDays = useMemo(() => {
@@ -125,7 +123,7 @@ export default function Dashboard() {
                   {[
                     { label: "Recebido no mês", value: formatBRL(monthNetTotal), note: "Líquido real após taxa", Icon: MoneyIcon },
                     { label: "Total de cobranças", value: charges.length.toString(), note: `${pendingCharges.length} pendente(s)`, Icon: ChargeIcon },
-                    { label: "Ticket médio", value: formatBRL(paidCharges.length > 0 ? (monthGrossTotal / paidCharges.length) : 0), note: "Somente pagamentos confirmados", Icon: PanelIcon },
+                    { label: "Ticket médio", value: formatBRL(avgTicket), note: `${paidCharges.length} pagamento(s) confirmado(s)`, Icon: PanelIcon },
                   ].map(({ label, value, note, Icon }) => (
                     <section key={label} className="rounded-3xl border border-[#fecdd3] bg-white p-4 shadow-[0_14px_36px_rgba(136,19,55,0.06)] sm:p-5 sm:shadow-[0_18px_50px_rgba(136,19,55,0.07)]">
                       <div className="mb-4 flex items-center justify-between sm:mb-5">
