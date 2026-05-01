@@ -68,6 +68,7 @@ serve(async (req) => {
       body: JSON.stringify({
         transaction_amount: amount_cents / 100,
         application_fee: fee_cents / 100, // <--- Aqui acontece o SPLIT
+        sponsor_id: 340296795,           // <--- Identificação da sua plataforma
         description: service_name || "Serviço CloudePay",
         external_reference: external_reference || `charge_${Date.now()}`,
         statement_descriptor: "CLOUDEPAY",
