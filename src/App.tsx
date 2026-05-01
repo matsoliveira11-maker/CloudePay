@@ -11,6 +11,7 @@ import Admin from "./pages/Admin";
 import PublicCharge from "./pages/PublicCharge";
 import FixedQRCode from "./pages/FixedQRCode";
 import AuthCallback from "./pages/AuthCallback";
+import ResetPassword from "./pages/ResetPassword";
 import OnboardingTour from "./components/OnboardingTour";
 
 import { ThemeProvider } from "./context/ThemeContext";
@@ -60,6 +61,9 @@ export default function App() {
 
           {/* Rota de retorno do Mercado Pago */}
           <Route path="/auth/callback" element={<AuthCallback />} />
+
+          {/* Rota de redefinição de senha via email */}
+          <Route path="/redefinir-senha" element={<ResetPassword />} />
 
           {/* Página pública de cobrança avulsa: /:slug/:chargeId */}
           <Route path=":slug/:chargeId" element={<PublicCharge />} />

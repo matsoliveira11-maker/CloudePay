@@ -105,7 +105,7 @@ export default function Login() {
     }
     const { supabase } = await import("../lib/supabase");
     const { error } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: `${window.location.origin}/#/redefinir-senha`,
+      redirectTo: `${window.location.origin}/redefinir-senha`,
     });
     if (!error) {
       setForgotSent(true);
