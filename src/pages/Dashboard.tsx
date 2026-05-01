@@ -456,24 +456,25 @@ export default function Dashboard() {
           <div className="w-full max-w-md rounded-3xl border border-[#fecdd3] bg-white p-5 shadow-[0_28px_90px_rgba(76,5,25,0.22)] sm:p-6">
             <div className="flex items-start justify-between gap-4">
               <div>
-                <span className="inline-flex items-center gap-2 rounded-full bg-[#fff1f2] px-3 py-1.5 text-xs font-semibold text-[#e11d48]">Suporte humano</span>
-                <h2 className="mt-4 text-3xl font-semibold tracking-[-0.06em] text-[#4c0519]">Como podemos ajudar?</h2>
-                <p className="mt-2 text-sm leading-6 text-[#881337]">Escolha um canal. Nosso time ajuda com conta, links de cobrança, pagamento pendente ou conexão com Mercado Pago.</p>
+                <span className="inline-flex items-center gap-2 rounded-full bg-[#fff1f2] px-3 py-1.5 text-xs font-semibold text-[#e11d48]">Suporte Direto</span>
+                <h2 className="mt-4 text-2xl font-semibold tracking-[-0.05em] text-[#4c0519]">Fale com o Fundador</h2>
+                <p className="mt-2 text-sm leading-6 text-[#881337]">Envie sua dúvida ou sugestão. Responderei o mais rápido possível.</p>
               </div>
               <button type="button" onClick={() => setSupportOpen(false)} className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#fff1f2] text-[#4c0519] transition hover:text-[#e11d48]">
                 <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none"><path d="m6 6 12 12M18 6 6 18" stroke="currentColor" strokeWidth="2" strokeLinecap="round" /></svg>
               </button>
             </div>
-            <div className="mt-6 grid gap-3">
-              <a href="#" className="flex items-center gap-3 rounded-2xl border border-[#fecdd3] bg-[#fffafa] p-4 text-[#4c0519] transition hover:border-[#e11d48]">
-                <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-[#e11d48] text-white"><WhatsAppIcon /></span>
-                <span><strong className="block">WhatsApp</strong><small className="text-[#881337]">Resposta rápida em dia útil</small></span>
-              </a>
-              <a href="#" className="flex items-center gap-3 rounded-2xl border border-[#fecdd3] bg-[#fffafa] p-4 text-[#4c0519] transition hover:border-[#e11d48]">
-                <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-[#fff1f2] text-[#e11d48]"><MailIcon /></span>
-                <span><strong className="block">Email</strong><small className="text-[#881337]">ajuda@cloudepay.com.br</small></span>
-              </a>
-            </div>
+            <form className="mt-6 space-y-4" onSubmit={(e) => { e.preventDefault(); alert("Mensagem enviada com sucesso! Entrarei em contato em breve."); setSupportOpen(false); }}>
+              <textarea 
+                className="w-full rounded-2xl border border-[#fecdd3] bg-[#fffafa] p-4 text-sm text-[#4c0519] outline-none transition focus:border-[#e11d48] focus:ring-1 focus:ring-[#e11d48]" 
+                rows={4} 
+                placeholder="Escreva sua mensagem aqui..." 
+                required 
+              />
+              <button type="submit" className="w-full rounded-2xl bg-[#e11d48] py-3.5 text-sm font-semibold text-white transition hover:bg-[#be123c]">
+                Enviar Mensagem
+              </button>
+            </form>
           </div>
         </div>
       )}
