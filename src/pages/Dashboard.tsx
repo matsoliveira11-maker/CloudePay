@@ -8,7 +8,7 @@ import { formatBRL, formatDateTime, maskBRLInput, parseBRLToCents } from "../lib
 import { sanitizeText } from "../lib/validators";
 import { X } from "phosphor-react";
 import Shell from "../components/Shell";
-import { MoneyIcon, ChargeIcon, FilterIcon, ArrowIcon, LinkIcon, PanelIcon } from "../components/Icons";
+import { MoneyIcon, ChargeIcon, FilterIcon, ArrowIcon, PanelIcon } from "../components/Icons";
 import toast from "react-hot-toast";
 import html2canvas from "html2canvas";
 import { useRef } from "react";
