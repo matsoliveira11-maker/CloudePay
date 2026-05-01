@@ -150,36 +150,39 @@ export default function SupportWidget({ isOpen, onClose }: SupportWidgetProps) {
       <div className="absolute inset-0" onClick={onClose} />
 
       {/* Widget */}
-      <div className="relative flex w-full max-w-md flex-col overflow-hidden rounded-3xl border border-[#fecdd3] bg-white shadow-[0_28px_90px_rgba(76,5,25,0.22)] sm:h-[560px]">
+      <div className="relative flex w-full max-w-md flex-col overflow-hidden rounded-[2.5rem] border border-[#fecdd3] bg-white shadow-[0_32px_100px_-20px_rgba(76,5,25,0.25)] sm:h-[620px]">
 
         {/* Header */}
-        <div className="flex items-center justify-between border-b border-[#fecdd3] bg-[#fff5f5] px-5 py-4">
-          <div className="flex items-center gap-3">
+        <div className="flex items-center justify-between border-b border-[#fecdd3] bg-gradient-to-br from-[#fffafa] to-[#fff1f2] px-6 py-5">
+          <div className="flex items-center gap-4">
             {selectedTicket && (
               <button
                 onClick={() => setSelectedTicket(null)}
-                className="flex h-8 w-8 items-center justify-center rounded-full border border-[#fecdd3] bg-white text-[#881337] transition hover:bg-[#fff1f2]"
+                className="flex h-9 w-9 items-center justify-center rounded-full border border-[#fecdd3] bg-white text-[#881337] shadow-sm transition hover:bg-[#fff1f2] hover:scale-105 active:scale-95"
               >
                 <ChevronLeft />
               </button>
             )}
-            <div className="flex h-9 w-9 items-center justify-center rounded-2xl bg-[#fff1f2] text-[#e11d48]">
+            <div className="flex h-11 w-11 items-center justify-center rounded-[1.2rem] bg-[#e11d48] text-white shadow-[0_8px_16px_rgba(225,29,72,0.25)]">
               <HeadsetIcon />
             </div>
             <div>
-              <h2 className="text-sm font-semibold text-[#4c0519]">
-                {selectedTicket ? selectedTicket.subject : isCreating ? "Novo Chamado" : "Suporte CloudePay"}
+              <h2 className="text-base font-bold tracking-tight text-[#4c0519]">
+                {selectedTicket ? selectedTicket.subject : isCreating ? "Novo Chamado" : "Suporte VIP"}
               </h2>
-              <p className="text-xs text-[#881337]">
-                {selectedTicket
-                  ? `Status: ${selectedTicket.status === "open" ? "Aberto" : "Encerrado"}`
-                  : "Respondemos o mais rápido possível"}
-              </p>
+              <div className="flex items-center gap-1.5">
+                <span className="h-2 w-2 animate-pulse rounded-full bg-[#10b981]" />
+                <p className="text-[11px] font-medium text-[#881337]">
+                  {selectedTicket
+                    ? `Chamado #${selectedTicket.id.slice(-4).toUpperCase()} · ${selectedTicket.status === "open" ? "Aberto" : "Encerrado"}`
+                    : "Time online · Resposta em minutos"}
+                </p>
+              </div>
             </div>
           </div>
           <button
             onClick={onClose}
-            className="flex h-8 w-8 items-center justify-center rounded-full border border-[#fecdd3] bg-white text-[#881337] transition hover:bg-[#fff1f2] hover:text-[#e11d48]"
+            className="flex h-9 w-9 items-center justify-center rounded-full border border-[#fecdd3] bg-white text-[#881337] shadow-sm transition hover:bg-[#fff1f2] hover:text-[#e11d48] hover:rotate-90"
           >
             <CloseIcon />
           </button>

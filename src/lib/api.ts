@@ -286,31 +286,50 @@ export async function simulatePayment(charge_id: string) {
   }
 }
 
-export async function getMonthTotalCents(profile_id: string): Promise<{ net: number; gross: number }> {
-  // Busca TODAS as cobranças pagas do perfil (sem filtro de data no banco)
-  // pois paid_at pode ser NULL em algumas cobranças mais antigas
+export async function getDashboardStats(profile_id: string): Promise<{ 
+  monthNet: number; 
+  monthGross: number;
+  totalNet: number;
+  totalGross: number;
+}> {
   const { data, error } = await supabase
     .from('charges')
-    .select('net_amount_cents, amount_cents, fee_cents, paid_at, created_at, status')
+    .select('net_amount_cents, amount_cents, paid_at, created_at, status')
     .eq('profile_id', profile_id)
     .eq('status', 'paid');
 
-  if (error || !data) return { net: 0, gross: 0 };
+  if (error || !data) return { monthNet: 0, monthGross: 0, totalNet: 0, totalGross: 0 };
 
-  // Filtrar pelo mês atual no frontend (mais robusto que no banco)
   const now = new Date();
   const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
 
-  const monthCharges = data.filter(c => {
-    // Usa paid_at se existir, senão created_at
+  let mNet = 0;
+  let mGross = 0;
+  let tNet = 0;
+  let tGross = 0;
+
+  data.forEach(c => {
+    const net = c.net_amount_cents || 0;
+    const gross = c.amount_cents || 0;
+    
+    // Totais acumulados (Lifetime)
+    tNet += net;
+    tGross += gross;
+
+    // Totais do mês
     const dateStr = c.paid_at || c.created_at;
-    if (!dateStr) return false;
-    return new Date(dateStr) >= startOfMonth;
+    if (dateStr && new Date(dateStr) >= startOfMonth) {
+      mNet += net;
+      mGross += gross;
+    }
   });
 
-  const net = monthCharges.reduce((sum, c) => sum + (c.net_amount_cents || 0), 0);
-  const gross = monthCharges.reduce((sum, c) => sum + (c.amount_cents || 0), 0);
-  return { net, gross };
+  return { 
+    monthNet: mNet, 
+    monthGross: mGross, 
+    totalNet: tNet, 
+    totalGross: tGross 
+  };
 }
 
 // ---------- PRODUCTS REAL ----------

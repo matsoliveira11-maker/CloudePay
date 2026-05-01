@@ -17,8 +17,7 @@ import { MoneyIcon, ChargeIcon, FilterIcon, ArrowIcon, WhatsAppIcon, LinkIcon, P
 export default function Dashboard() {
   const { profile } = useAuth();
   const [charges, setCharges] = useState<Charge[]>([]);
-  const [monthNet, setMonthNet] = useState(0);
-  const [monthGross, setMonthGross] = useState(0);
+  const [stats, setStats] = useState({ monthNet: 0, monthGross: 0, totalNet: 0, totalGross: 0 });
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [createdCharge, setCreatedCharge] = useState<Charge | null>(null);
 
@@ -41,13 +40,12 @@ export default function Dashboard() {
 
   const reload = useCallback(async () => {
     if (!profile) return;
-    const [list, totals] = await Promise.all([
+    const [list, s] = await Promise.all([
       api.listChargesByProfile(profile.id),
-      api.getMonthTotalCents(profile.id),
+      api.getDashboardStats(profile.id),
     ]);
     setCharges(list);
-    setMonthNet(totals.net);
-    setMonthGross(totals.gross);
+    setStats(s);
   }, [profile]);
 
   useEffect(() => {
@@ -73,13 +71,13 @@ export default function Dashboard() {
   const paidCharges = charges.filter((c) => c.status === "paid");
   const pendingCharges = charges.filter((c) => c.status === "pending");
 
-  // Ticket médio: média do bruto de todas as cobranças pagas (todos os tempos)
-  const allTimePaidGross = paidCharges.reduce((sum, c) => sum + c.amount_cents, 0);
-  const avgTicket = paidCharges.length > 0 ? allTimePaidGross / paidCharges.length : 0;
+  // Ticket médio: média do bruto de todas as cobranças pagas
+  const avgTicket = paidCharges.length > 0 ? stats.totalGross / paidCharges.length : 0;
 
-  // monthNet e monthGross vêm direto do banco via getMonthTotalCents
-  const monthNetTotal = monthNet;
-  const monthGrossTotal = monthGross;
+  // Valores para os cards
+  const monthNetTotal = stats.monthNet;
+  const totalNetTotal = stats.totalNet;
+  const totalGrossTotal = stats.totalGross;
 
   // Chart Logic (Simple approximation of inspiration chart)
   const chartDays = useMemo(() => {
@@ -156,10 +154,10 @@ export default function Dashboard() {
                     <h2 className="text-xl font-semibold tracking-[-0.04em]">Resumo financeiro</h2>
                     <div className="mt-5 space-y-3">
                       {[
-                        ["Pix recebido (bruto)", formatBRL(monthGrossTotal)],
+                        ["Total bruto recebido", formatBRL(totalGrossTotal)],
                         ["Pix pendente", formatBRL(pendingCharges.reduce((acc, curr) => acc + curr.amount_cents, 0))],
-                        ["Taxa da plataforma", formatBRL(monthGrossTotal - monthNetTotal)],
-                        ["Total Líquido", formatBRL(monthNetTotal)],
+                        ["Taxa total (2%)", formatBRL(totalGrossTotal - totalNetTotal)],
+                        ["Saldo total (líquido)", formatBRL(totalNetTotal)],
                       ].map(([label, value], index, arr) => (
                         <div key={label} className="flex items-center justify-between rounded-2xl border border-white/10 bg-white/[0.06] px-4 py-3">
                           <span className="text-sm text-white/75">{label}</span>
