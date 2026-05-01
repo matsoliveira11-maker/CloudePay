@@ -101,6 +101,7 @@ export default function Signup() {
       setDone(true);
       setTimeout(() => navigate("/painel"), 650);
     } else {
+      console.error("Erro no cadastro:", res.error);
       setError(res.error || "Erro ao criar conta");
     }
   }
@@ -167,12 +168,11 @@ export default function Signup() {
               >
                 Entrar
               </Link>
-              <button
-                type="button"
-                className="rounded-full px-4 py-2.5 transition bg-white text-[#4c0519] shadow-sm"
+              <div
+                className="rounded-full px-4 py-2.5 transition bg-white text-[#4c0519] shadow-sm flex items-center justify-center"
               >
                 Criar conta
-              </button>
+              </div>
             </div>
 
             {done ? (
@@ -190,13 +190,15 @@ export default function Signup() {
                 </p>
               </div>
             ) : (
-              <form onSubmit={handleSubmit} className="space-y-4">
+              <form 
+                onSubmit={handleSubmit} 
+                className="space-y-4 relative z-50"
+              >
                 <Field label="Nome completo" id="nome">
                   <input
                     id="nome"
                     name="nome"
                     type="text"
-                    autoComplete="name"
                     required
                     placeholder="Como seus clientes te conhecem"
                     className="auth-input"
@@ -208,7 +210,6 @@ export default function Signup() {
                     id="email"
                     name="email"
                     type="email"
-                    autoComplete="email"
                     required
                     placeholder="voce@email.com"
                     className="auth-input"
@@ -220,7 +221,6 @@ export default function Signup() {
                     id="cpf"
                     name="cpf"
                     type="text"
-                    inputMode="numeric"
                     required
                     placeholder="000.000.000-00"
                     maxLength={14}
@@ -237,7 +237,6 @@ export default function Signup() {
                       id="senha"
                       name="senha"
                       type={showPassword ? "text" : "password"}
-                      autoComplete="new-password"
                       required
                       minLength={6}
                       placeholder="••••••••"
@@ -246,33 +245,16 @@ export default function Signup() {
                     <button
                       type="button"
                       onClick={() => setShowPassword((s) => !s)}
-                      aria-label={showPassword ? "Ocultar senha" : "Mostrar senha"}
                       className="absolute right-3 top-1/2 -translate-y-1/2 rounded-full p-1.5 text-[#9f1239] transition hover:bg-[#fff1f2]"
                     >
-                      {showPassword ? (
-                        <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                          <path d="M3 3 21 21" />
-                          <path d="M10.6 6.1A10 10 0 0 1 22 12c-1 2-2.5 3.7-4.4 4.9M6.7 6.7C4.6 7.9 3 9.8 2 12c1.8 3.6 5.5 6 10 6 1.6 0 3.1-.3 4.4-.9" />
-                          <path d="M14 14a3 3 0 0 1-4-4" />
-                        </svg>
-                      ) : (
-                        <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                          <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7Z" />
-                          <circle cx="12" cy="12" r="3" />
-                        </svg>
-                      )}
+                      {showPassword ? "Ocultar" : "Ver"}
                     </button>
                   </div>
                 </Field>
 
-                <label className="flex items-start gap-3 text-xs leading-5 text-[#881337]">
+                <label className="flex items-start gap-3 text-xs leading-5 text-[#881337] cursor-pointer">
                   <input type="checkbox" required className="auth-checkbox mt-0.5" />
-                  <span>
-                    Eu li e aceito os{" "}
-                    <a href="#" className="font-semibold text-[#e11d48] hover:underline">Termos de uso</a>{" "}
-                    e a{" "}
-                    <a href="#" className="font-semibold text-[#e11d48] hover:underline">Política de Privacidade</a>.
-                  </span>
+                  <span>Aceito os Termos de uso e Privacidade.</span>
                 </label>
 
                 {error && (
@@ -282,21 +264,10 @@ export default function Signup() {
                 <button
                   type="submit"
                   disabled={submitting}
-                  className="cta-button mt-2 inline-flex w-full items-center justify-center gap-2 rounded-full bg-[#e11d48] px-6 py-4 text-sm font-semibold text-white shadow-[0_18px_40px_rgba(225,29,72,0.4)] transition hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-70"
+                  onClick={() => console.log("Botão de cadastro clicado!")}
+                  className="mt-2 flex w-full items-center justify-center gap-2 rounded-full bg-[#e11d48] px-6 py-4 text-sm font-semibold text-white transition-all hover:brightness-110 active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed shadow-xl relative z-[60]"
                 >
-                  {submitting ? (
-                    <>
-                      <svg className="h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                        <circle cx="12" cy="12" r="9" stroke="currentColor" strokeOpacity="0.3" strokeWidth="3" />
-                        <path d="M21 12a9 9 0 0 1-9 9" stroke="currentColor" strokeWidth="3" strokeLinecap="round" />
-                      </svg>
-                      Carregando...
-                    </>
-                  ) : (
-                    <>
-                      Acessar Plataforma <ArrowIcon />
-                    </>
-                  )}
+                  {submitting ? "Criando conta..." : "Criar minha conta"}
                 </button>
 
                 <p className="pt-4 text-center text-xs text-[#881337]">

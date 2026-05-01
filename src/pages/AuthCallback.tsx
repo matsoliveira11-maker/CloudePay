@@ -86,7 +86,7 @@ export default function AuthCallback() {
         const { data, error: funcError } = await supabase.functions.invoke('mp-auth', {
           body: {
             code,
-            redirect_uri: (import.meta as any).env.VITE_REDIRECT_URI,
+            redirect_uri: window.location.origin + "/auth/callback",
             userId
           }
         });

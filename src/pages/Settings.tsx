@@ -60,7 +60,7 @@ export default function Settings() {
 
   const handleConnectMP = () => {
     const clientId = (import.meta as any).env.VITE_MP_CLIENT_ID;
-    const redirectUri = (import.meta as any).env.VITE_REDIRECT_URI;
+    const redirectUri = window.location.origin + "/auth/callback";
     const authUrl = `https://auth.mercadopago.com.br/authorization?client_id=${clientId}&response_type=code&redirect_uri=${encodeURIComponent(redirectUri)}&scope=read%20write%20offline_access&state=${profile?.id}`;
     window.location.href = authUrl;
   };

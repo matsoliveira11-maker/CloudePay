@@ -31,20 +31,28 @@ serve(async (req) => {
       throw new Error('Credenciais do Mercado Pago não configuradas no servidor.')
     }
 
+    // Limpar espaços e garantir formato correto
+    const cleanRedirectUri = redirect_uri?.trim();
+
+    console.log("Iniciando troca de token para o usuário:", userId);
+    console.log("Redirect URI utilizada:", cleanRedirectUri);
+
     // 2. Trocar código pelo token no Mercado Pago
+    const mpRequestPayload = {
+      client_id: mpClientId,
+      client_secret: mpClientSecret,
+      grant_type: "authorization_code",
+      code: code.trim(),
+      redirect_uri: cleanRedirectUri
+    };
+
     const mpResponse = await fetch("https://api.mercadopago.com/oauth/token", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
         "Accept": "application/json"
       },
-      body: JSON.stringify({
-        client_id: mpClientId,
-        client_secret: mpClientSecret,
-        grant_type: "authorization_code",
-        code,
-        redirect_uri
-      })
+      body: JSON.stringify(mpRequestPayload)
     })
 
     const tokenData = await mpResponse.json()
