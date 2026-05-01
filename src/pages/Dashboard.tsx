@@ -7,7 +7,7 @@ import { formatBRL, formatDateTime, maskBRLInput, parseBRLToCents } from "../lib
 import { sanitizeText } from "../lib/validators";
 import { X } from "phosphor-react";
 import Shell from "../components/Shell";
-import { MoneyIcon, ChargeIcon, FilterIcon, ArrowIcon } from "../components/Icons";
+import { MoneyIcon, ChargeIcon, FilterIcon, ArrowIcon, WhatsAppIcon, LinkIcon, PanelIcon } from "../components/Icons";
 
 
 // --- Logic ---

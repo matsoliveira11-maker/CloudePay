@@ -69,6 +69,7 @@ function Field({ label, id, hint, children }: { label: string; id: string; hint?
 }
 
 export default function Login() {
+  const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [done, setDone] = useState(false);
