@@ -435,10 +435,10 @@ function CreateChargeFlowModal({
     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
       <div className="absolute inset-0 bg-black/80 backdrop-blur-md" onClick={onClose} />
       
-      <div className={`relative w-full overflow-hidden rounded-[2.5rem] border border-white/[0.05] bg-[#000000] shadow-[0_40px_120px_rgba(0,0,0,1)] transition-all duration-500 ${step === "share" ? "max-w-4xl" : "max-w-xl"}`}>
+      <div className={`relative w-full overflow-hidden rounded-[2.5rem] shadow-[0_40px_120px_rgba(136,19,55,0.15)] transition-all duration-500 ${step === "share" ? "max-w-4xl bg-transparent" : "max-w-xl bg-white"}`}>
         {step !== "share" && (
           <div className="absolute top-6 right-6 z-10">
-            <button onClick={onClose} className="flex h-10 w-10 items-center justify-center rounded-full bg-white/5 text-zinc-400 hover:bg-white hover:text-black transition-all">
+            <button onClick={onClose} className="flex h-10 w-10 items-center justify-center rounded-full bg-[#fff1f2] text-[#881337] hover:bg-[#ffe4e6] hover:scale-105 transition-all">
               <X size={18} weight="bold" />
             </button>
           </div>
@@ -562,51 +562,61 @@ function CreateChargeFlowModal({
             </div>
           </div>
         ) : (
-          <div className="p-8">
-            <h2 className="text-3xl font-bold tracking-tighter text-white mb-2">Criar nova cobrança</h2>
-            <p className="text-sm text-zinc-500 mb-8">Defina os detalhes para gerar seu link de pagamento.</p>
+          <div className="p-10">
+            <h2 className="text-3xl font-bold tracking-tighter text-[#4c0519] mb-2">Criar nova cobrança</h2>
+            <p className="text-sm text-[#881337]/70 mb-8 font-medium">Defina os detalhes para gerar seu link de pagamento.</p>
 
-            <div className="grid grid-cols-2 gap-2 rounded-2xl bg-white/[0.03] border border-white/[0.05] p-1.5 mb-8">
-              <button onClick={() => setStep("product")} className={`rounded-xl py-3 text-xs font-black uppercase tracking-widest transition-all ${step === "product" ? "bg-white text-black shadow-xl scale-[1.02]" : "text-zinc-500 hover:text-white"}`}>Produtos</button>
-              <button onClick={() => setStep("custom")} className={`rounded-xl py-3 text-xs font-black uppercase tracking-widest transition-all ${step === "custom" || step === "choose" ? "bg-white text-black shadow-xl scale-[1.02]" : "text-zinc-500 hover:text-white"}`}>Avulsa</button>
+            <div className="grid grid-cols-2 gap-2 rounded-2xl bg-[#fff1f2] p-1.5 mb-8">
+              <button 
+                onClick={() => setStep("product")} 
+                className={`rounded-xl py-3 text-xs font-black uppercase tracking-widest transition-all ${step === "product" ? "bg-white text-[#e11d48] shadow-sm scale-[1.02]" : "text-[#881337]/60 hover:text-[#e11d48]"}`}
+              >
+                Produtos
+              </button>
+              <button 
+                onClick={() => setStep("custom")} 
+                className={`rounded-xl py-3 text-xs font-black uppercase tracking-widest transition-all ${step === "custom" || step === "choose" ? "bg-white text-[#e11d48] shadow-sm scale-[1.02]" : "text-[#881337]/60 hover:text-[#e11d48]"}`}
+              >
+                Avulsa
+              </button>
             </div>
 
             {step === "product" ? (
-              <div className="space-y-4">
-                <div className="space-y-1.5">
-                    <label className="text-[10px] font-black uppercase tracking-widest text-zinc-600 ml-1">Selecionar Produto</label>
+              <div className="space-y-5">
+                <div className="space-y-2">
+                    <label className="text-[10px] font-black uppercase tracking-widest text-[#881337]/70 ml-1">Selecionar Produto</label>
                     <select 
-                        className="auth-input !bg-white/[0.02] border-white/[0.05] focus:border-white/20" 
+                        className="auth-input !bg-white border-[#fecdd3] focus:border-[#e11d48] text-[#4c0519] shadow-sm" 
                         value={selectedProductId} 
                         onChange={(e) => setSelectedProductId(e.target.value)}
                     >
-                        <option value="" className="bg-black">Escolha um item...</option>
-                        {products.map(p => <option key={p.id} value={p.id} className="bg-black">{p.name} ({formatBRL(p.amount_cents)})</option>)}
+                        <option value="">Escolha um item...</option>
+                        {products.map(p => <option key={p.id} value={p.id}>{p.name} ({formatBRL(p.amount_cents)})</option>)}
                     </select>
                 </div>
-                <div className="space-y-1.5">
-                    <label className="text-[10px] font-black uppercase tracking-widest text-zinc-600 ml-1">Cliente (Opcional)</label>
-                    <input placeholder="Nome completo do comprador" className="auth-input !bg-white/[0.02] border-white/[0.05]" value={payerName} onChange={(e) => setPayerName(e.target.value)} />
+                <div className="space-y-2">
+                    <label className="text-[10px] font-black uppercase tracking-widest text-[#881337]/70 ml-1">Cliente (Opcional)</label>
+                    <input placeholder="Nome completo do comprador" className="auth-input !bg-white border-[#fecdd3] focus:border-[#e11d48] text-[#4c0519] shadow-sm placeholder:text-[#881337]/30" value={payerName} onChange={(e) => setPayerName(e.target.value)} />
                 </div>
-                <button onClick={createFromProduct} disabled={loading || !selectedProductId} className="w-full h-16 rounded-2xl bg-white text-black text-xs font-black uppercase tracking-[0.2em] transition-all hover:bg-zinc-200 active:scale-[0.98] mt-4">
+                <button onClick={createFromProduct} disabled={loading || !selectedProductId} className="w-full h-14 rounded-full bg-gradient-to-r from-[#881337] to-[#e11d48] text-white text-xs font-black uppercase tracking-[0.15em] transition-all hover:opacity-90 active:scale-[0.98] mt-6 shadow-lg shadow-rose-500/20 disabled:opacity-50 disabled:active:scale-100">
                   {loading ? "Processando..." : "Gerar cobrança"}
                 </button>
               </div>
             ) : (
-              <form onSubmit={createCustom} className="space-y-4">
-                <div className="space-y-1.5">
-                    <label className="text-[10px] font-black uppercase tracking-widest text-zinc-600 ml-1">Valor</label>
-                    <input placeholder="R$ 0,00" className="auth-input text-3xl font-bold tracking-tighter !bg-white/[0.02] border-white/[0.05]" value={amountStr} onChange={(e) => setAmountStr(maskBRLInput(e.target.value))} required />
+              <form onSubmit={createCustom} className="space-y-5">
+                <div className="space-y-2">
+                    <label className="text-[10px] font-black uppercase tracking-widest text-[#881337]/70 ml-1">Valor</label>
+                    <input placeholder="R$ 0,00" className="auth-input text-3xl font-bold tracking-tighter !bg-white border-[#fecdd3] focus:border-[#e11d48] text-[#e11d48] shadow-sm placeholder:text-[#fecdd3]" value={amountStr} onChange={(e) => setAmountStr(maskBRLInput(e.target.value))} required />
                 </div>
-                <div className="space-y-1.5">
-                    <label className="text-[10px] font-black uppercase tracking-widest text-zinc-600 ml-1">Serviço / Produto</label>
-                    <input placeholder="Ex: Consultoria de Marketing" className="auth-input !bg-white/[0.02] border-white/[0.05]" value={serviceName} onChange={(e) => setServiceName(e.target.value)} required />
+                <div className="space-y-2">
+                    <label className="text-[10px] font-black uppercase tracking-widest text-[#881337]/70 ml-1">Serviço / Produto</label>
+                    <input placeholder="Ex: Consultoria de Marketing" className="auth-input !bg-white border-[#fecdd3] focus:border-[#e11d48] text-[#4c0519] shadow-sm placeholder:text-[#881337]/30" value={serviceName} onChange={(e) => setServiceName(e.target.value)} required />
                 </div>
-                <div className="space-y-1.5">
-                    <label className="text-[10px] font-black uppercase tracking-widest text-zinc-600 ml-1">Cliente (Opcional)</label>
-                    <input placeholder="Nome do cliente" className="auth-input !bg-white/[0.02] border-white/[0.05]" value={payerName} onChange={(e) => setPayerName(e.target.value)} />
+                <div className="space-y-2">
+                    <label className="text-[10px] font-black uppercase tracking-widest text-[#881337]/70 ml-1">Cliente (Opcional)</label>
+                    <input placeholder="Nome do cliente" className="auth-input !bg-white border-[#fecdd3] focus:border-[#e11d48] text-[#4c0519] shadow-sm placeholder:text-[#881337]/30" value={payerName} onChange={(e) => setPayerName(e.target.value)} />
                 </div>
-                <button type="submit" disabled={loading} className="w-full h-16 rounded-2xl bg-white text-black text-xs font-black uppercase tracking-[0.2em] transition-all hover:bg-zinc-200 active:scale-[0.98] mt-4">
+                <button type="submit" disabled={loading} className="w-full h-14 rounded-full bg-gradient-to-r from-[#881337] to-[#e11d48] text-white text-[11px] font-black uppercase tracking-[0.15em] transition-all hover:opacity-90 active:scale-[0.98] mt-6 shadow-lg shadow-rose-500/20 disabled:opacity-50 disabled:active:scale-100">
                   {loading ? "Processando..." : "Gerar link PIX"}
                 </button>
               </form>
