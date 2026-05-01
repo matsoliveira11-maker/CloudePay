@@ -436,126 +436,126 @@ function CreateChargeFlowModal({
       <div className="absolute inset-0 bg-black/80 backdrop-blur-md" onClick={onClose} />
       
       <div className={`relative w-full overflow-hidden rounded-[2.5rem] border border-white/[0.05] bg-[#000000] shadow-[0_40px_120px_rgba(0,0,0,1)] transition-all duration-500 ${step === "share" ? "max-w-4xl" : "max-w-xl"}`}>
-        <div className="absolute top-6 right-6 z-10">
-          <button onClick={onClose} className="flex h-10 w-10 items-center justify-center rounded-full bg-white/5 text-zinc-400 hover:bg-white hover:text-black transition-all">
-            <X size={18} weight="bold" />
-          </button>
-        </div>
+        {step !== "share" && (
+          <div className="absolute top-6 right-6 z-10">
+            <button onClick={onClose} className="flex h-10 w-10 items-center justify-center rounded-full bg-white/5 text-zinc-400 hover:bg-white hover:text-black transition-all">
+              <X size={18} weight="bold" />
+            </button>
+          </div>
+        )}
 
         {step === "share" ? (
-          <div className="grid md:grid-cols-[1fr_1.1fr]">
-            {localCharge?.status === "paid" ? (
-                <div className="bg-[#050505] p-10 flex flex-col items-center justify-center border-r border-white/[0.05]">
-                     <div ref={receiptRef} className="w-full max-w-sm rounded-3xl border border-white/[0.05] bg-black p-8 text-center shadow-2xl relative overflow-hidden">
-                        <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-emerald-500/10 text-emerald-500 mb-6">
-                            <svg className="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M5 13l4 4L19 7" />
-                            </svg>
-                        </div>
-                        <p className="text-[9px] font-black uppercase tracking-[0.3em] text-zinc-600">Venda Confirmada</p>
-                        <h2 className="mt-4 text-4xl font-bold tracking-tighter text-white">{formatBRL(localCharge.amount_cents)}</h2>
-                        <div className="mt-8 space-y-3 text-left">
-                            <div className="flex justify-between border-b border-white/[0.02] pb-3">
-                                <span className="text-[8px] font-black uppercase tracking-widest text-zinc-600">Cliente</span>
-                                <span className="text-white font-bold text-[10px]">{localCharge.payer_name || "Cliente Final"}</span>
-                            </div>
-                            <div className="flex justify-between border-b border-white/[0.02] pb-3">
-                                <span className="text-[8px] font-black uppercase tracking-widest text-zinc-600">Data</span>
-                                <span className="text-white font-bold text-[10px]">{new Date().toLocaleDateString('pt-BR')}</span>
-                            </div>
-                        </div>
-                    </div>
-                    <div className="mt-8 grid grid-cols-2 gap-3 w-full max-w-sm">
-                        <button onClick={downloadReceipt} className="h-14 rounded-2xl bg-white text-black text-[10px] font-black uppercase tracking-widest hover:bg-zinc-200 transition-all">Baixar IMG</button>
-                        <button onClick={() => window.print()} className="h-14 rounded-2xl border border-white/10 bg-white/5 text-white text-[10px] font-black uppercase tracking-widest hover:bg-white/10 transition-all">PDF</button>
-                    </div>
-                </div>
-            ) : (
-                <div className="bg-gradient-to-br from-zinc-900 to-[#050505] p-10 flex flex-col justify-between min-h-[520px]">
-                <div>
-                    <p className="text-[10px] font-black uppercase tracking-[0.3em] text-zinc-500">Cobrança Gerada</p>
-                    <h2 className="mt-4 text-6xl font-bold tracking-tighter text-white">{formatBRL(localCharge!.amount_cents)}</h2>
-                    <p className="mt-2 text-sm text-zinc-400">{localCharge!.service_name}</p>
-
-                    <div className="mt-10 rounded-3xl border border-white/[0.05] bg-white/[0.02] p-5">
-                        <div className="flex items-center gap-4">
-                            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white/5 font-bold text-white uppercase">{profile?.full_name?.slice(0, 2)}</div>
-                            <div>
-                                <p className="text-sm font-bold text-white">{profile?.full_name}</p>
-                                <p className="text-xs text-zinc-500">cloudepay.com.br/{profile?.slug}</p>
-                            </div>
-                        </div>
-                        <div className="mt-6 grid grid-cols-2 gap-3">
-                            <div className="rounded-2xl bg-white/[0.03] p-4 border border-white/[0.02]">
-                                <p className="text-[9px] font-black uppercase tracking-widest text-zinc-600">Taxa CloudePay</p>
-                                <p className="mt-1 text-sm font-bold text-white">2%</p>
-                            </div>
-                            <div className="rounded-2xl bg-white/[0.03] p-4 border border-white/[0.02]">
-                                <p className="text-[9px] font-black uppercase tracking-widest text-zinc-600">Expiração</p>
-                                <p className="mt-1 text-sm font-bold text-white">30 min</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <button 
-                    onClick={() => window.open(checkoutUrl, '_blank')}
-                    className="mt-10 flex items-center justify-center gap-2 rounded-2xl bg-white py-4 text-xs font-black uppercase tracking-[0.2em] text-black hover:bg-zinc-200 transition-all active:scale-[0.98]"
-                >
-                    Abrir página de pagamento <ArrowIcon />
+          <div className="flex flex-col md:flex-row w-full h-full min-h-[560px]">
+            {/* Left Column - Deep Red Brand Gradient */}
+            <div className="relative w-full md:w-[45%] bg-gradient-to-br from-[#881337] to-[#e11d48] p-10 flex flex-col">
+              <div className="flex items-center justify-between mb-8">
+                <span className="text-[10px] font-black uppercase tracking-[0.2em] text-white/70">
+                  Cobrança Pronta
+                </span>
+                <button onClick={onClose} className="flex h-8 w-8 items-center justify-center rounded-full bg-white/10 text-white hover:bg-white/20 transition-all">
+                  <X size={14} weight="bold" />
                 </button>
-                </div>
-            )}
+              </div>
 
-            <div className="bg-white p-10 flex flex-col justify-between">
-              <div className="flex flex-col items-center">
-                <div className="rounded-[2.5rem] border border-zinc-100 bg-zinc-50 p-4 shadow-sm">
+              <div className="flex-1">
+                <h2 className="text-5xl font-bold tracking-tighter text-white mb-2">
+                  {formatBRL(localCharge!.amount_cents)}
+                </h2>
+                <p className="text-sm text-white/80 font-medium mb-10">
+                  {localCharge!.service_name || "Cobrança avulsa"}
+                </p>
+
+                <div className="rounded-[1.5rem] bg-white/10 border border-white/5 p-5">
+                  <div className="flex items-center gap-4 mb-6">
+                    <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-white font-black text-[#e11d48] text-lg">
+                      {profile?.full_name?.slice(0, 2).toUpperCase() || "CL"}
+                    </div>
+                    <div className="min-w-0">
+                      <p className="text-base font-bold text-white truncate">
+                        {profile?.full_name || "Nome da Loja"}
+                      </p>
+                      <p className="text-xs text-white/60 truncate">
+                        cloudepay.com.br/{profile?.slug || "loja"}
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="rounded-xl bg-white/5 p-4">
+                      <p className="text-[10px] font-bold text-white/60 mb-1">Taxa CloudePay</p>
+                      <p className="text-sm font-bold text-white">2%</p>
+                    </div>
+                    <div className="rounded-xl bg-white/5 p-4">
+                      <p className="text-[10px] font-bold text-white/60 mb-1">Expiração</p>
+                      <p className="text-sm font-bold text-white">15 min</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <button 
+                  onClick={() => window.open(checkoutUrl, '_blank')}
+                  className="mt-8 flex w-full items-center justify-center gap-2 rounded-full bg-white py-4 text-[11px] font-black uppercase tracking-[0.1em] text-[#881337] hover:bg-zinc-100 transition-all shadow-lg active:scale-[0.98]"
+              >
+                  Abrir página de pagamento <ArrowIcon />
+              </button>
+            </div>
+
+            {/* Right Column - White Background */}
+            <div className="relative w-full md:w-[55%] bg-white p-10 flex flex-col items-center justify-center">
+              <div className="w-full max-w-[320px] flex flex-col items-center">
+                <div className="mb-6 rounded-[2rem] border border-[#fecdd3] p-4 shadow-sm bg-white">
                     {(localCharge?.qr_code_image || localCharge?.pix_code) ? (
                         localCharge?.qr_code_image ? (
-                            <img src={localCharge.qr_code_image} alt="QR Code" className="h-44 w-44" />
+                            <img src={localCharge.qr_code_image} alt="QR Code" className="h-48 w-48 object-contain" />
                         ) : (
-                            <div className="h-44 w-44 flex items-center justify-center text-zinc-300">
+                            <div className="h-48 w-48 flex items-center justify-center text-[#fecdd3]">
                                 <PanelIcon className="h-10 w-10 animate-pulse" />
                             </div>
                         )
                     ) : (
-                        <div className="h-44 w-44 animate-pulse bg-zinc-200 rounded-2xl" />
+                        <div className="h-48 w-48 animate-pulse bg-zinc-100 rounded-2xl" />
                     )}
                 </div>
-                <p className="mt-6 text-center text-[11px] font-bold leading-relaxed text-zinc-400 max-w-[240px]">
-                    {localCharge?.status === "paid" ? "Pagamento confirmado! O recibo está disponível para download." : "QR Code PIX gerado. Compartilhe o link ou abra a página de pagamento para o cliente."}
-                </p>
-              </div>
 
-              <div className="mt-8">
-                <div className="flex items-center gap-2 rounded-2xl border border-zinc-100 bg-zinc-50 p-2 pl-4">
-                  <span className="flex-1 truncate text-xs font-bold text-zinc-500">{checkoutUrl.replace('https://', '')}</span>
-                  <button onClick={copyLink} className={`rounded-xl px-6 py-3 text-xs font-black uppercase tracking-widest transition-all ${copied ? 'bg-emerald-500 text-white' : 'bg-rose-500 text-white hover:bg-rose-600'}`}>
-                    {copied ? 'Copiado' : 'Copiar'}
+                <p className="text-center text-[11px] font-medium leading-relaxed text-[#881337] mb-8">
+                    {localCharge?.status === "paid" 
+                        ? "Pagamento confirmado! O recibo está disponível para o cliente." 
+                        : "QR Code PIX gerado. Compartilhe o link ou abra a página de pagamento para o cliente."}
+                </p>
+
+                <div className="w-full flex items-center gap-2 rounded-2xl border border-[#fecdd3] bg-white p-1.5 pl-4 mb-8">
+                  <span className="flex-1 truncate text-xs font-medium text-[#881337]/70">
+                    {checkoutUrl.replace('https://', '')}
+                  </span>
+                  <button onClick={copyLink} className={`rounded-xl px-6 py-3 text-xs font-bold transition-all ${copied ? 'bg-emerald-500 text-white' : 'bg-[#e11d48] text-white hover:bg-[#be123c]'}`}>
+                    {copied ? 'Copiado!' : 'Copiar'}
                   </button>
                 </div>
 
-                <div className="mt-8">
-                  <p className="text-[9px] font-black uppercase tracking-[0.2em] text-zinc-400 mb-4">Compartilhar em</p>
+                <div className="w-full mb-6">
+                  <p className="text-[10px] font-black uppercase tracking-[0.15em] text-[#881337]/70 mb-3 text-center">
+                    Compartilhar em
+                  </p>
                   <div className="grid grid-cols-5 gap-2">
                     {[
-                      { icon: 'WA', label: 'WhatsApp', color: 'bg-emerald-50 text-emerald-600' },
-                      { icon: 'IG', label: 'Instagram', color: 'bg-fuchsia-50 text-fuchsia-600' },
-                      { icon: 'TT', label: 'TikTok', color: 'bg-zinc-50 text-zinc-900' },
-                      { icon: 'KW', label: 'Kwai', color: 'bg-orange-50 text-orange-600' },
-                      { icon: 'TG', label: 'Telegram', color: 'bg-sky-50 text-sky-600' },
+                      { icon: 'WA', label: 'WhatsApp' },
+                      { icon: 'IG', label: 'Instagram' },
+                      { icon: 'TT', label: 'TikTok' },
+                      { icon: 'KW', label: 'Kwai' },
+                      { icon: 'TG', label: 'Telegram' },
                     ].map((app) => (
-                      <button key={app.label} className="flex flex-col items-center gap-2 group">
-                        <div className={`h-11 w-11 flex items-center justify-center rounded-2xl border border-zinc-100 transition-all group-hover:scale-110 active:scale-95 ${app.color}`}>
-                          <span className="text-[10px] font-black">{app.icon}</span>
+                      <button key={app.label} className="flex flex-col items-center gap-1.5 group">
+                        <div className="h-12 w-12 flex items-center justify-center rounded-2xl border border-[#fecdd3] bg-white transition-all group-hover:bg-[#fff1f2] group-active:scale-95 text-[#e11d48]">
+                          <span className="text-[11px] font-black">{app.icon}</span>
                         </div>
-                        <span className="text-[9px] font-bold text-zinc-400">{app.label}</span>
+                        <span className="text-[9px] font-semibold text-[#881337]/70">{app.label}</span>
                       </button>
                     ))}
                   </div>
                 </div>
 
-                <button className="mt-8 flex w-full items-center justify-center gap-2 rounded-2xl border border-zinc-100 bg-white py-4 text-[10px] font-black uppercase tracking-[0.2em] text-zinc-400 hover:text-zinc-900 hover:border-zinc-200 transition-all">
+                <button className="w-full flex items-center justify-center gap-2 rounded-full border border-[#fecdd3] bg-white py-4 text-[11px] font-bold text-[#881337] hover:bg-[#fff1f2] transition-all">
                   Compartilhar pelo celular <LinkIcon className="h-4 w-4" />
                 </button>
               </div>
