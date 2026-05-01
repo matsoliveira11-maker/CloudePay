@@ -7,7 +7,6 @@ import {
     ChartBar,
     ChartLineUp,
     ChatCircleDots,
-    CheckCircle,
     Database,
     DotsThree,
     DownloadSimple,
@@ -32,7 +31,6 @@ import {
     UsersFour,
     WarningCircle,
     X,
-    XCircle,
     ShieldCheck
 } from "phosphor-react";
 import Logo from "../components/Logo";
@@ -563,7 +561,7 @@ function Taskbar({
                 </button>
                 <div className="mx-2 hidden h-8 w-px shrink-0 bg-white/[0.08] sm:block" />
                 <div className="flex items-center gap-1.5 overflow-x-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] scroll-smooth">
-                    {apps.map(({ id, label, Icon, color }) => {
+                    {apps.map(({ id, label, Icon }) => {
                         const isOpen = openApps.includes(id);
                         const isActive = isOpen && id === activeApp;
                         return (

@@ -8,7 +8,7 @@ import { formatBRL, formatDateTime, maskBRLInput, parseBRLToCents } from "../lib
 import { sanitizeText } from "../lib/validators";
 import { X } from "phosphor-react";
 import Shell from "../components/Shell";
-import { MoneyIcon, ChargeIcon, FilterIcon, ArrowIcon, WhatsAppIcon, LinkIcon, PanelIcon } from "../components/Icons";
+import { MoneyIcon, ChargeIcon, FilterIcon, ArrowIcon, LinkIcon, PanelIcon } from "../components/Icons";
 import toast from "react-hot-toast";
 import html2canvas from "html2canvas";
 import { useRef } from "react";
@@ -331,11 +331,23 @@ function CreateChargeFlowModal({
   const [products, setProducts] = useState<any[]>([]);
   const [selectedProductId, setSelectedProductId] = useState<string>("");
   const [localCharge, setLocalCharge] = useState<Charge | null>(createdCharge);
+  const [amountStr, setAmountStr] = useState("");
+  const [serviceName, setServiceName] = useState("");
+  const [payerName, setPayerName] = useState("");
+  const [copied, setCopied] = useState(false);
+  
   const intervalRef = useRef<number | null>(null);
+  const receiptRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     setLocalCharge(createdCharge);
+    if (createdCharge) setStep("share");
   }, [createdCharge]);
+
+  useEffect(() => {
+    if (!profile) return;
+    api.listProductsByProfile(profile.id).then(setProducts);
+  }, [profile?.id]);
 
   useEffect(() => {
     if (step === "share" && localCharge && localCharge.status === "pending") {
@@ -350,26 +362,11 @@ function CreateChargeFlowModal({
     return () => { if (intervalRef.current) clearInterval(intervalRef.current); };
   }, [step, localCharge?.id, localCharge?.status]);
 
-  const [amountStr, setAmountStr] = useState("");
-  const [serviceName, setServiceName] = useState("");
-  const [payerName, setPayerName] = useState("");
-  const [notes] = useState("");
-
-  useEffect(() => {
-    if (!profile) return;
-    api.listProductsByProfile(profile.id).then(setProducts);
-  }, [profile?.id]);
-
-  useEffect(() => {
-    if (createdCharge) {
-      setStep("share");
-    }
-  }, [createdCharge]);
-
   const checkoutUrl = useMemo(() => {
-    if (!createdCharge || !profile?.slug) return "";
-    return `${window.location.origin}/${profile.slug}/${createdCharge.id}`;
-  }, [createdCharge, profile?.slug]);
+    const target = localCharge || createdCharge;
+    if (!target || !profile?.slug) return "";
+    return `${window.location.origin}/${profile.slug}/${target.id}`;
+  }, [localCharge, createdCharge, profile?.slug]);
 
   async function createFromProduct() {
     if (!profile?.slug) return;
@@ -382,7 +379,7 @@ function CreateChargeFlowModal({
         payer_name: sanitizeText(payerName, 80) || null,
         payer_cpf: profile.cpf || "00000000000",
         payer_email: profile.email || "",
-        notes: sanitizeText(notes, 100) || null,
+        notes: null,
       });
       onCreated(charge);
     } catch (error: any) {
@@ -395,26 +392,30 @@ function CreateChargeFlowModal({
 
   async function createCustom(e: React.FormEvent) {
     e.preventDefault();
+    if (!profile?.slug) return;
     const cents = parseBRLToCents(amountStr);
     setLoading(true);
     try {
       const charge = await api.createCharge({
-        profile_id: profile!.id,
-        slug: profile!.slug!,
+        profile_id: profile.id,
+        slug: profile.slug,
         amount_cents: cents,
         service_name: sanitizeText(serviceName, 60),
         description: null,
         payer_name: sanitizeText(payerName, 80) || null,
-        payer_cpf: profile!.cpf || "00000000000",
-        payer_email: profile!.email || "",
-        notes: sanitizeText(notes, 100) || null,
+        payer_cpf: profile.cpf || "00000000000",
+        payer_email: profile.email || "",
+        notes: null,
       });
       onCreated(charge);
     } catch (error: any) {
       console.error(error);
       alert(error.message || "Ocorreu um erro ao gerar a cobrança avulsa.");
     } finally {
-  const receiptRef = useRef<HTMLDivElement>(null);
+      setLoading(false);
+    }
+  }
+
   const downloadReceipt = async () => {
     if (!receiptRef.current) return;
     const canvas = await html2canvas(receiptRef.current, { backgroundColor: "#000000", scale: 2 });
@@ -435,7 +436,6 @@ function CreateChargeFlowModal({
       <div className="absolute inset-0 bg-black/80 backdrop-blur-md" onClick={onClose} />
       
       <div className={`relative w-full overflow-hidden rounded-[2.5rem] border border-white/[0.05] bg-[#000000] shadow-[0_40px_120px_rgba(0,0,0,1)] transition-all duration-500 ${step === "share" ? "max-w-4xl" : "max-w-xl"}`}>
-        {/* Header (Floating) */}
         <div className="absolute top-6 right-6 z-10">
           <button onClick={onClose} className="flex h-10 w-10 items-center justify-center rounded-full bg-white/5 text-zinc-400 hover:bg-white hover:text-black transition-all">
             <X size={18} weight="bold" />
@@ -444,7 +444,6 @@ function CreateChargeFlowModal({
 
         {step === "share" ? (
           <div className="grid md:grid-cols-[1fr_1.1fr]">
-            {/* Lado Esquerdo: Info ou Recibo */}
             {localCharge?.status === "paid" ? (
                 <div className="bg-[#050505] p-10 flex flex-col items-center justify-center border-r border-white/[0.05]">
                      <div ref={receiptRef} className="w-full max-w-sm rounded-3xl border border-white/[0.05] bg-black p-8 text-center shadow-2xl relative overflow-hidden">
@@ -508,7 +507,6 @@ function CreateChargeFlowModal({
                 </div>
             )}
 
-            {/* Lado Direito: Compartilhamento */}
             <div className="bg-white p-10 flex flex-col justify-between">
               <div className="flex flex-col items-center">
                 <div className="rounded-[2.5rem] border border-zinc-100 bg-zinc-50 p-4 shadow-sm">
@@ -562,9 +560,6 @@ function CreateChargeFlowModal({
                 </button>
               </div>
             </div>
-          </div>
-        ) : (
-   </div>
           </div>
         ) : (
           <div className="p-8">

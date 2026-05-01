@@ -1,9 +1,6 @@
-import React, { useState, useEffect, useMemo, useCallback } from "react";
+import React, { useState } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
-import { supabase } from "../lib/supabase";
-import * as api from "../lib/api";
-import type { Charge } from "../lib/api";
 import Logo from "./Logo";
 import SupportWidget from "./SupportWidget";
 
@@ -57,48 +54,13 @@ export default function Shell({ children }: ShellProps) {
   const navigate = useNavigate();
   const location = useLocation();
   const [supportOpen, setSupportOpen] = useState(false);
-  const [notifications, setNotifications] = useState<Charge[]>([]);
-  const [unreadCount, setUnreadCount] = useState(0);
 
-  const activeTab = useMemo(() => {
+  const activeTab = React.useMemo(() => {
     if (location.pathname === "/painel") return "dashboard";
     if (location.pathname === "/produtos") return "produtos";
     if (location.pathname === "/configuracoes") return "perfil";
     return "";
   }, [location.pathname]);
-
-  const reloadNotifications = useCallback(async () => {
-    if (!profile?.id) return;
-    const list = await api.listChargesByProfile(profile.id);
-    const recent = list
-      .filter(c => c.status === "paid")
-      .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
-      .slice(0, 5);
-    setNotifications(recent);
-  }, [profile?.id]);
-
-  useEffect(() => {
-    reloadNotifications();
-
-    if (!profile?.id) return;
-    const channel = supabase.channel('realtime_shell')
-      .on('postgres_changes', { 
-        event: 'UPDATE', 
-        schema: 'public', 
-        table: 'charges', 
-        filter: `profile_id=eq.${profile.id}` 
-      }, (payload) => {
-        if (payload.old.status !== 'paid' && payload.new.status === 'paid') {
-          reloadNotifications();
-          setUnreadCount(prev => prev + 1);
-        }
-      })
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  }, [profile?.id, reloadNotifications]);
 
   const menuItems = [
     { key: "dashboard", label: "Dashboard", Icon: PanelIcon, path: "/painel" },
@@ -120,15 +82,10 @@ export default function Shell({ children }: ShellProps) {
                 type="button"
                 onClick={() => setSupportOpen(true)}
                 className="relative flex h-9 w-9 items-center justify-center rounded-full border border-[#fecdd3] bg-white text-[#881337] transition hover:bg-[#fff1f2]"
-                title={`${unreadCount} nova(s) notificação(ões)`}
-                aria-label="Notificações"
+                title="Suporte"
+                aria-label="Suporte"
               >
                 <HelpIcon className="h-4 w-4" />
-                {unreadCount > 0 && (
-                  <span className="absolute -right-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full bg-[#e11d48] text-[9px] font-bold text-white">
-                    {unreadCount > 9 ? '9+' : unreadCount}
-                  </span>
-                )}
               </button>
               <button
                 type="button"

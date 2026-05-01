@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { useAuth } from "../context/AuthContext";
-import { getClientTickets, getTicketMessages, sendTicketMessage, createTicket, closeTicket } from "../lib/api";
+import { getClientTickets, getTicketMessages, sendTicketMessage, createTicket } from "../lib/api";
 import { supabase } from "../lib/supabase";
 
 interface SupportWidgetProps {
