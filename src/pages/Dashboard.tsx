@@ -9,6 +9,9 @@ import { sanitizeText } from "../lib/validators";
 import { X } from "phosphor-react";
 import Shell from "../components/Shell";
 import { MoneyIcon, ChargeIcon, FilterIcon, ArrowIcon, WhatsAppIcon, LinkIcon, PanelIcon } from "../components/Icons";
+import toast from "react-hot-toast";
+import html2canvas from "html2canvas";
+import { useRef } from "react";
 
 
 // --- Logic ---
@@ -62,7 +65,13 @@ export default function Dashboard() {
         schema: 'public',
         table: 'charges',
         filter: `profile_id=eq.${profile.id}`,
-      }, () => {
+      }, (payload) => {
+        if (payload.new && (payload.new as any).status === 'paid' && (payload.old as any).status !== 'paid') {
+           toast.success(`Pagamento de ${formatBRL((payload.new as any).amount_cents)} recebido!`, {
+             icon: '💰',
+             duration: 5000,
+           });
+        }
         reload();
       })
       .subscribe();
@@ -321,6 +330,25 @@ function CreateChargeFlowModal({
   const [loading, setLoading] = useState(false);
   const [products, setProducts] = useState<any[]>([]);
   const [selectedProductId, setSelectedProductId] = useState<string>("");
+  const [localCharge, setLocalCharge] = useState<Charge | null>(createdCharge);
+  const intervalRef = useRef<number | null>(null);
+
+  useEffect(() => {
+    setLocalCharge(createdCharge);
+  }, [createdCharge]);
+
+  useEffect(() => {
+    if (step === "share" && localCharge && localCharge.status === "pending") {
+      intervalRef.current = window.setInterval(async () => {
+        const c = await api.getCharge(localCharge.id);
+        if (c && c.status === "paid") {
+          setLocalCharge(c);
+          if (intervalRef.current) clearInterval(intervalRef.current);
+        }
+      }, 5000);
+    }
+    return () => { if (intervalRef.current) clearInterval(intervalRef.current); };
+  }, [step, localCharge?.id, localCharge?.status]);
 
   const [amountStr, setAmountStr] = useState("");
   const [serviceName, setServiceName] = useState("");
@@ -386,11 +414,16 @@ function CreateChargeFlowModal({
       console.error(error);
       alert(error.message || "Ocorreu um erro ao gerar a cobrança avulsa.");
     } finally {
-      setLoading(false);
-    }
-  }
+  const receiptRef = useRef<HTMLDivElement>(null);
+  const downloadReceipt = async () => {
+    if (!receiptRef.current) return;
+    const canvas = await html2canvas(receiptRef.current, { backgroundColor: "#000000", scale: 2 });
+    const link = document.createElement("a");
+    link.download = `venda-${localCharge!.id.slice(0, 8)}.png`;
+    link.href = canvas.toDataURL("image/png");
+    link.click();
+  };
 
-  const [copied, setCopied] = useState(false);
   const copyLink = () => {
     navigator.clipboard.writeText(checkoutUrl);
     setCopied(true);
@@ -398,71 +431,188 @@ function CreateChargeFlowModal({
   };
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center p-0 sm:p-4">
-      <div className="absolute inset-0 bg-[#4c0519]/40 backdrop-blur-sm" onClick={onClose} />
-      <div className="relative w-full sm:max-w-xl max-h-[92vh] overflow-auto rounded-t-[2.5rem] sm:rounded-[2.5rem] border border-[#fecdd3] bg-white p-6 shadow-[0_40px_120px_rgba(76,5,25,0.3)]">
-        <div className="mb-6 flex items-center justify-between">
-          <h2 className="text-2xl font-semibold tracking-[-0.05em] text-[#4c0519]">
-            {step === "share" ? "Compartilhar cobrança" : "Nova cobrança"}
-          </h2>
-          <button onClick={onClose} className="flex h-10 w-10 items-center justify-center rounded-full bg-[#fff1f2] text-[#4c0519]">
+    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+      <div className="absolute inset-0 bg-black/80 backdrop-blur-md" onClick={onClose} />
+      
+      <div className={`relative w-full overflow-hidden rounded-[2.5rem] border border-white/[0.05] bg-[#000000] shadow-[0_40px_120px_rgba(0,0,0,1)] transition-all duration-500 ${step === "share" ? "max-w-4xl" : "max-w-xl"}`}>
+        {/* Header (Floating) */}
+        <div className="absolute top-6 right-6 z-10">
+          <button onClick={onClose} className="flex h-10 w-10 items-center justify-center rounded-full bg-white/5 text-zinc-400 hover:bg-white hover:text-black transition-all">
             <X size={18} weight="bold" />
           </button>
         </div>
 
         {step === "share" ? (
-          <div className="space-y-6">
-            <div className="rounded-3xl border border-[#fecdd3] bg-[#fffafa] p-6 text-center">
-              <p className="text-sm font-semibold uppercase tracking-widest text-[#9f1239]">Link pronto</p>
-              <p className="mt-4 text-4xl font-semibold tracking-tight text-[#4c0519]">{formatBRL(createdCharge!.amount_cents)}</p>
-              <p className="mt-2 text-sm text-[#881337]">{createdCharge!.service_name}</p>
-            </div>
-            
-            <div className="flex items-center gap-2 rounded-2xl border border-[#fecdd3] bg-white p-2">
-              <span className="flex-1 truncate px-3 text-sm font-medium text-[#4c0519]">{checkoutUrl}</span>
-              <button onClick={copyLink} className={`rounded-xl px-5 py-3 text-sm font-semibold transition ${copied ? 'bg-[#16a34a] text-white' : 'bg-[#e11d48] text-white'}`}>
-                {copied ? 'Copiado' : 'Copiar'}
-              </button>
-            </div>
+          <div className="grid md:grid-cols-[1fr_1.1fr]">
+            {/* Lado Esquerdo: Info ou Recibo */}
+            {localCharge?.status === "paid" ? (
+                <div className="bg-[#050505] p-10 flex flex-col items-center justify-center border-r border-white/[0.05]">
+                     <div ref={receiptRef} className="w-full max-w-sm rounded-3xl border border-white/[0.05] bg-black p-8 text-center shadow-2xl relative overflow-hidden">
+                        <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-emerald-500/10 text-emerald-500 mb-6">
+                            <svg className="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M5 13l4 4L19 7" />
+                            </svg>
+                        </div>
+                        <p className="text-[9px] font-black uppercase tracking-[0.3em] text-zinc-600">Venda Confirmada</p>
+                        <h2 className="mt-4 text-4xl font-bold tracking-tighter text-white">{formatBRL(localCharge.amount_cents)}</h2>
+                        <div className="mt-8 space-y-3 text-left">
+                            <div className="flex justify-between border-b border-white/[0.02] pb-3">
+                                <span className="text-[8px] font-black uppercase tracking-widest text-zinc-600">Cliente</span>
+                                <span className="text-white font-bold text-[10px]">{localCharge.payer_name || "Cliente Final"}</span>
+                            </div>
+                            <div className="flex justify-between border-b border-white/[0.02] pb-3">
+                                <span className="text-[8px] font-black uppercase tracking-widest text-zinc-600">Data</span>
+                                <span className="text-white font-bold text-[10px]">{new Date().toLocaleDateString('pt-BR')}</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div className="mt-8 grid grid-cols-2 gap-3 w-full max-w-sm">
+                        <button onClick={downloadReceipt} className="h-14 rounded-2xl bg-white text-black text-[10px] font-black uppercase tracking-widest hover:bg-zinc-200 transition-all">Baixar IMG</button>
+                        <button onClick={() => window.print()} className="h-14 rounded-2xl border border-white/10 bg-white/5 text-white text-[10px] font-black uppercase tracking-widest hover:bg-white/10 transition-all">PDF</button>
+                    </div>
+                </div>
+            ) : (
+                <div className="bg-gradient-to-br from-zinc-900 to-[#050505] p-10 flex flex-col justify-between min-h-[520px]">
+                <div>
+                    <p className="text-[10px] font-black uppercase tracking-[0.3em] text-zinc-500">Cobrança Gerada</p>
+                    <h2 className="mt-4 text-6xl font-bold tracking-tighter text-white">{formatBRL(localCharge!.amount_cents)}</h2>
+                    <p className="mt-2 text-sm text-zinc-400">{localCharge!.service_name}</p>
 
-            <div className="grid grid-cols-2 gap-3">
-              <a href={`https://wa.me/?text=${encodeURIComponent(`Pague ${formatBRL(createdCharge!.amount_cents)}: ${checkoutUrl}`)}`} target="_blank" rel="noreferrer" className="flex items-center justify-center gap-2 rounded-2xl border border-[#fecdd3] bg-white py-4 text-sm font-semibold text-[#4c0519]">
-                <WhatsAppIcon /> WhatsApp
-              </a>
-              <button onClick={copyLink} className="flex items-center justify-center gap-2 rounded-2xl border border-[#fecdd3] bg-white py-4 text-sm font-semibold text-[#4c0519]">
-                <LinkIcon /> Outros
-              </button>
+                    <div className="mt-10 rounded-3xl border border-white/[0.05] bg-white/[0.02] p-5">
+                        <div className="flex items-center gap-4">
+                            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white/5 font-bold text-white uppercase">{profile?.full_name?.slice(0, 2)}</div>
+                            <div>
+                                <p className="text-sm font-bold text-white">{profile?.full_name}</p>
+                                <p className="text-xs text-zinc-500">cloudepay.com.br/{profile?.slug}</p>
+                            </div>
+                        </div>
+                        <div className="mt-6 grid grid-cols-2 gap-3">
+                            <div className="rounded-2xl bg-white/[0.03] p-4 border border-white/[0.02]">
+                                <p className="text-[9px] font-black uppercase tracking-widest text-zinc-600">Taxa CloudePay</p>
+                                <p className="mt-1 text-sm font-bold text-white">2%</p>
+                            </div>
+                            <div className="rounded-2xl bg-white/[0.03] p-4 border border-white/[0.02]">
+                                <p className="text-[9px] font-black uppercase tracking-widest text-zinc-600">Expiração</p>
+                                <p className="mt-1 text-sm font-bold text-white">30 min</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <button 
+                    onClick={() => window.open(checkoutUrl, '_blank')}
+                    className="mt-10 flex items-center justify-center gap-2 rounded-2xl bg-white py-4 text-xs font-black uppercase tracking-[0.2em] text-black hover:bg-zinc-200 transition-all active:scale-[0.98]"
+                >
+                    Abrir página de pagamento <ArrowIcon />
+                </button>
+                </div>
+            )}
+
+            {/* Lado Direito: Compartilhamento */}
+            <div className="bg-white p-10 flex flex-col justify-between">
+              <div className="flex flex-col items-center">
+                <div className="rounded-[2.5rem] border border-zinc-100 bg-zinc-50 p-4 shadow-sm">
+                    {(localCharge?.qr_code_image || localCharge?.pix_code) ? (
+                        localCharge?.qr_code_image ? (
+                            <img src={localCharge.qr_code_image} alt="QR Code" className="h-44 w-44" />
+                        ) : (
+                            <div className="h-44 w-44 flex items-center justify-center text-zinc-300">
+                                <PanelIcon className="h-10 w-10 animate-pulse" />
+                            </div>
+                        )
+                    ) : (
+                        <div className="h-44 w-44 animate-pulse bg-zinc-200 rounded-2xl" />
+                    )}
+                </div>
+                <p className="mt-6 text-center text-[11px] font-bold leading-relaxed text-zinc-400 max-w-[240px]">
+                    {localCharge?.status === "paid" ? "Pagamento confirmado! O recibo está disponível para download." : "QR Code PIX gerado. Compartilhe o link ou abra a página de pagamento para o cliente."}
+                </p>
+              </div>
+
+              <div className="mt-8">
+                <div className="flex items-center gap-2 rounded-2xl border border-zinc-100 bg-zinc-50 p-2 pl-4">
+                  <span className="flex-1 truncate text-xs font-bold text-zinc-500">{checkoutUrl.replace('https://', '')}</span>
+                  <button onClick={copyLink} className={`rounded-xl px-6 py-3 text-xs font-black uppercase tracking-widest transition-all ${copied ? 'bg-emerald-500 text-white' : 'bg-rose-500 text-white hover:bg-rose-600'}`}>
+                    {copied ? 'Copiado' : 'Copiar'}
+                  </button>
+                </div>
+
+                <div className="mt-8">
+                  <p className="text-[9px] font-black uppercase tracking-[0.2em] text-zinc-400 mb-4">Compartilhar em</p>
+                  <div className="grid grid-cols-5 gap-2">
+                    {[
+                      { icon: 'WA', label: 'WhatsApp', color: 'bg-emerald-50 text-emerald-600' },
+                      { icon: 'IG', label: 'Instagram', color: 'bg-fuchsia-50 text-fuchsia-600' },
+                      { icon: 'TT', label: 'TikTok', color: 'bg-zinc-50 text-zinc-900' },
+                      { icon: 'KW', label: 'Kwai', color: 'bg-orange-50 text-orange-600' },
+                      { icon: 'TG', label: 'Telegram', color: 'bg-sky-50 text-sky-600' },
+                    ].map((app) => (
+                      <button key={app.label} className="flex flex-col items-center gap-2 group">
+                        <div className={`h-11 w-11 flex items-center justify-center rounded-2xl border border-zinc-100 transition-all group-hover:scale-110 active:scale-95 ${app.color}`}>
+                          <span className="text-[10px] font-black">{app.icon}</span>
+                        </div>
+                        <span className="text-[9px] font-bold text-zinc-400">{app.label}</span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <button className="mt-8 flex w-full items-center justify-center gap-2 rounded-2xl border border-zinc-100 bg-white py-4 text-[10px] font-black uppercase tracking-[0.2em] text-zinc-400 hover:text-zinc-900 hover:border-zinc-200 transition-all">
+                  Compartilhar pelo celular <LinkIcon className="h-4 w-4" />
+                </button>
+              </div>
             </div>
           </div>
         ) : (
-          <div className="space-y-5">
-            <div className="grid grid-cols-2 gap-2 rounded-2xl bg-[#fff1f2] p-1">
-              <button onClick={() => setStep("product")} className={`rounded-xl py-3 text-xs font-bold transition ${step === "product" ? "bg-white text-[#4c0519] shadow-sm" : "text-[#9f1239]"}`}>Produtos</button>
-              <button onClick={() => setStep("custom")} className={`rounded-xl py-3 text-xs font-bold transition ${step === "custom" || step === "choose" ? "bg-white text-[#4c0519] shadow-sm" : "text-[#9f1239]"}`}>Avulsa</button>
+   </div>
+          </div>
+        ) : (
+          <div className="p-8">
+            <h2 className="text-3xl font-bold tracking-tighter text-white mb-2">Criar nova cobrança</h2>
+            <p className="text-sm text-zinc-500 mb-8">Defina os detalhes para gerar seu link de pagamento.</p>
+
+            <div className="grid grid-cols-2 gap-2 rounded-2xl bg-white/[0.03] border border-white/[0.05] p-1.5 mb-8">
+              <button onClick={() => setStep("product")} className={`rounded-xl py-3 text-xs font-black uppercase tracking-widest transition-all ${step === "product" ? "bg-white text-black shadow-xl scale-[1.02]" : "text-zinc-500 hover:text-white"}`}>Produtos</button>
+              <button onClick={() => setStep("custom")} className={`rounded-xl py-3 text-xs font-black uppercase tracking-widest transition-all ${step === "custom" || step === "choose" ? "bg-white text-black shadow-xl scale-[1.02]" : "text-zinc-500 hover:text-white"}`}>Avulsa</button>
             </div>
 
             {step === "product" ? (
               <div className="space-y-4">
-                <select 
-                  className="auth-input" 
-                  value={selectedProductId} 
-                  onChange={(e) => setSelectedProductId(e.target.value)}
-                >
-                  <option value="">Selecione um produto</option>
-                  {products.map(p => <option key={p.id} value={p.id}>{p.name} ({formatBRL(p.amount_cents)})</option>)}
-                </select>
-                <input placeholder="Nome do cliente (opcional)" className="auth-input" value={payerName} onChange={(e) => setPayerName(e.target.value)} />
-                <button onClick={createFromProduct} disabled={loading || !selectedProductId} className="cta-button w-full rounded-2xl bg-[#e11d48] py-4 text-sm font-semibold text-white transition hover:-translate-y-0.5">
-                  {loading ? "Gerando..." : "Gerar cobrança"}
+                <div className="space-y-1.5">
+                    <label className="text-[10px] font-black uppercase tracking-widest text-zinc-600 ml-1">Selecionar Produto</label>
+                    <select 
+                        className="auth-input !bg-white/[0.02] border-white/[0.05] focus:border-white/20" 
+                        value={selectedProductId} 
+                        onChange={(e) => setSelectedProductId(e.target.value)}
+                    >
+                        <option value="" className="bg-black">Escolha um item...</option>
+                        {products.map(p => <option key={p.id} value={p.id} className="bg-black">{p.name} ({formatBRL(p.amount_cents)})</option>)}
+                    </select>
+                </div>
+                <div className="space-y-1.5">
+                    <label className="text-[10px] font-black uppercase tracking-widest text-zinc-600 ml-1">Cliente (Opcional)</label>
+                    <input placeholder="Nome completo do comprador" className="auth-input !bg-white/[0.02] border-white/[0.05]" value={payerName} onChange={(e) => setPayerName(e.target.value)} />
+                </div>
+                <button onClick={createFromProduct} disabled={loading || !selectedProductId} className="w-full h-16 rounded-2xl bg-white text-black text-xs font-black uppercase tracking-[0.2em] transition-all hover:bg-zinc-200 active:scale-[0.98] mt-4">
+                  {loading ? "Processando..." : "Gerar cobrança"}
                 </button>
               </div>
             ) : (
               <form onSubmit={createCustom} className="space-y-4">
-                <input placeholder="R$ 0,00" className="auth-input text-2xl font-bold" value={amountStr} onChange={(e) => setAmountStr(maskBRLInput(e.target.value))} required />
-                <input placeholder="Descrição do serviço" className="auth-input" value={serviceName} onChange={(e) => setServiceName(e.target.value)} required />
-                <input placeholder="Nome do cliente (opcional)" className="auth-input" value={payerName} onChange={(e) => setPayerName(e.target.value)} />
-                <button type="submit" disabled={loading} className="cta-button w-full rounded-2xl bg-[#e11d48] py-4 text-sm font-semibold text-white transition hover:-translate-y-0.5">
-                  {loading ? "Gerando..." : "Gerar link PIX"}
+                <div className="space-y-1.5">
+                    <label className="text-[10px] font-black uppercase tracking-widest text-zinc-600 ml-1">Valor</label>
+                    <input placeholder="R$ 0,00" className="auth-input text-3xl font-bold tracking-tighter !bg-white/[0.02] border-white/[0.05]" value={amountStr} onChange={(e) => setAmountStr(maskBRLInput(e.target.value))} required />
+                </div>
+                <div className="space-y-1.5">
+                    <label className="text-[10px] font-black uppercase tracking-widest text-zinc-600 ml-1">Serviço / Produto</label>
+                    <input placeholder="Ex: Consultoria de Marketing" className="auth-input !bg-white/[0.02] border-white/[0.05]" value={serviceName} onChange={(e) => setServiceName(e.target.value)} required />
+                </div>
+                <div className="space-y-1.5">
+                    <label className="text-[10px] font-black uppercase tracking-widest text-zinc-600 ml-1">Cliente (Opcional)</label>
+                    <input placeholder="Nome do cliente" className="auth-input !bg-white/[0.02] border-white/[0.05]" value={payerName} onChange={(e) => setPayerName(e.target.value)} />
+                </div>
+                <button type="submit" disabled={loading} className="w-full h-16 rounded-2xl bg-white text-black text-xs font-black uppercase tracking-[0.2em] transition-all hover:bg-zinc-200 active:scale-[0.98] mt-4">
+                  {loading ? "Processando..." : "Gerar link PIX"}
                 </button>
               </form>
             )}

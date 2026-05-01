@@ -13,6 +13,7 @@ import FixedQRCode from "./pages/FixedQRCode";
 import AuthCallback from "./pages/AuthCallback";
 import ResetPassword from "./pages/ResetPassword";
 import OnboardingTour from "./components/OnboardingTour";
+import { Toaster } from "react-hot-toast";
 
 import { ThemeProvider } from "./context/ThemeContext";
 
@@ -21,6 +22,20 @@ export default function App() {
     <ThemeProvider>
       <AuthProvider>
         <BrowserRouter>
+          <Toaster 
+            position="top-right"
+            toastOptions={{
+              style: {
+                background: '#050505',
+                color: '#fff',
+                border: '1px solid rgba(255,255,255,0.05)',
+                fontSize: '13px',
+                fontWeight: 'bold',
+                borderRadius: '1rem',
+                padding: '16px',
+              }
+            }}
+          />
           <OnboardingTour />
           <Routes>
           <Route path="/" element={<Landing />} />
