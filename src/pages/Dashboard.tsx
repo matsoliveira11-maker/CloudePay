@@ -418,7 +418,7 @@ function CreateChargeFlowModal({
 
   const downloadReceipt = async () => {
     if (!receiptRef.current) return;
-    const canvas = await html2canvas(receiptRef.current, { backgroundColor: "#000000", scale: 2 });
+    const canvas = await html2canvas(receiptRef.current, { backgroundColor: "#ffffff", scale: 2 });
     const link = document.createElement("a");
     link.download = `venda-${localCharge!.id.slice(0, 8)}.png`;
     link.href = canvas.toDataURL("image/png");
@@ -504,25 +504,51 @@ function CreateChargeFlowModal({
             {/* Right Column - White Background */}
             <div className="relative w-full md:w-[55%] bg-white p-10 flex flex-col items-center justify-center">
               <div className="w-full max-w-[320px] flex flex-col items-center">
-                <div className="mb-6 rounded-[2rem] border border-[#fecdd3] p-4 shadow-sm bg-white">
-                    {(localCharge?.qr_code_image || localCharge?.pix_code) ? (
-                        localCharge?.qr_code_image ? (
-                            <img src={localCharge.qr_code_image} alt="QR Code" className="h-48 w-48 object-contain" />
+                {localCharge?.status === "paid" ? (
+                    <div className="w-full flex flex-col items-center">
+                      <div ref={receiptRef} className="w-full rounded-[2rem] border border-[#fecdd3] bg-white p-8 text-center shadow-lg relative overflow-hidden mb-8">
+                          <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-emerald-50 text-emerald-500 mb-6">
+                              <svg className="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M5 13l4 4L19 7" />
+                              </svg>
+                          </div>
+                          <p className="text-[10px] font-black uppercase tracking-[0.2em] text-[#881337]/70">Venda Confirmada</p>
+                          <h2 className="mt-3 text-4xl font-bold tracking-tighter text-[#4c0519]">{formatBRL(localCharge.amount_cents)}</h2>
+                          <div className="mt-8 space-y-3 text-left">
+                              <div className="flex justify-between border-b border-[#fecdd3]/50 pb-3">
+                                  <span className="text-[9px] font-black uppercase tracking-widest text-[#881337]/70">Cliente</span>
+                                  <span className="text-[#4c0519] font-bold text-[11px] truncate max-w-[120px]">{localCharge.payer_name || "Cliente Final"}</span>
+                              </div>
+                              <div className="flex justify-between border-b border-[#fecdd3]/50 pb-3">
+                                  <span className="text-[9px] font-black uppercase tracking-widest text-[#881337]/70">Data</span>
+                                  <span className="text-[#4c0519] font-bold text-[11px]">{new Date().toLocaleDateString('pt-BR')}</span>
+                              </div>
+                          </div>
+                      </div>
+                      <div className="grid grid-cols-2 gap-3 w-full">
+                          <button onClick={downloadReceipt} className="h-14 rounded-full bg-[#e11d48] text-white text-[11px] font-black uppercase tracking-widest hover:bg-[#be123c] transition-all shadow-md">Baixar IMG</button>
+                          <button onClick={() => window.print()} className="h-14 rounded-full border border-[#fecdd3] bg-white text-[#881337] text-[11px] font-black uppercase tracking-widest hover:bg-[#fff1f2] transition-all">Imprimir</button>
+                      </div>
+                    </div>
+                ) : (
+                  <>
+                    <div className="mb-6 rounded-[2rem] border border-[#fecdd3] p-4 shadow-sm bg-white">
+                        {(localCharge?.qr_code_image || localCharge?.pix_code) ? (
+                            localCharge?.qr_code_image ? (
+                                <img src={localCharge.qr_code_image} alt="QR Code" className="h-48 w-48 object-contain" />
+                            ) : (
+                                <div className="h-48 w-48 flex items-center justify-center text-[#fecdd3]">
+                                    <PanelIcon className="h-10 w-10 animate-pulse" />
+                                </div>
+                            )
                         ) : (
-                            <div className="h-48 w-48 flex items-center justify-center text-[#fecdd3]">
-                                <PanelIcon className="h-10 w-10 animate-pulse" />
-                            </div>
-                        )
-                    ) : (
-                        <div className="h-48 w-48 animate-pulse bg-zinc-100 rounded-2xl" />
-                    )}
-                </div>
+                            <div className="h-48 w-48 animate-pulse bg-zinc-100 rounded-2xl" />
+                        )}
+                    </div>
 
-                <p className="text-center text-[11px] font-medium leading-relaxed text-[#881337] mb-8">
-                    {localCharge?.status === "paid" 
-                        ? "Pagamento confirmado! O recibo está disponível para o cliente." 
-                        : "QR Code PIX gerado. Compartilhe o link ou abra a página de pagamento para o cliente."}
-                </p>
+                    <p className="text-center text-[11px] font-medium leading-relaxed text-[#881337] mb-8">
+                        QR Code PIX gerado. Compartilhe o link ou abra a página de pagamento para o cliente.
+                    </p>
 
                 <div className="w-full flex items-center gap-2 rounded-2xl border border-[#fecdd3] bg-white p-1.5 pl-4 mb-8">
                   <span className="flex-1 truncate text-xs font-medium text-[#881337]/70">
@@ -555,9 +581,8 @@ function CreateChargeFlowModal({
                   </div>
                 </div>
 
-                <button className="w-full flex items-center justify-center gap-2 rounded-full border border-[#fecdd3] bg-white py-4 text-[11px] font-bold text-[#881337] hover:bg-[#fff1f2] transition-all">
-                  Compartilhar pelo celular <LinkIcon className="h-4 w-4" />
-                </button>
+                  </>
+                )}
               </div>
             </div>
           </div>
