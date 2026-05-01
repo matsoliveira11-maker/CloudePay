@@ -200,8 +200,8 @@ export default function Admin() {
                         <div className="mx-auto mb-10 flex justify-center scale-[1.2]">
                             <Logo variant="light" />
                         </div>
-                        <h1 className="text-2xl font-bold tracking-[-0.04em] text-white">Vault Access</h1>
-                        <p className="text-zinc-600 text-[10px] font-black uppercase tracking-[0.4em] mt-3">Founder console v2.0</p>
+                        <h1 className="text-2xl font-bold tracking-[-0.04em] text-white">Acesso ao Cofre</h1>
+                        <p className="text-zinc-600 text-[10px] font-black uppercase tracking-[0.4em] mt-3">Console de Fundador v2.0</p>
                     </div>
 
                     <div className="bg-[#0a0a0a] border border-white/[0.05] rounded-[2rem] p-8 shadow-[0_0_1px_rgba(255,255,255,0.1)] relative group overflow-hidden">
@@ -210,7 +210,7 @@ export default function Admin() {
                         
                         <div className="space-y-7 relative z-10">
                             <div className="space-y-2.5">
-                                <label className="text-[9px] font-black uppercase tracking-[0.2em] text-zinc-500 ml-1">Identity</label>
+                                <label className="text-[9px] font-black uppercase tracking-[0.2em] text-zinc-500 ml-1">Identidade</label>
                                 <input
                                     type="email"
                                     value={adminEmail}
@@ -221,7 +221,7 @@ export default function Admin() {
                             </div>
                             
                             <div className="space-y-2.5">
-                                <label className="text-[9px] font-black uppercase tracking-[0.2em] text-zinc-500 ml-1">Master Key</label>
+                                <label className="text-[9px] font-black uppercase tracking-[0.2em] text-zinc-500 ml-1">Chave Mestra</label>
                                 <input
                                     type="password"
                                     value={adminPassword}
@@ -243,14 +243,14 @@ export default function Admin() {
                                 disabled={isLoggingIn}
                                 className="w-full h-12 bg-white hover:bg-[#f2f2f2] disabled:opacity-30 text-black rounded-xl font-bold text-[11px] uppercase tracking-[0.1em] transition-all active:scale-[0.98] mt-2 shadow-[0_8px_30px_rgb(255,255,255,0.05)]"
                             >
-                                {isLoggingIn ? "Authenticating..." : "Authorize Access"}
+                                {isLoggingIn ? "Autenticando..." : "Autorizar Acesso"}
                             </button>
                         </div>
                     </div>
 
                     <div className="mt-16 text-center animate-in fade-in duration-1000 delay-500">
                         <Link to="/painel" className="text-[9px] font-bold uppercase tracking-[0.3em] text-zinc-700 hover:text-zinc-400 transition-colors">
-                            Return to Dashboard
+                            Voltar ao Dashboard
                         </Link>
                     </div>
                 </div>
@@ -267,8 +267,8 @@ export default function Admin() {
                     <div className="mx-auto w-16 h-16 rounded-full bg-white text-black flex items-center justify-center mb-10 shadow-[0_0_40px_rgba(255,255,255,0.1)]">
                         <ShieldCheck size={32} weight="bold" />
                     </div>
-                    <h1 className="text-xl font-bold text-white mb-2 tracking-tight">Access Control</h1>
-                    <p className="text-[9px] text-zinc-600 mb-12 uppercase tracking-[0.5em] font-black">Authorized Personnel Only</p>
+                    <h1 className="text-xl font-bold text-white mb-2 tracking-tight">Controle de Acesso</h1>
+                    <p className="text-[9px] text-zinc-600 mb-12 uppercase tracking-[0.5em] font-black">Apenas Pessoal Autorizado</p>
                     
                     <div className="space-y-6">
                         <input
@@ -276,17 +276,17 @@ export default function Admin() {
                             value={masterToken}
                             onChange={(e) => setMasterToken(e.target.value)}
                             onKeyDown={(e) => e.key === 'Enter' && handleUnlock()}
-                            placeholder="MASTER_TOKEN"
+                            placeholder="CHAVE_MESTRA"
                             className="w-full h-14 bg-black border border-white/[0.08] rounded-2xl px-6 text-center text-white font-mono text-lg tracking-[0.4em] placeholder:text-zinc-900 focus:outline-none focus:border-white/20 transition-all"
                         />
                         {tokenError && (
-                            <p className="text-[9px] text-red-500 font-black uppercase tracking-widest animate-pulse">Encryption Mismatch</p>
+                            <p className="text-[9px] text-red-500 font-black uppercase tracking-widest animate-pulse">Incompatibilidade de Criptografia</p>
                         )}
                         <button 
                             onClick={handleUnlock}
                             className="w-full h-14 bg-white hover:bg-[#f2f2f2] text-black rounded-2xl font-black uppercase tracking-[0.2em] text-[10px] transition-all active:scale-[0.98]"
                         >
-                            Execute Unlock
+                            Executar Desbloqueio
                         </button>
                     </div>
                 </div>
@@ -314,13 +314,13 @@ export default function Admin() {
                     <div className="h-4 w-px bg-white/10" />
                     <div className="flex items-center gap-2 px-3 py-1.5 rounded-full border border-white/[0.05] bg-white/[0.02] backdrop-blur-md">
                         <Lock size={12} weight="bold" className="text-zinc-500" />
-                        <span className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-400">Vault Console v2.0</span>
+                        <span className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-400">Console do Cofre v2.0</span>
                     </div>
                 </div>
                 <div className="flex items-center gap-3">
                     <div className="flex items-center gap-2 px-3 py-1.5 rounded-full border border-white/[0.05] bg-white/[0.02] backdrop-blur-md text-[10px] font-bold text-zinc-500 uppercase tracking-widest">
                         <Pulse size={14} weight="bold" className="text-white animate-pulse" />
-                        Systems Operational
+                        Sistemas Operacionais
                     </div>
                     <div className="h-8 w-8 flex items-center justify-center rounded-full border border-white/[0.05] bg-white/[0.02] text-zinc-500">
                         <Bell size={16} weight="bold" />
@@ -418,7 +418,7 @@ function AppWindow({
                     </div>
                     <div className="flex flex-col">
                         <span className="text-xs font-bold text-white uppercase tracking-widest">{def.label}</span>
-                        <span className="text-[9px] font-black text-zinc-600 uppercase tracking-[0.2em]">CloudeOS Admin Console</span>
+                        <span className="text-[9px] font-black text-zinc-600 uppercase tracking-[0.2em]">Console Administrativo CloudeOS</span>
                     </div>
                 </div>
                 <div className="flex items-center gap-2">
@@ -457,15 +457,15 @@ function EmptyDesk({ onOpen }: { onOpen: (id: AppId) => void }) {
                 <div className="mx-auto w-20 h-20 rounded-full border border-white/[0.05] bg-white/[0.02] flex items-center justify-center mb-10 shadow-2xl">
                     <Sparkle size={32} weight="bold" className="text-white/20" />
                 </div>
-                <h2 className="text-3xl font-bold text-white tracking-tight">System Core Idling</h2>
-                <p className="mt-4 text-[10px] font-black uppercase tracking-[0.4em] text-zinc-600">Select a module to initiate foundation management</p>
+                <h2 className="text-3xl font-bold text-white tracking-tight">Núcleo em Repouso</h2>
+                <p className="mt-4 text-[10px] font-black uppercase tracking-[0.4em] text-zinc-600">Selecione um módulo para iniciar a gestão da fundação</p>
                 
                 <div className="mt-12 flex justify-center gap-4">
                     <button
                         onClick={() => onOpen("dashboard")}
                         className="px-8 py-3 rounded-2xl border border-white/10 bg-white text-black font-black uppercase tracking-widest text-[10px] transition-all hover:scale-105 active:scale-95 shadow-[0_8px_30px_rgb(255,255,255,0.05)]"
                     >
-                        Launch Terminal
+                        Iniciar Terminal
                     </button>
                 </div>
             </div>
@@ -558,7 +558,7 @@ function Taskbar({
                         }`}
                 >
                     <div className={startActive ? "brightness-0" : "scale-90 transition-transform group-hover:scale-100"}>
-                        <Logo variant="light" />
+                        <Logo variant="light" iconOnly />
                     </div>
                 </button>
                 <div className="mx-2 hidden h-8 w-px shrink-0 bg-white/[0.08] sm:block" />
@@ -637,19 +637,19 @@ function DashboardApp({ stats, charges }: { stats: any; charges: any[] }) {
             </div>
 
             {/* Resumo real */}
-            <Panel title="Platform Summary" icon={WarningCircle}>
-                <div className="grid gap-3 md:grid-cols-3">
-                    <div className="rounded-2xl border border-white/[0.05] bg-[#0a0a0a] p-4 group hover:border-white/10 transition-all">
-                        <span className="text-[9px] font-black uppercase tracking-widest text-zinc-600">Total Transactions</span>
-                        <p className="mt-2 text-2xl font-bold text-white tracking-tight">{totalCharges}</p>
+            <Panel title="Resumo da Plataforma" icon={WarningCircle}>
+                <div className="grid gap-4 md:grid-cols-3">
+                    <div className="rounded-2xl border border-white/[0.05] bg-white/[0.01] p-6 group hover:border-white/10 transition-all">
+                        <span className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-600">Total de Transações</span>
+                        <p className="mt-3 text-3xl font-bold text-white tracking-tight">{totalCharges}</p>
                     </div>
-                    <div className="rounded-2xl border border-emerald-500/20 bg-emerald-500/[0.02] p-4 group hover:border-emerald-500/40 transition-all">
-                        <span className="text-[9px] font-black uppercase tracking-widest text-emerald-500">Authorized</span>
-                        <p className="mt-2 text-2xl font-bold text-white tracking-tight">{paid}</p>
+                    <div className="rounded-2xl border border-emerald-500/10 bg-emerald-500/[0.02] p-6 group hover:border-emerald-500/30 transition-all">
+                        <span className="text-[10px] font-black uppercase tracking-[0.2em] text-emerald-500/60">Autorizadas</span>
+                        <p className="mt-3 text-3xl font-bold text-white tracking-tight">{paid}</p>
                     </div>
-                    <div className="rounded-2xl border border-amber-500/20 bg-amber-500/[0.02] p-4 group hover:border-amber-500/40 transition-all">
-                        <span className="text-[9px] font-black uppercase tracking-widest text-amber-500">Pending Execution</span>
-                        <p className="mt-2 text-2xl font-bold text-white tracking-tight">{pending}</p>
+                    <div className="rounded-2xl border border-amber-500/10 bg-amber-500/[0.02] p-6 group hover:border-amber-500/30 transition-all">
+                        <span className="text-[10px] font-black uppercase tracking-[0.2em] text-amber-500/60">Execução Pendente</span>
+                        <p className="mt-3 text-3xl font-bold text-white tracking-tight">{pending}</p>
                     </div>
                 </div>
             </Panel>
@@ -696,7 +696,7 @@ function KpiCard({
                     <Trend size={10} weight="bold" />
                     {Math.abs(delta).toFixed(1)}%
                 </div>
-                <span className="text-[9px] font-bold text-zinc-700 uppercase tracking-widest">vs. prev period</span>
+                <span className="text-[9px] font-bold text-zinc-700 uppercase tracking-widest">vs. período anterior</span>
             </div>
         </div>
     );
@@ -790,15 +790,15 @@ function UsersApp({ users, onRefresh }: { users: any[], onRefresh: () => void })
         <div className={`grid gap-6 h-full items-start ${selected ? "lg:grid-cols-[1fr_380px]" : ""}`}>
             <div className="flex flex-col h-full">
                 <div className="mb-6 flex flex-wrap items-center gap-3 bg-white/[0.01] p-2 rounded-2xl border border-white/[0.03]">
-                    <SearchBox value={search} onChange={setSearch} placeholder="Search identity..." />
+                    <SearchBox value={search} onChange={setSearch} placeholder="Buscar identidade..." />
                     <button onClick={onRefresh} className="h-10 w-10 flex items-center justify-center rounded-xl border border-white/[0.05] bg-white/[0.02] text-zinc-500 hover:text-white transition-all">
                         <Sparkle size={18} weight="bold" />
                     </button>
-                    <span className="ml-auto text-[10px] font-black uppercase tracking-widest text-zinc-600 mr-4">{filtered.length} units detected</span>
+                    <span className="ml-auto text-[10px] font-black uppercase tracking-widest text-zinc-600 mr-4">{filtered.length} unidades detectadas</span>
                 </div>
                 <div className="flex-1 bg-[#050505] rounded-[2rem] border border-white/[0.03] overflow-hidden">
                     <DataTable
-                        headers={["Authority", "Timestamp", "Endpoint", "Status"]}
+                        headers={["Identidade", "Data/Hora", "Email", "Status"]}
                         rows={filtered.map((u: any) => ({
                             key: u.id,
                             onClick: () => setSelected(u),
@@ -846,17 +846,17 @@ function UserDrawer({ user, onClose }: { user: any; onClose: () => void }) {
             </div>
 
             <div className="grid grid-cols-1 gap-3">
-                <Stat label="Identification" value={(user.id || "").slice(0, 12).toUpperCase()} />
-                <Stat label="Endpoint Path" value={user.slug || "NULL"} />
-                <Stat label="Authorization Date" value={new Date(user.created_at || user.joinedAt).toLocaleDateString("en-US", { year: 'numeric', month: 'long', day: 'numeric' })} />
+                <Stat label="Identificação" value={(user.id || "").slice(0, 12).toUpperCase()} />
+                <Stat label="Caminho do Endpoint" value={user.slug || "NULO"} />
+                <Stat label="Data de Autorização" value={new Date(user.created_at || user.joinedAt).toLocaleDateString("pt-BR", { year: 'numeric', month: 'long', day: 'numeric' })} />
             </div>
 
             <div className="mt-8 pt-8 border-t border-white/[0.03]">
-                <p className="text-[9px] font-black uppercase tracking-[0.4em] text-zinc-700 mb-6">Security Actions</p>
+                <p className="text-[9px] font-black uppercase tracking-[0.4em] text-zinc-700 mb-6">Ações de Segurança</p>
                 <div className="grid grid-cols-2 gap-3">
-                    <ActionBtn icon={UserCircle} label="Profile" />
-                    <ActionBtn icon={Eye} label="Impersonate" />
-                    <ActionBtn icon={Trash} danger label="Revoke" />
+                    <ActionBtn icon={UserCircle} label="Perfil" />
+                    <ActionBtn icon={Eye} label="Simular" />
+                    <ActionBtn icon={Trash} danger label="Revogar" />
                 </div>
             </div>
         </aside>
@@ -1084,159 +1084,151 @@ function SupportApp() {
     const [newMessage, setNewMessage] = useState("");
     const [loadingTickets, setLoadingTickets] = useState(true);
 
-    // 1. Fetch Tickets
     useEffect(() => {
         getAdminTickets().then(data => {
             setTickets(data);
             setLoadingTickets(false);
         });
-
-        // Listen for new tickets
-        const sub = supabase.channel('tickets_channel')
-            .on('postgres_changes', { event: '*', schema: 'public', table: 'tickets' }, () => {
-                getAdminTickets().then(setTickets);
-            })
-            .subscribe();
-
+        const sub = supabase.channel('tickets_changes').on('postgres_changes', { event: '*', schema: 'public', table: 'tickets' }, () => {
+            getAdminTickets().then(setTickets);
+        }).subscribe();
         return () => { supabase.removeChannel(sub); };
     }, []);
 
-    // 2. Fetch Messages for selected ticket
     useEffect(() => {
         if (!selectedTicket) return;
         getTicketMessages(selectedTicket.id).then(setMessages);
-
-        // Listen for new messages
-        const sub = supabase.channel(`messages_${selectedTicket.id}`)
-            .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'ticket_messages', filter: `ticket_id=eq.${selectedTicket.id}` }, () => {
-                getTicketMessages(selectedTicket.id).then(setMessages);
-            })
-            .subscribe();
-
+        const sub = supabase.channel(`messages_${selectedTicket.id}`).on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'ticket_messages', filter: `ticket_id=eq.${selectedTicket.id}` }, () => {
+            getTicketMessages(selectedTicket.id).then(setMessages);
+        }).subscribe();
         return () => { supabase.removeChannel(sub); };
     }, [selectedTicket]);
 
-    // 3. Send message
-    const handleSend = async () => {
+    const handleSendMessage = async () => {
         if (!newMessage.trim() || !selectedTicket || !profile) return;
         try {
             await sendTicketMessage(selectedTicket.id, profile.id, newMessage);
             setNewMessage("");
-            // Optimistic reload or let realtime handle it:
             getTicketMessages(selectedTicket.id).then(setMessages);
         } catch (e) {
-            console.error("Erro ao enviar mensagem", e);
+            console.error(e);
         }
     };
 
-    if (loadingTickets) {
-        return <div className="flex h-full items-center justify-center text-white/50 text-sm">Carregando chamados...</div>;
-    }
+    const handleCloseTicket = async () => {
+        if (!selectedTicket) return;
+        try {
+            await closeTicket(selectedTicket.id);
+            setSelectedTicket({ ...selectedTicket, status: 'closed' });
+        } catch (e) {
+            console.error(e);
+        }
+    };
 
-    if (tickets.length === 0) {
-        return (
-            <div className="flex h-full items-center justify-center">
-                <div className="text-center max-w-md animate-in fade-in duration-500">
-                    <Headset size={48} weight="duotone" className="mx-auto text-white/20 mb-4" />
-                    <h3 className="font-heading text-xl font-bold text-white mb-2">Central de Suporte</h3>
-                    <p className="font-body text-sm text-white/45 mb-6">Nenhum ticket de suporte aberto no momento. Quando os usuários entrarem em contato, os chamados aparecerão aqui em tempo real.</p>
-                </div>
-            </div>
-        );
-    }
+    if (loadingTickets) return <div className="flex h-full items-center justify-center"><Pulse size={32} weight="bold" className="text-white/10 animate-pulse" /></div>;
 
     return (
-        <div className="grid h-full grid-cols-1 gap-4 lg:grid-cols-[300px_1fr]">
-            {/* Tickets List */}
-            <div className="flex flex-col gap-2 overflow-y-auto pr-2 custom-scrollbar border-r border-white/5">
-                <h3 className="mb-2 font-heading text-sm font-bold text-white/80">Chamados Abertos ({tickets.length})</h3>
-                {tickets.map((t) => (
-                    <button
-                        key={t.id}
-                        onClick={() => setSelectedTicket(t)}
-                        className={`text-left rounded-xl border p-3 transition-all ${selectedTicket?.id === t.id ? "border-lime-accent/50 bg-lime-accent/5" : "border-white/[0.05] bg-white/[0.02] hover:bg-white/[0.04]"}`}
-                    >
-                        <div className="flex justify-between items-start mb-1">
-                            <span className="font-heading text-xs font-bold text-white truncate">{t.profiles?.full_name || 'Usuário'}</span>
-                            <span className="font-mono text-[9px] text-white/40">{new Date(t.created_at).toLocaleDateString()}</span>
-                        </div>
-                        <p className="font-body text-xs text-white/60 truncate">{t.subject}</p>
-                        <div className="mt-2 flex items-center gap-2">
-                            <span className={`inline-flex rounded-md px-1.5 py-0.5 font-body text-[9px] font-black uppercase tracking-widest ${t.status === 'open' ? 'bg-amber-400/20 text-amber-400' : 'bg-lime-accent/20 text-lime-accent'}`}>
-                                {t.status}
-                            </span>
-                        </div>
-                    </button>
-                ))}
+        <div className="grid h-full grid-cols-1 gap-6 lg:grid-cols-[340px_1fr]">
+            {/* Sidebar — Sessions */}
+            <div className="flex flex-col gap-3 overflow-y-auto pr-2 custom-scrollbar">
+                <div className="mb-4 px-2 flex items-center justify-between">
+                    <h3 className="text-[10px] font-black uppercase tracking-[0.4em] text-zinc-600">Sessões Ativas</h3>
+                    <div className="h-1.5 w-1.5 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]" />
+                </div>
+                {tickets.length === 0 ? (
+                    <div className="p-10 text-center border border-dashed border-white/5 rounded-[2rem]">
+                        <p className="text-[10px] font-bold text-zinc-700 uppercase tracking-widest">Nenhum sinal detectado</p>
+                    </div>
+                ) : (
+                    tickets.map((t) => (
+                        <button
+                            key={t.id}
+                            onClick={() => setSelectedTicket(t)}
+                            className={`group flex items-center gap-4 rounded-[1.5rem] border p-5 transition-all ${selectedTicket?.id === t.id ? "border-white/10 bg-white/[0.04]" : "border-white/[0.03] bg-black hover:border-white/10"}`}
+                        >
+                            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-white text-black font-black text-xs">
+                                {(t.profiles?.full_name || 'U').charAt(0).toUpperCase()}
+                            </div>
+                            <div className="flex-1 min-w-0 text-left">
+                                <p className="font-bold text-white text-[11px] truncate tracking-tight">{t.profiles?.full_name || 'Usuário'}</p>
+                                <p className="text-[10px] font-bold text-zinc-600 uppercase tracking-widest mt-1">Ref: {t.id.slice(0, 6)}</p>
+                            </div>
+                            {t.status === 'open' && <div className="h-1.5 w-1.5 rounded-full bg-amber-500" />}
+                        </button>
+                    ))
+                )}
             </div>
 
-            {/* Chat Area */}
-            {selectedTicket ? (
-                <div className="flex flex-col h-full rounded-2xl border border-white/[0.06] bg-white/[0.01] overflow-hidden relative">
-                    <div className="flex items-center justify-between border-b border-white/[0.06] bg-white/[0.02] px-4 py-3">
-                        <div>
-                            <h4 className="font-heading text-sm font-bold text-white">{selectedTicket.subject}</h4>
-                            <p className="font-body text-[11px] text-white/45">Cliente: {selectedTicket.profiles?.email}</p>
-                        </div>
-                        {selectedTicket.status === 'open' && (
-                            <button 
-                                onClick={async () => {
-                                    try {
-                                        await closeTicket(selectedTicket.id);
-                                        setSelectedTicket({...selectedTicket, status: 'closed'});
-                                    } catch (e) {
-                                        console.error(e);
-                                    }
-                                }}
-                                className="rounded-md border border-white/10 bg-white/5 px-2 py-1 font-heading text-[10px] text-white hover:bg-white/10"
-                            >
-                                Encerrar
-                            </button>
-                        )}
-                    </div>
-
-                    <div className="flex-1 overflow-y-auto p-4 custom-scrollbar flex flex-col gap-4">
-                        {messages.length === 0 ? (
-                            <p className="text-center font-body text-xs text-white/40 mt-auto mb-auto">Nenhuma mensagem neste chamado ainda.</p>
-                        ) : (
-                            messages.map((m) => {
-                                const isAdmin = m.sender_id === profile?.id; // simplificação
-                                return (
-                                    <div key={m.id} className={`flex max-w-[80%] flex-col ${isAdmin ? "self-end items-end" : "self-start items-start"}`}>
-                                        <div className={`rounded-2xl px-4 py-2.5 font-body text-sm ${isAdmin ? "bg-lime-accent text-[#0a0a0a] rounded-tr-sm" : "bg-white/[0.06] text-white/90 rounded-tl-sm"}`}>
-                                            {m.message}
-                                        </div>
-                                        <span className="mt-1 px-1 font-mono text-[9px] text-white/40">{new Date(m.created_at).toLocaleTimeString()} - {m.profiles?.full_name || 'Admin'}</span>
-                                    </div>
-                                );
-                            })
-                        )}
-                    </div>
-
-                    <div className="border-t border-white/[0.06] bg-[#0a0d10] p-3">
-                        {selectedTicket.status === 'open' ? (
+            {/* Chat Console */}
+            <div className="flex flex-col h-full bg-[#050505] rounded-[2.5rem] border border-white/[0.05] overflow-hidden">
+                {selectedTicket ? (
+                    <>
+                        <header className="flex items-center justify-between border-b border-white/[0.03] px-8 py-6 bg-white/[0.01]">
+                            <div className="flex items-center gap-4">
+                                <div className="flex h-12 w-12 items-center justify-center rounded-full border border-white/10 text-white">
+                                    <Headset size={20} weight="bold" />
+                                </div>
+                                <div>
+                                    <h3 className="font-bold text-white tracking-tight">{selectedTicket.profiles?.full_name || 'Usuário'}</h3>
+                                    <p className="text-[9px] font-black text-emerald-500 mt-1 uppercase tracking-[0.2em]">Conexão Segura Ativa</p>
+                                </div>
+                            </div>
                             <div className="flex items-center gap-2">
+                                {selectedTicket.status === 'open' && (
+                                    <button onClick={handleCloseTicket} className="px-4 py-2 rounded-xl bg-red-500/10 border border-red-500/20 text-red-500 text-[10px] font-black uppercase tracking-widest hover:bg-red-500/20 transition-all">
+                                        Finalizar
+                                    </button>
+                                )}
+                            </div>
+                        </header>
+
+                        <div className="flex-1 overflow-y-auto p-8 space-y-6 custom-scrollbar bg-black">
+                            {messages.length === 0 ? (
+                                <div className="h-full flex items-center justify-center text-zinc-800 uppercase font-black text-[9px] tracking-[0.5em]">Aguardando transmissão...</div>
+                            ) : (
+                                messages.map((m) => {
+                                    const isFromAdmin = ADMIN_EMAILS.includes(m.sender_email?.toLowerCase()) || m.sender_id === profile?.id;
+                                    return (
+                                        <div key={m.id} className={`flex ${isFromAdmin ? 'justify-end' : 'justify-start'}`}>
+                                            <div className={`max-w-[70%] rounded-[1.8rem] p-5 ${isFromAdmin ? 'bg-white text-black' : 'bg-zinc-900/50 border border-white/5 text-zinc-300'}`}>
+                                                <p className="text-[13px] font-medium leading-relaxed">{m.content || m.message}</p>
+                                                <p className={`text-[8px] mt-4 font-black uppercase tracking-[0.2em] ${isFromAdmin ? 'text-black/30' : 'text-zinc-600'}`}>{fmtDateTime(m.created_at)}</p>
+                                            </div>
+                                        </div>
+                                    );
+                                })
+                            )}
+                        </div>
+
+                        <footer className="p-6 border-t border-white/[0.03] bg-white/[0.01]">
+                            <div className="flex items-center gap-3">
                                 <input
+                                    type="text"
                                     value={newMessage}
                                     onChange={(e) => setNewMessage(e.target.value)}
-                                    onKeyDown={(e) => e.key === 'Enter' && handleSend()}
-                                    placeholder="Digite sua resposta..."
-                                    className="flex-1 rounded-xl border border-white/10 bg-white/[0.03] px-4 py-2.5 font-body text-sm text-white placeholder:text-white/30 focus:outline-none focus:ring-2 focus:ring-lime-accent/30"
+                                    onKeyDown={(e) => e.key === 'Enter' && handleSendMessage()}
+                                    placeholder="Transmitir mensagem ao console do usuário..."
+                                    className="flex-1 h-14 bg-black border border-white/[0.08] rounded-2xl px-6 text-sm text-white placeholder:text-zinc-900 focus:outline-none focus:border-white/20 transition-all"
                                 />
-                                <button onClick={handleSend} className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-lime-accent text-[#0a0a0a] transition-all hover:scale-105 active:scale-95">
-                                    <ArrowUp size={16} weight="bold" />
+                                <button
+                                    onClick={handleSendMessage}
+                                    className="h-14 w-14 flex items-center justify-center bg-white text-black rounded-2xl transition-all hover:scale-105 active:scale-95"
+                                >
+                                    <ArrowUp size={20} weight="bold" />
                                 </button>
                             </div>
-                        ) : (
-                            <p className="text-center font-body text-[11px] text-white/40">Este chamado foi encerrado.</p>
-                        )}
+                        </footer>
+                    </>
+                ) : (
+                    <div className="flex h-full items-center justify-center">
+                        <div className="text-center max-w-xs animate-in fade-in duration-1000">
+                            <Headset size={48} weight="bold" className="mx-auto text-white/5 mb-8" />
+                            <h3 className="text-sm font-black text-white uppercase tracking-[0.4em] mb-4">Central de Comando</h3>
+                            <p className="text-[10px] font-bold text-zinc-700 uppercase tracking-widest leading-loose">Selecione uma transmissão de usuário para iniciar o protocolo de suporte</p>
+                        </div>
                     </div>
-                </div>
-            ) : (
-                <div className="flex items-center justify-center text-white/40 font-body text-sm">
-                    Selecione um chamado à esquerda
-                </div>
-            )}
+                )}
+            </div>
         </div>
     );
 }
@@ -1248,33 +1240,33 @@ function SupportApp() {
 function SettingsApp() {
     return (
         <div className="grid gap-4 xl:grid-cols-2">
-            <Panel title="Platform Core" icon={GearSix}>
+            <Panel title="Núcleo da Plataforma" icon={GearSix}>
                 <div className="space-y-4">
-                    <SettingRow label="Environment Identity" value="CloudeOS v2.0" />
-                    <SettingRow label="Domain Mapping" value="cloudepay.vercel.app" />
-                    <SettingRow label="System Status" value="OLED Mastery Active" />
+                    <SettingRow label="Identidade do Ambiente" value="CloudeOS v2.0" />
+                    <SettingRow label="Mapeamento de Domínio" value="cloudepay.vercel.app" />
+                    <SettingRow label="Status do Sistema" value="OLED Mastery Ativo" />
                 </div>
             </Panel>
 
-            <Panel title="Integrations" icon={Database}>
+            <Panel title="Integrações" icon={Database}>
                 <ul className="space-y-3">
-                    <Integration name="Identity & Security" status="ok" />
-                    <Integration name="Global Deployment" status="ok" />
-                    <Integration name="Financial Gateway" status="pending" />
+                    <Integration name="Identidade & Segurança" status="ok" />
+                    <Integration name="Implantação Global" status="ok" />
+                    <Integration name="Gateway Financeiro" status="pending" />
                 </ul>
             </Panel>
 
-            <Panel title="Economics" icon={ChartBar}>
+            <Panel title="Economia" icon={ChartBar}>
                 <div className="space-y-4">
-                    <SettingRow label="Execution Fee" value="2.0% Fixed" />
-                    <SettingRow label="Asset Class" value="Fiat (BRL)" />
+                    <SettingRow label="Taxa de Execução" value="2.0% Fixa" />
+                    <SettingRow label="Classe de Ativo" value="Fiat (BRL)" />
                 </div>
             </Panel>
 
-            <Panel title="High Council" icon={Lock}>
+            <Panel title="Conselho Superior" icon={Lock}>
                 <div className="space-y-4">
                     <SettingRow label="Principal" value="admin@cloudepay.com" />
-                    <SettingRow label="Secondary" value="vault@cloudepay.com" />
+                    <SettingRow label="Secundário" value="vault@cloudepay.com" />
                 </div>
             </Panel>
         </div>
@@ -1297,9 +1289,9 @@ function SettingRow({ label, value, editable }: { label: string; value: string; 
 
 function Integration({ name, status }: { name: string; status: "ok" | "pending" | "error" }) {
     const map = {
-        ok: { color: "text-emerald-500", bg: "bg-emerald-500/10", label: "OPERATIONAL" },
-        pending: { color: "text-amber-500", bg: "bg-amber-500/10", label: "SYNCHRONIZING" },
-        error: { color: "text-red-500", bg: "bg-red-500/10", label: "FAULT_DETECTED" },
+        ok: { color: "text-emerald-500", bg: "bg-emerald-500/10", label: "OPERACIONAL" },
+        pending: { color: "text-amber-500", bg: "bg-amber-500/10", label: "SINCRONIZANDO" },
+        error: { color: "text-red-500", bg: "bg-red-500/10", label: "FALHA_DETECTADA" },
     }[status];
     return (
         <li className="flex items-center justify-between rounded-xl border border-white/[0.03] bg-white/[0.01] px-4 py-3">
@@ -1320,19 +1312,19 @@ function LogsApp() {
         <div className="flex h-full items-center justify-center bg-black">
             <div className="text-center max-w-md animate-in fade-in duration-1000">
                 <Database size={56} weight="bold" className="mx-auto text-white/10 mb-8" />
-                <h3 className="text-2xl font-bold text-white mb-4 tracking-tight">Audit Console</h3>
-                <p className="text-[10px] font-black uppercase tracking-[0.4em] text-zinc-600 mb-10 leading-loose">Secure ledger synchronization in progress. Every transaction event is being indexed by the foundation core.</p>
+                <h3 className="text-2xl font-bold text-white mb-4 tracking-tight">Console de Auditoria</h3>
+                <p className="text-[10px] font-black uppercase tracking-[0.4em] text-zinc-600 mb-10 leading-loose">Sincronização segura de registros em andamento. Cada transação está sendo indexada pelo núcleo.</p>
                 
                 <div className="rounded-[2rem] border border-white/[0.04] bg-white/[0.01] p-8 text-left">
-                    <p className="text-[9px] font-black uppercase tracking-[0.4em] text-zinc-700 mb-6">Subsystem Status</p>
+                    <p className="text-[9px] font-black uppercase tracking-[0.4em] text-zinc-700 mb-6">Status do Subsistema</p>
                     <ul className="space-y-4">
                         <li className="flex items-center gap-3 text-[11px] font-bold text-zinc-400">
                             <div className="h-1.5 w-1.5 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]" />
-                            Transaction Indexing Active
+                            Indexação de Transações Ativa
                         </li>
                         <li className="flex items-center gap-3 text-[11px] font-bold text-zinc-400">
                             <div className="h-1.5 w-1.5 rounded-full bg-amber-500 shadow-[0_0_8px_rgba(245,158,11,0.5)]" />
-                            Detailed Event Logging Deploying
+                            Log de Eventos Detalhado em Implantação
                         </li>
                     </ul>
                 </div>
@@ -1411,7 +1403,7 @@ function Pill({
                 className="bg-transparent text-[10px] font-black uppercase tracking-widest text-zinc-400 focus:outline-none appearance-none cursor-pointer hover:text-white transition-colors"
             >
                 {options.map((o) => (
-                    <option key={o} value={o} className="bg-black">{o === "all" ? "MASTER_FILTER" : o.toUpperCase()}</option>
+                    <option key={o} value={o} className="bg-black">{o === "all" ? "FILTRO_MESTRE" : o.toUpperCase()}</option>
                 ))}
             </select>
         </div>
