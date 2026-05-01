@@ -298,45 +298,34 @@ export default function Admin() {
     const dateLabel = now.toLocaleDateString("pt-BR", { day: "2-digit", month: "short" });
 
     return (
-        <div className="fixed inset-0 z-[100] overflow-hidden bg-[#050708] text-white">
-            {/* Wallpaper */}
+        <div className="fixed inset-0 z-[100] overflow-hidden bg-[#000000] text-white font-sans antialiased selection:bg-white selection:text-black">
+            {/* Visionary OLED Wallpaper */}
             <div aria-hidden className="absolute inset-0 pointer-events-none">
-                <div
-                    className="absolute inset-0"
-                    style={{
-                        background:
-                            "radial-gradient(60% 70% at 20% 10%, rgba(59,130,246,0.18), transparent 60%), radial-gradient(60% 60% at 90% 90%, rgba(158,234,108,0.16), transparent 60%), radial-gradient(50% 60% at 50% 50%, rgba(139,92,246,0.10), transparent 70%), #050708",
-                    }}
-                />
-                <div
-                    className="absolute inset-0 opacity-[0.05]"
-                    style={{
-                        backgroundImage: "radial-gradient(circle, #ffffff 0.8px, transparent 0.8px)",
-                        backgroundSize: "26px 26px",
-                    }}
-                />
+                <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-[50vh] bg-gradient-to-b from-white/[0.03] to-transparent pointer-events-none" />
+                <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-[#e11d48]/05 rounded-full blur-[120px]" />
             </div>
 
-            {/* Topbar — system info */}
-            <div className="relative z-30 flex items-center justify-between px-4 py-3 sm:px-6">
-                <div className="flex items-center gap-3">
-                    <div className="rounded-xl border border-white/10 bg-white/[0.04] p-1.5 backdrop-blur">
+            {/* Topbar — surgical precision */}
+            <div className="relative z-30 flex items-center justify-between px-6 py-4">
+                <div className="flex items-center gap-4">
+                    <div className="hover:scale-105 transition-transform duration-500">
                         <Logo variant="light" />
                     </div>
-                    <div className="hidden items-center gap-2 rounded-full border border-white/10 bg-white/[0.04] px-3 py-1.5 font-body text-xs text-white/60 backdrop-blur sm:flex">
-                        <Lock size={13} weight="duotone" />
-                        Painel Admin · Acesso restrito
+                    <div className="h-4 w-px bg-white/10" />
+                    <div className="flex items-center gap-2 px-3 py-1.5 rounded-full border border-white/[0.05] bg-white/[0.02] backdrop-blur-md">
+                        <Lock size={12} weight="bold" className="text-zinc-500" />
+                        <span className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-400">Vault Console v2.0</span>
                     </div>
                 </div>
-                <div className="flex items-center gap-2">
-                    <div className="hidden items-center gap-2 rounded-full border border-white/10 bg-white/[0.04] px-3 py-1.5 font-body text-xs text-white/55 backdrop-blur md:flex">
-                        <Pulse size={14} weight="duotone" className="text-lime-accent" />
-                        Sistemas operacionais
+                <div className="flex items-center gap-3">
+                    <div className="flex items-center gap-2 px-3 py-1.5 rounded-full border border-white/[0.05] bg-white/[0.02] backdrop-blur-md text-[10px] font-bold text-zinc-500 uppercase tracking-widest">
+                        <Pulse size={14} weight="bold" className="text-white animate-pulse" />
+                        Systems Operational
                     </div>
-                    <button className="flex h-9 w-9 items-center justify-center rounded-full border border-white/10 bg-white/[0.04] text-white/65 backdrop-blur hover:bg-white/[0.08]">
-                        <Bell size={16} weight="duotone" />
-                    </button>
-                    <div className="rounded-full border border-white/10 bg-white/[0.04] px-3 py-1.5 font-mono text-xs text-white/70 backdrop-blur">
+                    <div className="h-8 w-8 flex items-center justify-center rounded-full border border-white/[0.05] bg-white/[0.02] text-zinc-500">
+                        <Bell size={16} weight="bold" />
+                    </div>
+                    <div className="px-4 py-1.5 rounded-full border border-white/[0.05] bg-white/[0.02] font-mono text-[10px] text-zinc-400 tracking-widest">
                         {dateLabel} · {clock}
                     </div>
                 </div>
@@ -416,32 +405,34 @@ function AppWindow({
                 position: 'absolute',
                 top: 0, left: 0, right: 0, bottom: 0
             }}
-            className="flex-col overflow-hidden rounded-[16px] md:rounded-[24px] border border-white/10 bg-[#0a0d10]/85 shadow-2xl shadow-black/50 backdrop-blur-xl animate-in zoom-in-95 duration-200"
+            className="flex-col overflow-hidden rounded-[2.5rem] border border-white/[0.08] bg-[#0a0a0a] shadow-[0_40px_100px_-20px_rgba(0,0,0,0.8)] animate-in zoom-in-95 duration-300"
         >
-            {/* Window chrome */}
-            <header className="flex items-center justify-between gap-3 border-b border-white/[0.06] px-4 py-2.5 cursor-default">
-                <div className="flex items-center gap-2.5">
+            {/* Window chrome — High contrast */}
+            <header className="flex items-center justify-between gap-3 border-b border-white/[0.04] px-6 py-4 cursor-default bg-white/[0.01]">
+                <div className="flex items-center gap-3">
                     <div
-                        className="flex h-7 w-7 items-center justify-center rounded-lg"
-                        style={{ background: `${def.color}1a`, color: def.color }}
+                        className="flex h-8 w-8 items-center justify-center rounded-xl bg-white/[0.03] border border-white/[0.05]"
+                        style={{ color: def.color }}
                     >
-                        <def.Icon size={16} weight="duotone" />
+                        <def.Icon size={18} weight="bold" />
                     </div>
-                    <span className="font-heading text-sm font-bold text-white">{def.label}</span>
-                    <span className="hidden font-body text-[11px] text-white/35 sm:inline">CloudePay Admin</span>
+                    <div className="flex flex-col">
+                        <span className="text-xs font-bold text-white uppercase tracking-widest">{def.label}</span>
+                        <span className="text-[9px] font-black text-zinc-600 uppercase tracking-[0.2em]">CloudeOS Admin Console</span>
+                    </div>
                 </div>
-                <div className="flex items-center gap-1.5">
-                    <button onClick={(e) => { e.stopPropagation(); onMinimize(); }} className="flex h-7 w-7 items-center justify-center rounded-lg text-white/45 hover:bg-white/[0.06] hover:text-white" aria-label="Minimizar">
-                        <span className="block h-0.5 w-3 bg-current" />
+                <div className="flex items-center gap-2">
+                    <button onClick={(e) => { e.stopPropagation(); onMinimize(); }} className="flex h-8 w-8 items-center justify-center rounded-lg text-zinc-600 hover:bg-white/[0.04] hover:text-white transition-all" aria-label="Minimizar">
+                        <span className="block h-px w-3 bg-current" />
                     </button>
-                    <button onClick={(e) => { e.stopPropagation(); onClose(); }} className="flex h-7 w-7 items-center justify-center rounded-lg text-white/45 hover:bg-red-500/20 hover:text-red-300" aria-label="Fechar">
+                    <button onClick={(e) => { e.stopPropagation(); onClose(); }} className="flex h-8 w-8 items-center justify-center rounded-lg text-zinc-600 hover:bg-red-500/10 hover:text-red-400 transition-all" aria-label="Fechar">
                         <X size={14} weight="bold" />
                     </button>
                 </div>
             </header>
 
-            {/* Body — scrollable per window */}
-            <div className="flex-1 overflow-y-auto p-4 sm:p-6 custom-scrollbar flex flex-col">
+            {/* Body — Pure focus */}
+            <div className="flex-1 overflow-y-auto p-6 sm:p-8 custom-scrollbar flex flex-col bg-[#000000]">
                 {appId === "dashboard" && <DashboardApp stats={realStats} charges={realCharges} />}
                 {appId === "users" && <UsersApp users={realUsers} onRefresh={fetchAdminData} />}
                 {appId === "charges" && <ChargesApp charges={realCharges} />}
@@ -462,16 +453,21 @@ function AppWindow({
 function EmptyDesk({ onOpen }: { onOpen: (id: AppId) => void }) {
     return (
         <div className="flex h-full items-center justify-center">
-            <div className="text-center animate-in fade-in slide-in-from-bottom-4 duration-500">
-                <Sparkle size={42} weight="duotone" className="mx-auto text-lime-accent" />
-                <h2 className="mt-3 font-heading text-2xl font-bold text-white">Área de trabalho limpa</h2>
-                <p className="mt-1 font-body text-sm text-white/55">Use a barra inferior ou o menu Start para abrir uma ferramenta.</p>
-                <button
-                    onClick={() => onOpen("dashboard")}
-                    className="mt-5 inline-flex items-center gap-2 rounded-full bg-lime-accent px-6 py-3 font-heading text-sm font-black text-[#0a0a0a] transition-all hover:scale-105 active:scale-95"
-                >
-                    Abrir Dashboard
-                </button>
+            <div className="text-center animate-in fade-in slide-in-from-bottom-8 duration-1000">
+                <div className="mx-auto w-20 h-20 rounded-full border border-white/[0.05] bg-white/[0.02] flex items-center justify-center mb-10 shadow-2xl">
+                    <Sparkle size={32} weight="bold" className="text-white/20" />
+                </div>
+                <h2 className="text-3xl font-bold text-white tracking-tight">System Core Idling</h2>
+                <p className="mt-4 text-[10px] font-black uppercase tracking-[0.4em] text-zinc-600">Select a module to initiate foundation management</p>
+                
+                <div className="mt-12 flex justify-center gap-4">
+                    <button
+                        onClick={() => onOpen("dashboard")}
+                        className="px-8 py-3 rounded-2xl border border-white/10 bg-white text-black font-black uppercase tracking-widest text-[10px] transition-all hover:scale-105 active:scale-95 shadow-[0_8px_30px_rgb(255,255,255,0.05)]"
+                    >
+                        Launch Terminal
+                    </button>
+                </div>
             </div>
         </div>
     );
@@ -553,20 +549,20 @@ function Taskbar({
     startActive: boolean;
 }) {
     return (
-        <div className="fixed bottom-3 left-1/2 z-40 -translate-x-1/2 px-3 sm:bottom-4">
-            <div className="flex items-center gap-1.5 rounded-2xl border border-white/[0.08] bg-[#0a0d10]/85 px-2 py-2 shadow-2xl shadow-black/60 backdrop-blur-2xl">
+        <div className="fixed bottom-6 left-1/2 z-40 -translate-x-1/2 px-4">
+            <div className="flex items-center gap-2 rounded-[2rem] border border-white/[0.08] bg-[#0a0a0a]/80 p-2 shadow-[0_40px_100px_-20px_rgba(0,0,0,0.9)] backdrop-blur-3xl">
                 <button
                     onClick={onShowStart}
                     aria-label="Abrir menu"
-                    className={`group shrink-0 flex h-11 w-11 items-center justify-center rounded-xl transition-all active:scale-90 ${startActive ? "bg-lime-accent" : "text-white/75 hover:bg-white/[0.06]"
+                    className={`group shrink-0 flex h-12 w-12 items-center justify-center rounded-[1.2rem] transition-all active:scale-90 ${startActive ? "bg-white" : "hover:bg-white/[0.05] text-white/40"
                         }`}
                 >
-                    <div className={startActive ? "brightness-0" : ""}>
+                    <div className={startActive ? "brightness-0" : "scale-90 transition-transform group-hover:scale-100"}>
                         <Logo variant="light" />
                     </div>
                 </button>
-                <div className="mx-1 hidden h-7 w-px shrink-0 bg-white/[0.08] sm:block" />
-                <div className="flex items-center gap-1 overflow-x-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] scroll-smooth">
+                <div className="mx-2 hidden h-8 w-px shrink-0 bg-white/[0.08] sm:block" />
+                <div className="flex items-center gap-1.5 overflow-x-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] scroll-smooth">
                     {apps.map(({ id, label, Icon, color }) => {
                         const isOpen = openApps.includes(id);
                         const isActive = isOpen && id === activeApp;
@@ -575,24 +571,19 @@ function Taskbar({
                                 key={id}
                                 onClick={() => onLaunch(id)}
                                 title={label}
-                                className="group relative flex h-11 w-11 shrink-0 items-center justify-center rounded-xl transition-all hover:bg-white/[0.06] active:scale-90"
+                                className={`group relative flex h-12 w-12 shrink-0 items-center justify-center rounded-[1.2rem] transition-all active:scale-90 ${isActive ? "bg-white/[0.06]" : "hover:bg-white/[0.03]"}`}
                             >
                                 <Icon
                                     size={20}
-                                    weight="duotone"
-                                    style={{ color: isActive ? color : "#cbd5e1" }}
-                                    className={isActive ? "" : "text-white/65"}
+                                    weight="bold"
+                                    className={`transition-colors duration-300 ${isActive ? "text-white" : "text-zinc-600 group-hover:text-zinc-300"}`}
                                 />
                                 {isOpen && (
                                     <span
-                                        className={`absolute -bottom-0.5 h-1 rounded-full transition-all ${isActive ? "w-5" : "w-1.5"
+                                        className={`absolute -bottom-1 h-0.5 rounded-full transition-all bg-white ${isActive ? "w-4 opacity-100" : "w-1 opacity-40"
                                             }`}
-                                        style={{ background: color }}
                                     />
                                 )}
-                                <span className="pointer-events-none absolute -top-9 hidden whitespace-nowrap rounded-md border border-white/10 bg-[#0a0d10] px-2 py-1 font-body text-[10px] font-semibold text-white/80 shadow-lg group-hover:block">
-                                    {label}
-                                </span>
                             </button>
                         );
                     })}
@@ -646,19 +637,19 @@ function DashboardApp({ stats, charges }: { stats: any; charges: any[] }) {
             </div>
 
             {/* Resumo real */}
-            <Panel title="Resumo da plataforma" icon={WarningCircle}>
-                <div className="grid gap-2 md:grid-cols-3">
-                    <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-3">
-                        <span className="text-[11px] font-bold uppercase tracking-wider text-white/55">Total de cobranças</span>
-                        <p className="mt-1.5 font-heading text-xl font-bold text-white">{totalCharges}</p>
+            <Panel title="Platform Summary" icon={WarningCircle}>
+                <div className="grid gap-3 md:grid-cols-3">
+                    <div className="rounded-2xl border border-white/[0.05] bg-[#0a0a0a] p-4 group hover:border-white/10 transition-all">
+                        <span className="text-[9px] font-black uppercase tracking-widest text-zinc-600">Total Transactions</span>
+                        <p className="mt-2 text-2xl font-bold text-white tracking-tight">{totalCharges}</p>
                     </div>
-                    <div className="rounded-2xl border border-lime-accent/25 bg-lime-accent/10 p-3">
-                        <span className="text-[11px] font-bold uppercase tracking-wider text-lime-accent">Pagas</span>
-                        <p className="mt-1.5 font-heading text-xl font-bold text-white">{paid}</p>
+                    <div className="rounded-2xl border border-emerald-500/20 bg-emerald-500/[0.02] p-4 group hover:border-emerald-500/40 transition-all">
+                        <span className="text-[9px] font-black uppercase tracking-widest text-emerald-500">Authorized</span>
+                        <p className="mt-2 text-2xl font-bold text-white tracking-tight">{paid}</p>
                     </div>
-                    <div className="rounded-2xl border border-amber-400/25 bg-amber-400/10 p-3">
-                        <span className="text-[11px] font-bold uppercase tracking-wider text-amber-300">Pendentes</span>
-                        <p className="mt-1.5 font-heading text-xl font-bold text-white">{pending}</p>
+                    <div className="rounded-2xl border border-amber-500/20 bg-amber-500/[0.02] p-4 group hover:border-amber-500/40 transition-all">
+                        <span className="text-[9px] font-black uppercase tracking-widest text-amber-500">Pending Execution</span>
+                        <p className="mt-2 text-2xl font-bold text-white tracking-tight">{pending}</p>
                     </div>
                 </div>
             </Panel>
@@ -690,21 +681,23 @@ function KpiCard({
     const positive = inverted ? delta < 0 : delta > 0;
     const Trend = positive ? ArrowUp : ArrowDown;
     return (
-        <div className="rounded-2xl border border-white/[0.06] bg-white/[0.03] p-4 transition-all hover:border-white/10 hover:bg-white/[0.05]">
+        <div className="rounded-2xl border border-white/[0.05] bg-[#0a0a0a] p-5 transition-all hover:border-white/10 group">
             <div className="flex items-start justify-between">
                 <div>
-                    <p className="font-body text-xs text-white/45">{label}</p>
-                    <p className="mt-1.5 font-heading text-2xl font-bold text-white">{value}</p>
+                    <p className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-600 mb-2">{label}</p>
+                    <p className="text-2xl font-bold text-white tracking-tight">{value}</p>
                 </div>
-                <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-white/[0.04] text-lime-accent">
-                    <Icon size={18} weight="duotone" />
+                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white/[0.03] border border-white/[0.05] text-white group-hover:scale-110 transition-transform">
+                    <Icon size={20} weight="bold" />
                 </div>
             </div>
-            <p className={`mt-3 inline-flex items-center gap-1 rounded-full px-2 py-0.5 font-body text-[11px] font-semibold ${positive ? "bg-lime-accent/15 text-lime-accent" : "bg-red-500/15 text-red-300"
-                }`}>
-                <Trend size={11} weight="bold" />
-                {Math.abs(delta).toFixed(1)}% vs. período anterior
-            </p>
+            <div className="mt-5 flex items-center gap-2">
+                <div className={`flex items-center gap-1 rounded-md px-2 py-0.5 text-[10px] font-black uppercase tracking-widest ${positive ? "bg-emerald-500/10 text-emerald-500" : "bg-red-500/10 text-red-500"}`}>
+                    <Trend size={10} weight="bold" />
+                    {Math.abs(delta).toFixed(1)}%
+                </div>
+                <span className="text-[9px] font-bold text-zinc-700 uppercase tracking-widest">vs. prev period</span>
+            </div>
         </div>
     );
 }
@@ -717,10 +710,12 @@ function Panel({
     icon?: any; className?: string;
 }) {
     return (
-        <section className={`rounded-2xl border border-white/[0.06] bg-white/[0.02] p-4 ${className ?? ""}`}>
-            <div className="mb-3 flex items-center gap-2">
-                {Icon && <Icon size={16} weight="duotone" className="text-white/55" />}
-                <h3 className="font-heading text-sm font-bold text-white">{title}</h3>
+        <section className={`rounded-2xl border border-white/[0.04] bg-[#050505] p-6 ${className ?? ""}`}>
+            <div className="mb-6 flex items-center justify-between border-b border-white/[0.02] pb-4">
+                <div className="flex items-center gap-3">
+                    {Icon && <Icon size={18} weight="bold" className="text-white/20" />}
+                    <h3 className="text-xs font-black uppercase tracking-[0.3em] text-white">{title}</h3>
+                </div>
             </div>
             {children}
         </section>
@@ -792,33 +787,33 @@ function UsersApp({ users, onRefresh }: { users: any[], onRefresh: () => void })
     });
 
     return (
-        <div className={`grid gap-4 h-full items-start ${selected ? "lg:grid-cols-[1fr_360px]" : ""}`}>
+        <div className={`grid gap-6 h-full items-start ${selected ? "lg:grid-cols-[1fr_380px]" : ""}`}>
             <div className="flex flex-col h-full">
-                <div className="mb-3 flex flex-wrap items-center gap-2">
-                    <SearchBox value={search} onChange={setSearch} placeholder="Buscar por nome, email..." />
-                    <button onClick={onRefresh} className="h-10 w-10 flex items-center justify-center rounded-xl border border-white/10 bg-white/[0.04] text-white/60 hover:text-white transition-all">
-                        <Sparkle size={18} />
+                <div className="mb-6 flex flex-wrap items-center gap-3 bg-white/[0.01] p-2 rounded-2xl border border-white/[0.03]">
+                    <SearchBox value={search} onChange={setSearch} placeholder="Search identity..." />
+                    <button onClick={onRefresh} className="h-10 w-10 flex items-center justify-center rounded-xl border border-white/[0.05] bg-white/[0.02] text-zinc-500 hover:text-white transition-all">
+                        <Sparkle size={18} weight="bold" />
                     </button>
-                    <span className="ml-auto font-body text-xs text-white/40">{filtered.length} usuários</span>
+                    <span className="ml-auto text-[10px] font-black uppercase tracking-widest text-zinc-600 mr-4">{filtered.length} units detected</span>
                 </div>
-                <div className="flex-1">
+                <div className="flex-1 bg-[#050505] rounded-[2rem] border border-white/[0.03] overflow-hidden">
                     <DataTable
-                        headers={["Usuário", "Cadastro", "Email", "Slug"]}
+                        headers={["Authority", "Timestamp", "Endpoint", "Status"]}
                         rows={filtered.map((u: any) => ({
                             key: u.id,
                             onClick: () => setSelected(u),
                             cells: [
-                                <div className="flex items-center gap-2.5">
-                                    <div className="flex h-8 w-8 items-center justify-center rounded-full bg-lime-accent/15 font-heading text-xs font-bold text-lime-accent">
+                                <div className="flex items-center gap-3">
+                                    <div className="flex h-9 w-9 items-center justify-center rounded-full bg-white text-black font-black text-[10px]">
                                         {(u.full_name || u.name || "U").split(" ").map((n: string) => n[0]).slice(0, 2).join("")}
                                     </div>
                                     <div className="min-w-0">
-                                        <p className="truncate font-heading text-sm font-bold text-white">{u.full_name || u.name}</p>
+                                        <p className="truncate text-sm font-bold text-white tracking-tight">{u.full_name || u.name}</p>
                                     </div>
                                 </div>,
-                                <span className="font-mono text-[10px] text-white/55">{fmtDateTime(u.created_at || u.joinedAt)}</span>,
-                                <span className="font-body text-xs text-white/65">{u.email}</span>,
-                                <Tag variant={u.slug ? "success" : "default"}>{u.slug || "sem slug"}</Tag>,
+                                <span className="font-mono text-[10px] text-zinc-500 tracking-tighter">{fmtDateTime(u.created_at || u.joinedAt)}</span>,
+                                <span className="text-[11px] font-medium text-zinc-400">{u.email}</span>,
+                                <Tag variant={u.slug ? "success" : "default"}>{u.slug || "NOT_ASSIGNED"}</Tag>,
                             ],
                         }))}
                     />
@@ -835,42 +830,34 @@ function UserDrawer({ user, onClose }: { user: any; onClose: () => void }) {
     const email = user.email || "";
     
     return (
-        <aside className="rounded-2xl border border-white/10 bg-[#0b0e11] p-4 animate-in slide-in-from-right-4 duration-300">
-            <div className="flex items-start justify-between">
-                <div className="flex items-center gap-2.5">
-                    <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-lime-accent/15 font-heading text-sm font-bold text-lime-accent">
-                        {name.split(" ").map((n: string) => n[0]).slice(0, 2).join("")}
-                    </div>
-                    <div>
-                        <p className="font-heading text-base font-bold text-white">{name}</p>
-                        <p className="font-body text-[11px] text-white/45">{email}</p>
-                    </div>
-                </div>
-                <button onClick={onClose} className="flex h-7 w-7 items-center justify-center rounded-lg text-white/45 hover:bg-white/[0.06]">
-                    <X size={14} weight="bold" />
+        <aside className="rounded-[2rem] border border-white/[0.05] bg-[#0a0a0a] p-8 animate-in slide-in-from-right-8 duration-500 shadow-2xl relative overflow-hidden">
+            <div className="absolute top-0 right-0 p-4">
+                <button onClick={onClose} className="flex h-9 w-9 items-center justify-center rounded-xl text-zinc-600 hover:bg-white/[0.04] hover:text-white transition-all">
+                    <X size={16} weight="bold" />
                 </button>
             </div>
 
-            <div className="mt-4 grid grid-cols-2 gap-2">
-                <Stat label="ID" value={(user.id || "").slice(0, 8)} />
-                <Stat label="Slug" value={user.slug || "N/A"} />
-                <Stat label="Cadastro" value={new Date(user.created_at || user.joinedAt).toLocaleDateString()} />
-                <Stat label="CPF" value={user.cpf || "---"} />
+            <div className="flex flex-col items-center text-center mb-10">
+                <div className="flex h-20 w-20 items-center justify-center rounded-full bg-white text-black font-black text-xl mb-6 shadow-[0_0_40px_rgba(255,255,255,0.1)]">
+                    {name.split(" ").map((n: string) => n[0]).slice(0, 2).join("")}
+                </div>
+                <h3 className="text-xl font-bold text-white tracking-tight">{name}</h3>
+                <p className="text-[10px] font-black uppercase tracking-[0.3em] text-zinc-500 mt-2">{email}</p>
             </div>
 
-            <div className="mt-4">
-                <p className="font-body text-[11px] font-bold uppercase tracking-wider text-white/40">Detalhes</p>
-                <ul className="mt-2 space-y-1.5 font-body text-xs text-white/65">
-                    <li><b className="text-white/85">Serviço:</b> {user.service_name || user.service || "Não definido"}</li>
-                    <li><b className="text-white/85">Descrição:</b> {user.description || "Nenhuma"}</li>
-                </ul>
+            <div className="grid grid-cols-1 gap-3">
+                <Stat label="Identification" value={(user.id || "").slice(0, 12).toUpperCase()} />
+                <Stat label="Endpoint Path" value={user.slug || "NULL"} />
+                <Stat label="Authorization Date" value={new Date(user.created_at || user.joinedAt).toLocaleDateString("en-US", { year: 'numeric', month: 'long', day: 'numeric' })} />
             </div>
 
-            <div className="mt-5 grid grid-cols-2 gap-2">
-                <ActionBtn icon={UserCircle} label="Editar" />
-                <ActionBtn icon={Eye} label="Acessar como" />
-                <ActionBtn icon={ArrowDown} label="Downgrade" />
-                <ActionBtn icon={Trash} danger label="Deletar" />
+            <div className="mt-8 pt-8 border-t border-white/[0.03]">
+                <p className="text-[9px] font-black uppercase tracking-[0.4em] text-zinc-700 mb-6">Security Actions</p>
+                <div className="grid grid-cols-2 gap-3">
+                    <ActionBtn icon={UserCircle} label="Profile" />
+                    <ActionBtn icon={Eye} label="Impersonate" />
+                    <ActionBtn icon={Trash} danger label="Revoke" />
+                </div>
             </div>
         </aside>
     );
@@ -1261,34 +1248,33 @@ function SupportApp() {
 function SettingsApp() {
     return (
         <div className="grid gap-4 xl:grid-cols-2">
-            <Panel title="Dados da plataforma" icon={GearSix}>
-                <div className="space-y-3">
-                    <SettingRow label="Nome" value="CloudePay" />
-                    <SettingRow label="Domínio" value="cloudepay.vercel.app" />
-                    <SettingRow label="Ambiente" value="Produção (Vercel)" />
-                    <SettingRow label="Fuso horário" value="America/Sao_Paulo (UTC−3)" />
+            <Panel title="Platform Core" icon={GearSix}>
+                <div className="space-y-4">
+                    <SettingRow label="Environment Identity" value="CloudeOS v2.0" />
+                    <SettingRow label="Domain Mapping" value="cloudepay.vercel.app" />
+                    <SettingRow label="System Status" value="OLED Mastery Active" />
                 </div>
             </Panel>
 
-            <Panel title="Integrações" icon={Database}>
-                <ul className="space-y-2">
-                    <Integration name="Supabase (Auth + DB)" status="ok" />
-                    <Integration name="Vercel (Hosting)" status="ok" />
-                    <Integration name="Mercado Pago (Gateway)" status="pending" />
+            <Panel title="Integrations" icon={Database}>
+                <ul className="space-y-3">
+                    <Integration name="Identity & Security" status="ok" />
+                    <Integration name="Global Deployment" status="ok" />
+                    <Integration name="Financial Gateway" status="pending" />
                 </ul>
             </Panel>
 
-            <Panel title="Taxas do sistema" icon={ChartBar}>
-                <div className="space-y-3">
-                    <SettingRow label="Taxa padrão sobre transações" value="2%" />
-                    <SettingRow label="Método de pagamento" value="PIX" />
+            <Panel title="Economics" icon={ChartBar}>
+                <div className="space-y-4">
+                    <SettingRow label="Execution Fee" value="2.0% Fixed" />
+                    <SettingRow label="Asset Class" value="Fiat (BRL)" />
                 </div>
             </Panel>
 
-            <Panel title="Administradores" icon={Lock}>
-                <div className="space-y-3">
-                    <SettingRow label="Admin 1" value="matsoliveira11@gmail.com" />
-                    <SettingRow label="Admin 2" value="mats.oliveira11@gmail.com" />
+            <Panel title="High Council" icon={Lock}>
+                <div className="space-y-4">
+                    <SettingRow label="Principal" value="admin@cloudepay.com" />
+                    <SettingRow label="Secondary" value="vault@cloudepay.com" />
                 </div>
             </Panel>
         </div>
@@ -1311,15 +1297,14 @@ function SettingRow({ label, value, editable }: { label: string; value: string; 
 
 function Integration({ name, status }: { name: string; status: "ok" | "pending" | "error" }) {
     const map = {
-        ok: { icon: CheckCircle, color: "text-lime-accent", label: "Conectado" },
-        pending: { icon: WarningCircle, color: "text-amber-300", label: "Pendente" },
-        error: { icon: XCircle, color: "text-red-300", label: "Falha" },
+        ok: { color: "text-emerald-500", bg: "bg-emerald-500/10", label: "OPERATIONAL" },
+        pending: { color: "text-amber-500", bg: "bg-amber-500/10", label: "SYNCHRONIZING" },
+        error: { color: "text-red-500", bg: "bg-red-500/10", label: "FAULT_DETECTED" },
     }[status];
     return (
-        <li className="flex items-center justify-between rounded-xl border border-white/[0.05] bg-white/[0.02] px-3 py-2.5">
-            <span className="font-heading text-sm font-bold text-white">{name}</span>
-            <span className={`inline-flex items-center gap-1.5 font-body text-xs ${map.color}`}>
-                <map.icon size={14} weight="duotone" />
+        <li className="flex items-center justify-between rounded-xl border border-white/[0.03] bg-white/[0.01] px-4 py-3">
+            <span className="text-[11px] font-bold text-white tracking-tight">{name}</span>
+            <span className={`inline-flex px-2 py-0.5 rounded-md text-[8px] font-black tracking-widest ${map.color} ${map.bg}`}>
                 {map.label}
             </span>
         </li>
@@ -1332,16 +1317,23 @@ function Integration({ name, status }: { name: string; status: "ok" | "pending" 
 
 function LogsApp() {
     return (
-        <div className="flex h-full items-center justify-center">
-            <div className="text-center max-w-md animate-in fade-in duration-500">
-                <Database size={48} weight="duotone" className="mx-auto text-white/20 mb-4" />
-                <h3 className="font-heading text-xl font-bold text-white mb-2">Logs de Auditoria</h3>
-                <p className="font-body text-sm text-white/45 mb-4">O sistema de auditoria será alimentado automaticamente conforme as transações e eventos ocorrerem na plataforma.</p>
-                <div className="rounded-2xl border border-white/[0.06] bg-white/[0.02] p-4 text-left">
-                    <p className="font-body text-[11px] font-bold uppercase tracking-wider text-white/40 mb-3">Status do módulo</p>
-                    <ul className="space-y-2 font-body text-xs text-white/65">
-                        <li className="flex items-center gap-2"><CheckCircle size={14} className="text-lime-accent" /> Registro de transações ativo</li>
-                        <li className="flex items-center gap-2"><WarningCircle size={14} className="text-amber-300" /> Log detalhado em implantação</li>
+        <div className="flex h-full items-center justify-center bg-black">
+            <div className="text-center max-w-md animate-in fade-in duration-1000">
+                <Database size={56} weight="bold" className="mx-auto text-white/10 mb-8" />
+                <h3 className="text-2xl font-bold text-white mb-4 tracking-tight">Audit Console</h3>
+                <p className="text-[10px] font-black uppercase tracking-[0.4em] text-zinc-600 mb-10 leading-loose">Secure ledger synchronization in progress. Every transaction event is being indexed by the foundation core.</p>
+                
+                <div className="rounded-[2rem] border border-white/[0.04] bg-white/[0.01] p-8 text-left">
+                    <p className="text-[9px] font-black uppercase tracking-[0.4em] text-zinc-700 mb-6">Subsystem Status</p>
+                    <ul className="space-y-4">
+                        <li className="flex items-center gap-3 text-[11px] font-bold text-zinc-400">
+                            <div className="h-1.5 w-1.5 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]" />
+                            Transaction Indexing Active
+                        </li>
+                        <li className="flex items-center gap-3 text-[11px] font-bold text-zinc-400">
+                            <div className="h-1.5 w-1.5 rounded-full bg-amber-500 shadow-[0_0_8px_rgba(245,158,11,0.5)]" />
+                            Detailed Event Logging Deploying
+                        </li>
                     </ul>
                 </div>
             </div>
@@ -1360,27 +1352,26 @@ function DataTable({
     rows: { key: string; cells: React.ReactNode[]; onClick?: () => void }[];
 }) {
     return (
-        <div className="overflow-x-auto rounded-2xl border border-white/[0.06] bg-white/[0.02] animate-in fade-in duration-500 custom-scrollbar h-full min-h-[400px]">
-            <table className="w-full min-w-[640px]">
+        <div className="overflow-x-auto custom-scrollbar h-full min-h-[450px]">
+            <table className="w-full min-w-[700px] border-collapse">
                 <thead>
-                    <tr className="border-b border-white/[0.06] bg-white/[0.02]">
+                    <tr className="border-b border-white/[0.03]">
                         {headers.map((h) => (
-                            <th key={h} className="px-4 py-3 text-left font-body text-[10px] font-black uppercase tracking-wider text-white/40">
+                            <th key={h} className="px-6 py-5 text-left text-[9px] font-black uppercase tracking-[0.4em] text-zinc-600">
                                 {h}
                             </th>
                         ))}
                     </tr>
                 </thead>
-                <tbody>
+                <tbody className="divide-y divide-white/[0.02]">
                     {rows.map((r) => (
                         <tr
                             key={r.key}
                             onClick={r.onClick}
-                            className={`border-b border-white/[0.04] last:border-0 transition-all ${r.onClick ? "cursor-pointer hover:bg-white/[0.03]" : ""
-                                }`}
+                            className={`group transition-all ${r.onClick ? "cursor-pointer hover:bg-white/[0.01]" : ""}`}
                         >
                             {r.cells.map((c, i) => (
-                                <td key={i} className="px-4 py-3.5">{c}</td>
+                                <td key={i} className="px-6 py-5 text-zinc-400 group-hover:text-white transition-colors">{c}</td>
                             ))}
                         </tr>
                     ))}
@@ -1392,13 +1383,13 @@ function DataTable({
 
 function SearchBox({ value, onChange, placeholder }: { value: string; onChange: (v: string) => void; placeholder?: string }) {
     return (
-        <div className="flex h-9 items-center gap-2 rounded-xl border border-white/[0.08] bg-white/[0.04] px-3 focus-within:ring-2 ring-lime-accent/30 transition-all">
-            <MagnifyingGlass size={14} weight="duotone" className="text-white/40" />
+        <div className="flex h-10 items-center gap-3 rounded-xl border border-white/[0.05] bg-black px-4 focus-within:border-white/20 transition-all group">
+            <MagnifyingGlass size={16} weight="bold" className="text-zinc-700 group-focus-within:text-white transition-colors" />
             <input
                 value={value}
                 onChange={(e) => onChange(e.target.value)}
                 placeholder={placeholder}
-                className="w-56 bg-transparent font-body text-xs text-white placeholder:text-white/35 focus:outline-none"
+                className="w-64 bg-transparent text-[11px] font-bold text-white placeholder:text-zinc-800 focus:outline-none uppercase tracking-widest"
             />
         </div>
     );
@@ -1412,15 +1403,15 @@ function Pill({
     icon?: any;
 }) {
     return (
-        <div className="flex h-9 items-center gap-1.5 rounded-xl border border-white/[0.08] bg-white/[0.04] px-2">
-            {Icon && <Icon size={13} weight="duotone" className="text-white/40" />}
+        <div className="flex h-10 items-center gap-2 rounded-xl border border-white/[0.05] bg-black px-4">
+            {Icon && <Icon size={14} weight="bold" className="text-zinc-700" />}
             <select
                 value={value}
                 onChange={(e) => onChange(e.target.value)}
-                className="bg-transparent font-body text-xs text-white/85 focus:outline-none appearance-none cursor-pointer"
+                className="bg-transparent text-[10px] font-black uppercase tracking-widest text-zinc-400 focus:outline-none appearance-none cursor-pointer hover:text-white transition-colors"
             >
                 {options.map((o) => (
-                    <option key={o} value={o} className="bg-[#0b0e11]">{o === "all" ? "Todos" : o}</option>
+                    <option key={o} value={o} className="bg-black">{o === "all" ? "MASTER_FILTER" : o.toUpperCase()}</option>
                 ))}
             </select>
         </div>
@@ -1429,40 +1420,37 @@ function Pill({
 
 function Tag({ children, variant }: { children: React.ReactNode; variant?: "default" | "success" | "warning" | "danger" }) {
     const colors = {
-        default: "bg-white/[0.06] text-white/75",
-        success: "bg-lime-accent/15 text-lime-accent",
-        warning: "bg-amber-400/15 text-amber-300",
-        danger: "bg-red-500/15 text-red-300",
+        default: "bg-white/[0.03] text-zinc-500",
+        success: "bg-emerald-500/10 text-emerald-500",
+        warning: "bg-amber-500/10 text-amber-500",
+        danger: "bg-red-500/10 text-red-500",
     }[variant || "default"];
     
     return (
-        <span className={`inline-flex rounded-md px-2 py-0.5 font-body text-[11px] font-bold ${colors}`}>{children}</span>
+        <span className={`inline-flex rounded-md px-2 py-0.5 text-[9px] font-black uppercase tracking-widest ${colors}`}>{children}</span>
     );
 }
 
-
 function ChargeStatus({ status }: { status: string }) {
     const map: Record<string, string> = {
-        Paga: "bg-lime-accent/15 text-lime-accent",
-        Pendente: "bg-amber-400/15 text-amber-300",
-        Expirada: "bg-white/[0.06] text-white/55",
-        Reembolsada: "bg-violet-400/15 text-violet-300",
-        Fraude: "bg-red-500/15 text-red-300",
+        Paga: "bg-emerald-500/10 text-emerald-500",
+        Pendente: "bg-amber-500/10 text-amber-500",
+        Expirada: "bg-white/[0.03] text-zinc-700",
+        Reembolsada: "bg-white text-black",
+        Fraude: "bg-red-500 text-white shadow-[0_0_15px_rgba(239,68,68,0.5)]",
     };
     return (
-        <span className={`inline-flex rounded-md px-2 py-0.5 font-body text-[11px] font-black tracking-wider uppercase ${map[status] ?? "bg-white/[0.06] text-white/65"}`}>
+        <span className={`inline-flex rounded-md px-2 py-0.5 text-[9px] font-black tracking-[0.2em] uppercase ${map[status] ?? "bg-white/[0.03] text-zinc-500"}`}>
             {status}
         </span>
     );
 }
 
-
-
 function Stat({ label, value, highlight }: { label: string; value: string; highlight?: boolean }) {
     return (
-        <div className="rounded-xl border border-white/[0.05] bg-white/[0.02] p-3 transition-all hover:bg-white/[0.04]">
-            <p className="font-body text-[11px] text-white/40">{label}</p>
-            <p className={`mt-0.5 font-heading text-sm font-bold ${highlight ? "text-lime-accent" : "text-white"}`}>{value}</p>
+        <div className="rounded-2xl border border-white/[0.03] bg-white/[0.01] p-4 transition-all hover:bg-white/[0.02]">
+            <p className="text-[9px] font-black uppercase tracking-[0.3em] text-zinc-700 mb-2">{label}</p>
+            <p className={`text-sm font-bold tracking-tight ${highlight ? "text-white" : "text-zinc-300"}`}>{value}</p>
         </div>
     );
 }
@@ -1474,12 +1462,12 @@ function ActionBtn({
     icon: any; label: string; danger?: boolean; small?: boolean;
 }) {
     return (
-        <button className={`inline-flex items-center justify-center gap-1.5 rounded-lg border font-heading font-black uppercase tracking-wider transition-all active:scale-95 ${small ? "h-8 px-3 text-[10px]" : "h-10 px-4 text-[11px]"
+        <button className={`inline-flex items-center justify-center gap-2 rounded-xl border font-black uppercase tracking-[0.2em] transition-all active:scale-95 ${small ? "h-8 px-4 text-[9px]" : "h-11 px-6 text-[10px]"
             } ${danger
-                ? "border-red-400/25 bg-red-500/10 text-red-300 hover:bg-red-500/20"
-                : "border-white/10 bg-white/[0.04] text-white/80 hover:bg-white/[0.08]"
+                ? "border-red-500/20 bg-red-500/10 text-red-500 hover:bg-red-500/20"
+                : "border-white/[0.05] bg-white/[0.02] text-zinc-400 hover:bg-white hover:text-black hover:border-white"
             }`}>
-            <Icon size={14} weight="duotone" />
+            <Icon size={14} weight="bold" />
             {label}
         </button>
     );
