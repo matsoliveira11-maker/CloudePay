@@ -81,19 +81,20 @@ function CopyIcon() {
 // --- Logic ---
 
 export default function PublicCharge() {
-  const { chargeId } = useParams<{ chargeId: string }>();
+  const { slug, chargeId } = useParams<{ slug: string; chargeId: string }>();
   const [charge, setCharge] = useState<any>(null);
   const [profile, setProfile] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [copied, setCopied] = useState(false);
   const [status, setStatus] = useState<"pending" | "paid" | "expired">("pending");
   const [generatedQr, setGeneratedQr] = useState<string>("");
+  const intervalRef = useRef<number | null>(null);
 
   useEffect(() => {
     if (charge?.pix_code && !charge?.qr_code_image) {
       QRCode.toDataURL(charge.pix_code, {
         margin: 1,
-        width: 400,
+        width: 600,
         color: { dark: "#000000", light: "#ffffff" }
       }).then(setGeneratedQr);
     }
@@ -101,10 +102,14 @@ export default function PublicCharge() {
 
   useEffect(() => {
     async function load() {
-      if (!chargeId) return;
+      if (!chargeId || !slug) return;
       try {
-        const c = await api.getCharge(chargeId);
-        if (!c) return;
+        // Busca a cobrança validando o slug do proprietário
+        const c = await api.getChargeBySlugAndId(slug, chargeId);
+        if (!c) {
+          setCharge(null);
+          return;
+        }
         setCharge(c);
         setStatus(c.status);
         const p = await api.getProfileById(c.profile_id);
@@ -114,7 +119,7 @@ export default function PublicCharge() {
       }
     }
     load();
-  }, [chargeId]);
+  }, [chargeId, slug]);
 
   useEffect(() => {
     if (status === "paid" || status === "expired" || !chargeId) return;
@@ -141,95 +146,107 @@ export default function PublicCharge() {
 
   if (loading) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-[#fffafa]">
-        <div className="h-8 w-8 animate-spin rounded-full border-4 border-[#fecdd3] border-t-[#e11d48]" />
+      <div className="flex min-h-screen items-center justify-center bg-[#000000]">
+        <div className="h-10 w-10 border-2 border-white/5 border-t-white rounded-full animate-spin" />
       </div>
     );
   }
 
   if (!charge) {
     return (
-      <div className="flex min-h-screen flex-col items-center justify-center bg-[#fffafa] p-6 text-center">
-        <h1 className="text-2xl font-bold text-[#4c0519]">Cobrança não encontrada</h1>
-        <p className="mt-2 text-[#881337]">O link pode estar expirado ou incorreto.</p>
-        <Link to="/" className="mt-6 font-semibold text-[#e11d48]">Voltar para o início</Link>
+      <div className="flex min-h-screen flex-col items-center justify-center bg-[#000000] p-6 text-center">
+        <div className="mb-8 opacity-20"><Logo variant="light" /></div>
+        <h1 className="text-xl font-bold text-white tracking-tight">Cobrança Não Localizada</h1>
+        <p className="mt-3 text-sm text-zinc-500 max-w-[280px]">O link pode ter expirado ou o endereço de destino está incorreto.</p>
+        <Link to="/" className="mt-10 text-[10px] font-black uppercase tracking-[0.3em] text-white/40 hover:text-white transition-colors">Voltar ao Início</Link>
       </div>
     );
   }
 
   return (
-    <main className="min-h-screen bg-[#fffafa] text-[#4c0519] antialiased page-grid flex flex-col items-center justify-center p-4">
-      <div className="w-full max-w-md">
-        <div className="mb-8 flex flex-col items-center text-center">
-          <Logo />
-          <div className="mt-4 flex items-center gap-2 rounded-full bg-white px-3 py-1 text-[10px] font-bold uppercase tracking-widest text-[#e11d48] shadow-sm border border-[#fecdd3]">
-            <ShieldIcon /> Pagamento 100% Seguro
+    <main className="min-h-screen bg-[#000000] text-white antialiased flex flex-col items-center justify-center p-4">
+      <div className="w-full max-w-md animate-in fade-in zoom-in-95 duration-1000">
+        <div className="mb-12 flex flex-col items-center text-center">
+          <Logo variant="light" />
+          <div className="mt-6 flex items-center gap-2 rounded-full border border-white/[0.05] bg-white/[0.02] px-4 py-1.5 text-[9px] font-black uppercase tracking-[0.2em] text-zinc-400">
+            <ShieldIcon /> Protocolo de Pagamento Seguro
           </div>
         </div>
 
         {status === "paid" ? (
-          <section className="rounded-[2.5rem] border border-[#fecdd3] bg-white p-8 text-center shadow-[0_32px_80px_rgba(76,5,25,0.12)]">
-            <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-full bg-[#9EEA6C]/20 text-[#006400]">
-              <svg className="h-10 w-10" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M5 13l4 4L19 7" />
+          <section className="rounded-[3rem] border border-white/[0.05] bg-white/[0.01] p-10 text-center shadow-2xl backdrop-blur-xl">
+            <div className="mx-auto flex h-24 w-24 items-center justify-center rounded-full bg-emerald-500/10 text-emerald-500 shadow-[0_0_50px_rgba(16,185,129,0.1)]">
+              <svg className="h-12 w-12" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M5 13l4 4L19 7" />
               </svg>
             </div>
-            <h1 className="mt-6 text-3xl font-semibold tracking-tight text-[#4c0519]">Pagamento confirmado!</h1>
-            <p className="mt-2 text-[#881337]">A transação foi processada com sucesso.</p>
-            <div className="mt-8 space-y-3 text-left">
-              <div className="flex justify-between rounded-2xl bg-[#fffafa] p-4 text-sm font-semibold border border-[#fecdd3]">
-                <span className="text-[#881337]">Valor</span>
-                <span>{formatBRL(charge.amount_cents)}</span>
+            <h1 className="mt-8 text-3xl font-bold tracking-tight text-white">Transação Concluída</h1>
+            <p className="mt-3 text-zinc-500 text-sm">O pagamento foi processado e autorizado com sucesso.</p>
+            
+            <div className="mt-10 space-y-3">
+              <div className="flex justify-between rounded-2xl border border-white/[0.03] bg-white/[0.02] p-5 text-sm font-medium">
+                <span className="text-zinc-600 uppercase text-[10px] font-black tracking-widest">Valor Pago</span>
+                <span className="text-white font-bold tracking-tight">{formatBRL(charge.amount_cents)}</span>
               </div>
-              <div className="flex justify-between rounded-2xl bg-[#fffafa] p-4 text-sm font-semibold border border-[#fecdd3]">
-                <span className="text-[#881337]">Recebedor</span>
-                <span>{profile?.full_name}</span>
+              <div className="flex justify-between rounded-2xl border border-white/[0.03] bg-white/[0.02] p-5 text-sm font-medium">
+                <span className="text-zinc-600 uppercase text-[10px] font-black tracking-widest">Destinatário</span>
+                <span className="text-white font-bold tracking-tight">{profile?.full_name}</span>
               </div>
             </div>
+
+            <button onClick={() => window.print()} className="mt-10 text-[10px] font-black uppercase tracking-[0.3em] text-zinc-700 hover:text-white transition-colors">Imprimir Comprovante</button>
           </section>
         ) : (
-          <section className="rounded-[2.5rem] border border-[#fecdd3] bg-white p-6 shadow-[0_32px_80px_rgba(76,5,25,0.12)]">
-            <div className="flex items-start justify-between">
-              <div className="flex-1">
-                <p className="text-[10px] font-bold uppercase tracking-widest text-[#9f1239]">Você está pagando</p>
-                <h1 className="mt-1 text-2xl font-semibold tracking-tight text-[#4c0519]">{charge.service_name}</h1>
-                <p className="mt-1 text-sm text-[#881337]">Para: <strong>{profile?.full_name}</strong></p>
+          <section className="rounded-[3rem] border border-white/[0.05] bg-[#050505] p-8 shadow-2xl relative overflow-hidden">
+            <div className="absolute top-0 right-0 p-8 opacity-5 pointer-events-none">
+                <Logo variant="light" />
+            </div>
+
+            <div className="flex items-start justify-between relative z-10">
+              <div className="flex-1 min-w-0 pr-4">
+                <p className="text-[10px] font-black uppercase tracking-[0.25em] text-zinc-600">Serviço/Produto</p>
+                <h1 className="mt-2 text-2xl font-bold tracking-tight text-white truncate">{charge.service_name}</h1>
+                <p className="mt-2 text-sm text-zinc-500">Destinado a: <span className="text-zinc-300 font-semibold tracking-tight">{profile?.full_name}</span></p>
               </div>
-              <div className="rounded-2xl border border-[#fecdd3] bg-[#fffafa] p-2 flex items-center justify-center min-w-[112px] min-h-[112px]">
+              <div className="rounded-3xl border border-white/[0.08] bg-white p-2.5 shadow-[0_0_40px_rgba(255,255,255,0.05)]">
                 {(charge.qr_code_image || generatedQr) ? (
-                  <img src={charge.qr_code_image || generatedQr} alt="QR Code PIX" className="h-24 w-24 sm:h-28 sm:w-28" />
+                  <img src={charge.qr_code_image || generatedQr} alt="Pix QR" className="h-28 w-28 sm:h-32 sm:w-32 rounded-xl" />
                 ) : (
-                  <div className="h-24 w-24 sm:h-28 sm:w-28 animate-pulse bg-zinc-100 rounded-xl" />
+                  <div className="h-28 w-28 sm:h-32 sm:w-32 animate-pulse bg-zinc-100 rounded-xl" />
                 )}
               </div>
             </div>
 
-            <div className="mt-8">
-              <p className="text-[10px] font-bold uppercase tracking-widest text-[#9f1239]">Valor total</p>
-              <div className="mt-1 text-4xl font-semibold tracking-tight text-[#e11d48]">
+            <div className="mt-10">
+              <p className="text-[10px] font-black uppercase tracking-[0.25em] text-zinc-600">Valor da Transação</p>
+              <div className="mt-2 text-5xl font-bold tracking-tighter text-white">
                 {formatBRL(charge.amount_cents)}
               </div>
             </div>
 
-            <div className="mt-8 space-y-3">
+            <div className="mt-10 space-y-4">
               <button
                 onClick={copyPix}
-                className={`flex w-full items-center justify-center gap-2 rounded-2xl py-4 text-sm font-semibold transition ${
-                  copied ? "bg-[#16a34a] text-white" : "bg-[#e11d48] text-white shadow-[0_14px_30px_rgba(225,29,72,0.22)]"
+                className={`flex w-full items-center justify-center gap-3 rounded-2xl h-16 text-xs font-black uppercase tracking-[0.2em] transition-all active:scale-[0.98] ${
+                  copied ? "bg-emerald-500 text-white" : "bg-white text-black hover:bg-zinc-200"
                 }`}
               >
-                {copied ? "Código copiado!" : <><CopyIcon /> Copiar código PIX</>}
+                {copied ? "Código Copiado!" : <><CopyIcon /> Copiar Código PIX</>}
               </button>
-              <div className="flex items-center justify-center gap-2 text-[11px] font-bold uppercase tracking-widest text-[#881337]">
-                <ClockIcon /> Aguardando pagamento...
+              
+              <div className="flex items-center justify-center gap-2.5 text-[9px] font-black uppercase tracking-[0.3em] text-zinc-700 py-2">
+                <div className="h-1.5 w-1.5 rounded-full bg-amber-500 animate-pulse" />
+                <ClockIcon /> Aguardando Confirmação da Rede
               </div>
             </div>
           </section>
         )}
 
-        <p className="mt-10 text-center text-[10px] font-bold uppercase tracking-[0.2em] text-[#881337]/40">
-          Powered by CloudePay Network
-        </p>
+        <footer className="mt-12 text-center">
+            <p className="text-[9px] font-black uppercase tracking-[0.4em] text-zinc-800">
+                Segurança Biométrica & Criptografia CloudePay Network
+            </p>
+        </footer>
       </div>
     </main>
   );

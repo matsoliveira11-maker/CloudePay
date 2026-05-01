@@ -117,7 +117,7 @@ export default function FixedQRCode() {
     if (charge?.pix_code && !charge?.qr_code_image) {
       QRCode.toDataURL(charge.pix_code, {
         margin: 1,
-        width: 400,
+        width: 600,
         color: { dark: "#000000", light: "#ffffff" }
       }).then(setGeneratedQr);
     }
@@ -186,128 +186,142 @@ export default function FixedQRCode() {
 
   if (stage === "loading") {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-[#fffafa]">
-        <div className="h-8 w-8 animate-spin rounded-full border-4 border-[#fecdd3] border-t-[#e11d48]" />
+      <div className="flex min-h-screen items-center justify-center bg-[#000000]">
+        <div className="h-10 w-10 border-2 border-white/5 border-t-white rounded-full animate-spin" />
       </div>
     );
   }
 
   if (stage === "notfound") {
     return (
-      <div className="flex min-h-screen flex-col items-center justify-center bg-[#fffafa] p-6 text-center">
-        <Logo />
-        <h1 className="mt-8 text-2xl font-bold text-[#4c0519]">Profissional não encontrado</h1>
-        <p className="mt-2 text-[#881337]">O link pode estar incorreto ou a conta foi desativada.</p>
-        <Link to="/" className="mt-6 font-semibold text-[#e11d48]">Ir para o início</Link>
+      <div className="flex min-h-screen flex-col items-center justify-center bg-[#000000] p-6 text-center">
+        <div className="mb-8 opacity-20"><Logo variant="light" /></div>
+        <h1 className="text-xl font-bold text-white tracking-tight">Vendedor Não Localizado</h1>
+        <p className="mt-3 text-sm text-zinc-500 max-w-[280px]">O link pode estar incorreto ou a conta foi desativada.</p>
+        <Link to="/" className="mt-10 text-[10px] font-black uppercase tracking-[0.3em] text-white/40 hover:text-white transition-colors">Voltar ao Início</Link>
       </div>
     );
   }
 
   return (
-    <main className="min-h-screen bg-[#fffafa] text-[#4c0519] antialiased page-grid flex flex-col items-center py-10 px-4">
-      <div className="w-full max-w-md">
-        <div className="mb-8 flex flex-col items-center text-center">
-          <Logo />
-          <div className="mt-4 flex items-center gap-2 rounded-full bg-white px-3 py-1 text-[10px] font-bold uppercase tracking-widest text-[#e11d48] shadow-sm border border-[#fecdd3]">
-            <ShieldIcon /> Pagamento 100% Seguro
+    <main className="min-h-screen bg-[#000000] text-white antialiased flex flex-col items-center py-10 px-4">
+      <div className="w-full max-w-md animate-in fade-in slide-in-from-bottom-4 duration-1000">
+        <div className="mb-12 flex flex-col items-center text-center">
+          <Logo variant="light" />
+          <div className="mt-6 flex items-center gap-2 rounded-full border border-white/[0.05] bg-white/[0.02] px-4 py-1.5 text-[9px] font-black uppercase tracking-[0.2em] text-zinc-400">
+            <ShieldIcon /> Gateway de Pagamento Seguro
           </div>
         </div>
 
         {stage === "form" && (
-          <section className="rounded-[2.5rem] border border-[#fecdd3] bg-white p-6 shadow-[0_32px_80px_rgba(76,5,25,0.12)]">
-            <div className="mb-6 text-center">
-                <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-[#fff1f2] text-[#e11d48] mb-3">
-                    <UserIcon className="h-8 w-8" />
+          <section className="rounded-[3rem] border border-white/[0.05] bg-[#050505] p-8 shadow-2xl backdrop-blur-xl">
+            <div className="mb-8 text-center">
+                <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-full bg-white/[0.02] border border-white/[0.05] text-white mb-4">
+                    <UserIcon className="h-10 w-10" />
                 </div>
-              <h1 className="text-xl font-semibold tracking-tight text-[#4c0519]">{profile.full_name}</h1>
-              <p className="text-sm text-[#881337]">{profile.service_name || "Profissional"}</p>
+              <h1 className="text-2xl font-bold tracking-tight text-white">{profile.full_name}</h1>
+              <p className="mt-1 text-sm text-zinc-500">{profile.service_name || "Profissional Verificado"}</p>
             </div>
 
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <Field label="Valor a pagar" id="f-amount">
-                <input className="auth-input text-2xl font-bold" placeholder="R$ 0,00" value={amount} onChange={e => setAmount(maskBRLInput(e.target.value))} required />
+            <form onSubmit={handleSubmit} className="space-y-5">
+              <Field label="Quanto você quer pagar?" id="f-amount">
+                <input className="auth-input text-3xl font-bold tracking-tighter !bg-white/[0.02] border-white/[0.05] focus:border-white/20 transition-all" placeholder="R$ 0,00" value={amount} onChange={e => setAmount(maskBRLInput(e.target.value))} required />
               </Field>
-              <Field label="Seu nome" id="f-name">
-                <input className="auth-input" placeholder="Seu nome completo" value={payerName} onChange={e => setPayerName(e.target.value)} required />
-              </Field>
-              <div className="grid grid-cols-2 gap-3">
-                <Field label="CPF" id="f-cpf">
-                  <input className="auth-input" placeholder="000.000.000-00" value={payerCpf} onChange={e => setPayerCpf(maskCPFInput(e.target.value))} required />
+              
+              <div className="space-y-4">
+                <Field label="Seu Nome Completo" id="f-name">
+                    <input className="auth-input !bg-white/[0.01] border-white/[0.05]" placeholder="Nome do pagador" value={payerName} onChange={e => setPayerName(e.target.value)} required />
                 </Field>
-                <Field label="Email" id="f-email">
-                  <input className="auth-input" placeholder="seu@email.com" value={payerEmail} onChange={e => setPayerEmail(e.target.value)} required />
+                
+                <div className="grid grid-cols-2 gap-4">
+                    <Field label="Seu CPF" id="f-cpf">
+                    <input className="auth-input !bg-white/[0.01] border-white/[0.05]" placeholder="000.000.000-00" value={payerCpf} onChange={e => setPayerCpf(maskCPFInput(e.target.value))} required />
+                    </Field>
+                    <Field label="Seu Melhor Email" id="f-email">
+                    <input className="auth-input !bg-white/[0.01] border-white/[0.05]" placeholder="seu@email.com" value={payerEmail} onChange={e => setPayerEmail(e.target.value)} required />
+                    </Field>
+                </div>
+
+                <Field label="Descrição da Transferência (Opcional)" id="f-desc">
+                    <input className="auth-input !bg-white/[0.01] border-white/[0.05]" placeholder="Ex: Pagamento serviço" value={description} onChange={e => setDescription(e.target.value)} />
                 </Field>
               </div>
-              <Field label="Descrição (opcional)" id="f-desc">
-                <input className="auth-input" placeholder="Ex: Pagamento serviço" value={description} onChange={e => setDescription(e.target.value)} />
-              </Field>
 
-              {error && <p className="text-xs font-semibold text-red-500">{error}</p>}
+              {error && (
+                <div className="p-4 rounded-2xl bg-red-500/10 border border-red-500/20 text-red-500 text-[10px] font-black uppercase tracking-widest text-center">
+                    {error}
+                </div>
+              )}
 
-              <button type="submit" disabled={loading} className="cta-button w-full rounded-2xl bg-[#e11d48] py-4 text-sm font-semibold text-white shadow-[0_14px_30px_rgba(225,29,72,0.22)] transition hover:-translate-y-0.5">
-                {loading ? "Processando..." : "Gerar QR Code PIX"}
+              <button type="submit" disabled={loading} className="w-full h-16 rounded-2xl bg-white text-black text-xs font-black uppercase tracking-[0.2em] transition-all hover:bg-zinc-200 active:scale-[0.98] mt-4">
+                {loading ? "Processando Requisição..." : "Gerar QR Code PIX"}
               </button>
             </form>
           </section>
         )}
 
         {stage === "paying" && (
-          <section className="rounded-[2.5rem] border border-[#fecdd3] bg-white p-6 shadow-[0_32px_80px_rgba(76,5,25,0.12)] text-center">
-            <p className="text-[10px] font-bold uppercase tracking-widest text-[#9f1239]">Pagar agora</p>
-            <div className="mt-2 text-4xl font-semibold tracking-tight text-[#4c0519]">{formatBRL(charge.amount_cents)}</div>
+          <section className="rounded-[3rem] border border-white/[0.05] bg-[#050505] p-10 text-center shadow-2xl backdrop-blur-xl">
+            <p className="text-[10px] font-black uppercase tracking-[0.3em] text-zinc-600">Total a Transferir</p>
+            <div className="mt-3 text-5xl font-bold tracking-tighter text-white">{formatBRL(charge.amount_cents)}</div>
             
-            <div className="mt-6 flex justify-center">
-                <div className="rounded-2xl border border-[#fecdd3] bg-[#fffafa] p-3 flex items-center justify-center min-w-[216px] min-h-[216px]">
+            <div className="mt-10 flex justify-center">
+                <div className="rounded-[2.5rem] border border-white/[0.08] bg-white p-3.5 shadow-[0_0_60px_rgba(255,255,255,0.05)]">
                     {(charge.qr_code_image || generatedQr) ? (
-                      <img src={charge.qr_code_image || generatedQr} alt="QR Code" className="h-48 w-48" />
+                      <img src={charge.qr_code_image || generatedQr} alt="QR Code" className="h-48 w-48 rounded-2xl sm:h-56 sm:w-56" />
                     ) : (
-                      <div className="h-48 w-48 animate-pulse bg-zinc-100 rounded-xl" />
+                      <div className="h-48 w-48 sm:h-56 sm:w-56 animate-pulse bg-zinc-100 rounded-2xl" />
                     )}
                 </div>
             </div>
 
-            <div className="mt-8 space-y-3">
+            <div className="mt-12 space-y-4">
               <button
                 onClick={copyPix}
-                className={`flex w-full items-center justify-center gap-2 rounded-2xl py-4 text-sm font-semibold transition ${
-                  copied ? "bg-[#16a34a] text-white" : "bg-[#e11d48] text-white shadow-[0_14px_30px_rgba(225,29,72,0.22)]"
+                className={`flex w-full h-16 items-center justify-center gap-3 rounded-2xl text-xs font-black uppercase tracking-[0.2em] transition-all active:scale-[0.98] ${
+                  copied ? "bg-emerald-500 text-white" : "bg-white text-black hover:bg-zinc-200"
                 }`}
               >
-                {copied ? "Copiado!" : <><CopyIcon /> Copiar código PIX</>}
+                {copied ? "Código Copiado!" : <><CopyIcon /> Copiar Código PIX</>}
               </button>
-              <div className="flex items-center justify-center gap-2 text-[11px] font-bold uppercase tracking-widest text-[#881337]">
-                <ClockIcon /> Aguardando pagamento...
+              
+              <div className="flex items-center justify-center gap-2.5 text-[9px] font-black uppercase tracking-[0.3em] text-zinc-700 py-2">
+                <div className="h-1.5 w-1.5 rounded-full bg-amber-500 animate-pulse" />
+                <ClockIcon /> Aguardando Confirmação em Tempo Real
               </div>
             </div>
           </section>
         )}
 
         {stage === "success" && (
-          <section className="rounded-[2.5rem] border border-[#fecdd3] bg-white p-8 text-center shadow-[0_32px_80px_rgba(76,5,25,0.12)]">
-            <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-full bg-[#9EEA6C]/20 text-[#006400]">
-              <svg className="h-10 w-10" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M5 13l4 4L19 7" />
+          <section className="rounded-[3rem] border border-white/[0.05] bg-white/[0.01] p-10 text-center shadow-2xl backdrop-blur-xl">
+            <div className="mx-auto flex h-24 w-24 items-center justify-center rounded-full bg-emerald-500/10 text-emerald-500 shadow-[0_0_50px_rgba(16,185,129,0.1)]">
+              <svg className="h-12 w-12" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M5 13l4 4L19 7" />
               </svg>
             </div>
-            <h1 className="mt-6 text-3xl font-semibold tracking-tight text-[#4c0519]">Pago!</h1>
-            <p className="mt-2 text-[#881337]">Obrigado pelo seu pagamento.</p>
-            <div className="mt-8 space-y-2 text-left">
-              <div className="flex justify-between border-b border-[#fecdd3] pb-2 text-sm">
-                <span className="text-[#881337]">Valor</span>
-                <span className="font-bold">{formatBRL(charge.amount_cents)}</span>
+            <h1 className="mt-8 text-3xl font-bold tracking-tight text-white">Pagamento Realizado</h1>
+            <p className="mt-3 text-zinc-500 text-sm">Obrigado. Sua transferência foi confirmada.</p>
+            
+            <div className="mt-10 space-y-3 text-left">
+              <div className="flex justify-between border-b border-white/[0.05] pb-4 text-sm">
+                <span className="text-zinc-600 uppercase text-[10px] font-black tracking-widest">Valor</span>
+                <span className="font-bold text-white tracking-tight">{formatBRL(charge.amount_cents)}</span>
               </div>
-              <div className="flex justify-between border-b border-[#fecdd3] pb-2 text-sm">
-                <span className="text-[#881337]">Para</span>
-                <span className="font-bold">{profile.full_name}</span>
+              <div className="flex justify-between border-b border-white/[0.05] pb-4 text-sm">
+                <span className="text-zinc-600 uppercase text-[10px] font-black tracking-widest">Favorecido</span>
+                <span className="font-bold text-white tracking-tight">{profile.full_name}</span>
               </div>
             </div>
-            <p className="mt-8 text-xs text-[#881337]/50">Você já pode fechar esta página.</p>
+            <p className="mt-10 text-[9px] font-black uppercase tracking-[0.2em] text-zinc-700">Esta página já pode ser fechada.</p>
           </section>
         )}
 
-        <p className="mt-10 text-center text-[10px] font-bold uppercase tracking-[0.2em] text-[#881337]/40">
-          Powered by CloudePay Network
-        </p>
+        <footer className="mt-16 text-center">
+            <p className="text-[9px] font-black uppercase tracking-[0.4em] text-zinc-800">
+                Luxus Financial Technology • CloudePay Network
+            </p>
+        </footer>
       </div>
     </main>
   );
