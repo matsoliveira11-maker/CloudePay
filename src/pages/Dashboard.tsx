@@ -207,7 +207,7 @@ export default function Dashboard() {
                     <div className="flex items-center justify-between gap-4">
                       <div>
                         <h2 className="text-xl font-semibold tracking-[-0.04em] text-[#4c0519]">Desempenho (últimos 7 dias)</h2>
-                        <p className="mt-1 text-sm text-[#881337]">{formatBRL(monthGrossTotal)} volume total recebido</p>
+                        <p className="mt-1 text-sm text-[#881337]">{formatBRL(displayGross)} volume total recebido</p>
                       </div>
                     </div>
                     <div className="mt-6 flex h-44 items-end gap-1.5 rounded-2xl border border-[#ffe4e6] bg-[#fffafa] p-3 sm:mt-8 sm:h-56 sm:gap-2 sm:p-4">
