@@ -18,6 +18,8 @@ export default function Dashboard() {
   const { profile } = useAuth();
   const [charges, setCharges] = useState<Charge[]>([]);
   const [stats, setStats] = useState({ monthNet: 0, monthGross: 0, totalNet: 0, totalGross: 0 });
+  const [filter, setFilter] = useState<"all" | "paid" | "pending">("all");
+  const [period, setPeriod] = useState<"month" | "total">("month");
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [createdCharge, setCreatedCharge] = useState<Charge | null>(null);
 
@@ -68,16 +70,33 @@ export default function Dashboard() {
     return () => { supabase.removeChannel(channel); };
   }, [reload, profile?.id]);
 
+  const filteredCharges = useMemo(() => {
+    let list = charges;
+    if (filter === "paid") list = list.filter(c => c.status === "paid");
+    if (filter === "pending") list = list.filter(c => c.status === "pending");
+    
+    if (period === "month") {
+      const now = new Date();
+      const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+      list = list.filter(c => new Date(c.paid_at || c.created_at) >= startOfMonth);
+    }
+    return list;
+  }, [charges, filter, period]);
+
   const paidCharges = charges.filter((c) => c.status === "paid");
   const pendingCharges = charges.filter((c) => c.status === "pending");
 
   // Ticket médio: média do bruto de todas as cobranças pagas
   const avgTicket = paidCharges.length > 0 ? stats.totalGross / paidCharges.length : 0;
 
-  // Valores para os cards
-  const monthNetTotal = stats.monthNet;
-  const totalNetTotal = stats.totalNet;
-  const totalGrossTotal = stats.totalGross;
+  // Valores para os cards (Se o mês estiver zerado, mostramos o total para não ficar vazio no início do mês)
+  const isMonthEmpty = period === "month" && stats.monthNet === 0;
+  
+  const displayNet = isMonthEmpty ? stats.totalNet : (period === "month" ? stats.monthNet : stats.totalNet);
+  const displayGross = isMonthEmpty ? stats.totalGross : (period === "month" ? stats.monthGross : stats.totalGross);
+  
+  const netLabel = isMonthEmpty ? "Saldo Total" : (period === "month" ? "Recebido no mês" : "Saldo Total");
+  const netNote = isMonthEmpty ? "Líquido acumulado" : (period === "month" ? "Líquido real após taxa" : "Líquido acumulado");
 
   // Chart Logic (Simple approximation of inspiration chart)
   const chartDays = useMemo(() => {
@@ -111,16 +130,31 @@ export default function Dashboard() {
                     <h1 className="text-4xl font-semibold leading-none tracking-[-0.07em] text-[#4c0519] sm:text-6xl">{profile?.full_name?.split(" ")[0]}</h1>
                   </div>
                   <div className="grid grid-cols-3 gap-2 rounded-2xl border border-[#fecdd3] bg-white p-2 shadow-sm sm:flex sm:flex-wrap">
-                    <button className="inline-flex items-center justify-center gap-1 rounded-xl bg-[#e11d48] px-3 py-2 text-xs font-semibold text-white sm:gap-2 sm:px-4 sm:text-sm"><FilterIcon /> Este mês</button>
-                    <button className="rounded-xl px-3 py-2 text-xs font-semibold text-[#881337] hover:bg-[#fff1f2] sm:px-4 sm:text-sm">Pagas</button>
-                    <button className="rounded-xl px-3 py-2 text-xs font-semibold text-[#881337] hover:bg-[#fff1f2] sm:px-4 sm:text-sm">Pendentes</button>
+                    <button 
+                      onClick={() => { setPeriod(period === "month" ? "total" : "month"); }}
+                      className={`inline-flex items-center justify-center gap-1 rounded-xl px-3 py-2 text-xs font-semibold sm:gap-2 sm:px-4 sm:text-sm transition ${period === "month" ? "bg-[#e11d48] text-white" : "text-[#881337] hover:bg-[#fff1f2]"}`}
+                    >
+                      <FilterIcon /> {period === "month" ? "Este mês" : "Todo período"}
+                    </button>
+                    <button 
+                      onClick={() => setFilter("paid")}
+                      className={`rounded-xl px-3 py-2 text-xs font-semibold sm:px-4 sm:text-sm transition ${filter === "paid" ? "bg-[#e11d48] text-white" : "text-[#881337] hover:bg-[#fff1f2]"}`}
+                    >
+                      Pagas
+                    </button>
+                    <button 
+                      onClick={() => setFilter("pending")}
+                      className={`rounded-xl px-3 py-2 text-xs font-semibold sm:px-4 sm:text-sm transition ${filter === "pending" ? "bg-[#e11d48] text-white" : "text-[#881337] hover:bg-[#fff1f2]"}`}
+                    >
+                      Pendentes
+                    </button>
                   </div>
                 </div>
 
                 <div className="grid gap-3 sm:grid-cols-3 sm:gap-4">
                   {[
-                    { label: "Recebido no mês", value: formatBRL(monthNetTotal), note: "Líquido real após taxa", Icon: MoneyIcon },
-                    { label: "Total de cobranças", value: charges.length.toString(), note: `${pendingCharges.length} pendente(s)`, Icon: ChargeIcon },
+                    { label: netLabel, value: formatBRL(displayNet), note: netNote, Icon: MoneyIcon },
+                    { label: "Total de cobranças", value: filteredCharges.length.toString(), note: `${filteredCharges.filter(c => c.status === 'pending').length} pendente(s)`, Icon: ChargeIcon },
                     { label: "Ticket médio", value: formatBRL(avgTicket), note: `${paidCharges.length} pagamento(s) confirmado(s)`, Icon: PanelIcon },
                   ].map(({ label, value, note, Icon }) => (
                     <section key={label} className="rounded-3xl border border-[#fecdd3] bg-white p-4 shadow-[0_14px_36px_rgba(136,19,55,0.06)] sm:p-5 sm:shadow-[0_18px_50px_rgba(136,19,55,0.07)]">
@@ -154,10 +188,10 @@ export default function Dashboard() {
                     <h2 className="text-xl font-semibold tracking-[-0.04em]">Resumo financeiro</h2>
                     <div className="mt-5 space-y-3">
                       {[
-                        ["Total bruto recebido", formatBRL(totalGrossTotal)],
+                        ["Total bruto recebido", formatBRL(displayGross)],
                         ["Pix pendente", formatBRL(pendingCharges.reduce((acc, curr) => acc + curr.amount_cents, 0))],
-                        ["Taxa total (2%)", formatBRL(totalGrossTotal - totalNetTotal)],
-                        ["Saldo total (líquido)", formatBRL(totalNetTotal)],
+                        ["Taxa total (2%)", formatBRL(displayGross - displayNet)],
+                        ["Saldo total (líquido)", formatBRL(displayNet)],
                       ].map(([label, value], index, arr) => (
                         <div key={label} className="flex items-center justify-between rounded-2xl border border-white/10 bg-white/[0.06] px-4 py-3">
                           <span className="text-sm text-white/75">{label}</span>
