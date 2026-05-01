@@ -191,53 +191,43 @@ export default function Admin() {
 
     if (!isAdmin) {
         return (
-            <div className="min-h-screen flex items-center justify-center bg-[#0b0b0b] p-6 relative overflow-hidden">
-                {/* Cinematic Background Decor */}
-                <div className="absolute inset-0 pointer-events-none">
-                    <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-[#e11d48]/10 rounded-full blur-[120px]" />
-                    <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-[#4c0519]/20 rounded-full blur-[120px]" />
-                </div>
-
-                <div className="w-full max-w-sm relative z-10 animate-in fade-in slide-in-from-bottom-4 duration-1000">
-                    <div className="mb-10 text-center">
-                        <div className="mx-auto w-16 h-16 rounded-[1.5rem] bg-white/[0.03] border border-white/10 shadow-2xl flex items-center justify-center mb-8 backdrop-blur-md">
+            <div className="min-h-screen flex items-center justify-center bg-[#0b0b0b] p-6">
+                <div className="w-full max-w-sm animate-in fade-in duration-700">
+                    <div className="mb-12 text-center">
+                        <div className="mx-auto mb-8">
                             <Logo variant="light" />
                         </div>
-                        <h1 className="text-4xl font-bold tracking-[-0.075em] text-white mb-3">Cofre de Fundadores</h1>
-                        <p className="text-white/40 text-sm font-medium tracking-wide uppercase">Nível de Acesso 01 · Restrito</p>
+                        <h1 className="text-3xl font-bold tracking-tight text-white mb-2">Cofre de Fundadores</h1>
+                        <p className="text-white/30 text-xs font-bold uppercase tracking-[0.3em]">Acesso Restrito</p>
                     </div>
 
-                    <div className="bg-[#121212] border border-white/10 rounded-[2.5rem] p-8 shadow-[0_32px_100px_-20px_rgba(0,0,0,0.8)] backdrop-blur-xl relative">
-                        {/* Subtle inner glow */}
-                        <div className="absolute inset-0 rounded-[2.5rem] border border-white/5 pointer-events-none" />
-                        
+                    <div className="bg-[#111111] border border-white/10 rounded-3xl p-8 shadow-2xl">
                         <div className="space-y-6">
                             <div className="space-y-2">
-                                <label className="text-[10px] font-bold uppercase tracking-[0.2em] text-white/30 ml-1">Email de Acesso</label>
+                                <label className="text-[10px] font-bold uppercase tracking-widest text-white/20 ml-1">Email de Acesso</label>
                                 <input
                                     type="email"
                                     value={adminEmail}
                                     onChange={(e) => setAdminEmail(e.target.value)}
                                     placeholder="fundador@cloudepay.com"
-                                    className="w-full h-14 bg-white/[0.03] border border-white/10 rounded-2xl px-6 text-white placeholder:text-white/10 focus:outline-none focus:border-[#e11d48] focus:ring-1 focus:ring-[#e11d48]/50 transition-all font-medium"
+                                    className="w-full h-12 bg-white/5 border border-white/10 rounded-xl px-5 text-sm text-white placeholder:text-white/10 focus:outline-none focus:border-[#e11d48] transition-all"
                                 />
                             </div>
                             
                             <div className="space-y-2">
-                                <label className="text-[10px] font-bold uppercase tracking-[0.2em] text-white/30 ml-1">Senha Mestra</label>
+                                <label className="text-[10px] font-bold uppercase tracking-widest text-white/20 ml-1">Senha Mestra</label>
                                 <input
                                     type="password"
                                     value={adminPassword}
                                     onChange={(e) => setAdminPassword(e.target.value)}
                                     onKeyDown={(e) => e.key === 'Enter' && handleAdminLogin()}
                                     placeholder="••••••••"
-                                    className="w-full h-14 bg-white/[0.03] border border-white/10 rounded-2xl px-6 text-white placeholder:text-white/10 focus:outline-none focus:border-[#e11d48] focus:ring-1 focus:ring-[#e11d48]/50 transition-all font-medium"
+                                    className="w-full h-12 bg-white/5 border border-white/10 rounded-xl px-5 text-sm text-white placeholder:text-white/10 focus:outline-none focus:border-[#e11d48] transition-all"
                                 />
                             </div>
 
                             {loginError && (
-                                <div className="flex items-center gap-2 px-4 py-3 rounded-xl bg-red-500/10 border border-red-500/20 text-red-400 text-xs font-semibold animate-shake">
-                                    <WarningCircle size={16} weight="bold" />
+                                <div className="px-4 py-3 rounded-xl bg-red-500/10 border border-red-500/20 text-red-400 text-[11px] font-semibold text-center">
                                     {loginError}
                                 </div>
                             )}
@@ -245,24 +235,16 @@ export default function Admin() {
                             <button 
                                 onClick={handleAdminLogin}
                                 disabled={isLoggingIn}
-                                className="w-full h-14 bg-[#e11d48] hover:bg-[#be123c] disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-2xl font-bold uppercase tracking-widest text-xs transition-all shadow-[0_12px_40px_rgba(225,29,72,0.3)] active:scale-[0.98] mt-4 flex items-center justify-center gap-2 overflow-hidden relative group"
+                                className="w-full h-12 bg-[#e11d48] hover:bg-[#be123c] disabled:opacity-50 text-white rounded-xl font-bold uppercase tracking-widest text-xs transition-all active:scale-[0.98] mt-2 flex items-center justify-center gap-2"
                             >
-                                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000" />
-                                {isLoggingIn ? (
-                                    <div className="h-4 w-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                                ) : (
-                                    <>
-                                        Entrar no Cofre
-                                        <ArrowUp size={16} weight="bold" className="rotate-90 group-hover:translate-x-0.5 transition-transform" />
-                                    </>
-                                )}
+                                {isLoggingIn ? "Autenticando..." : "Entrar no Cofre"}
                             </button>
                         </div>
                     </div>
 
                     <p className="mt-10 text-center">
-                        <Link to="/painel" className="text-xs font-bold uppercase tracking-widest text-white/20 hover:text-white transition-colors">
-                            ← Voltar ao Início
+                        <Link to="/painel" className="text-[10px] font-bold uppercase tracking-widest text-white/20 hover:text-white transition-colors">
+                            Voltar ao Início
                         </Link>
                     </p>
                 </div>
@@ -272,42 +254,29 @@ export default function Admin() {
 
     if (!isUnlocked) {
         return (
-            <div className="min-h-screen flex items-center justify-center bg-[#0b0b0b] p-6 relative overflow-hidden">
-                {/* Cinematic Background Decor */}
-                <div className="absolute inset-0 pointer-events-none">
-                    <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-[#e11d48]/10 rounded-full blur-[120px]" />
-                    <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-[#4c0519]/20 rounded-full blur-[120px]" />
-                </div>
-
-                <div className="w-full max-w-sm bg-[#121212] border border-white/10 rounded-[2.5rem] p-10 text-center relative z-10 shadow-[0_32px_100px_-20px_rgba(0,0,0,0.9)] backdrop-blur-xl">
-                    <div className="absolute inset-0 rounded-[2.5rem] border border-white/5 pointer-events-none" />
+            <div className="min-h-screen flex items-center justify-center bg-[#0b0b0b] p-6">
+                <div className="w-full max-w-sm bg-[#111111] border border-white/10 rounded-3xl p-10 text-center shadow-2xl">
+                    <ShieldCheck size={40} weight="bold" className="mx-auto text-[#e11d48] mb-6" />
+                    <h1 className="text-2xl font-bold text-white mb-2">Token Mestre</h1>
+                    <p className="text-sm text-white/20 mb-8 uppercase tracking-widest font-bold text-[10px]">Desbloqueio Requerido</p>
                     
-                    <div className="mx-auto w-20 h-20 rounded-[2rem] bg-[#e11d48]/10 text-[#e11d48] flex items-center justify-center mb-8 shadow-inner">
-                        <ShieldCheck size={44} weight="bold" className="drop-shadow-[0_0_15px_rgba(225,29,72,0.5)]" />
-                    </div>
-                    <h1 className="text-2xl font-bold tracking-tight text-white mb-3">Chave Mestre Requerida</h1>
-                    <p className="text-sm text-white/40 mb-10 font-medium tracking-wide">Desbloqueio de console de alto nível.</p>
-                    
-                    <div className="space-y-5">
+                    <div className="space-y-4">
                         <input
                             type="password"
                             value={masterToken}
                             onChange={(e) => setMasterToken(e.target.value)}
                             onKeyDown={(e) => e.key === 'Enter' && handleUnlock()}
-                            placeholder="TOKEN MESTRE"
-                            className="w-full h-14 bg-white/[0.03] border border-white/10 rounded-2xl px-6 text-center text-white font-mono text-lg tracking-[0.2em] placeholder:text-white/5 focus:outline-none focus:border-[#e11d48] transition-all"
+                            placeholder="TOKEN"
+                            className="w-full h-12 bg-white/5 border border-white/10 rounded-xl px-6 text-center text-white font-mono text-lg tracking-[0.5em] placeholder:text-white/5 focus:outline-none focus:border-[#e11d48] transition-all"
                         />
                         {tokenError && (
-                            <p className="text-xs text-[#e11d48] font-bold uppercase tracking-wider animate-pulse">Token de Acesso Inválido</p>
+                            <p className="text-[10px] text-[#e11d48] font-bold uppercase tracking-widest">Inválido</p>
                         )}
                         <button 
                             onClick={handleUnlock}
-                            className="w-full h-14 bg-[#e11d48] hover:bg-[#be123c] text-white rounded-2xl font-bold uppercase tracking-[0.2em] text-xs transition-all shadow-[0_12px_40px_rgba(225,29,72,0.3)] active:scale-[0.98] group"
+                            className="w-full h-12 bg-[#e11d48] hover:bg-[#be123c] text-white rounded-xl font-bold uppercase tracking-widest text-xs transition-all active:scale-[0.98]"
                         >
-                            <span className="flex items-center justify-center gap-2">
-                                Desbloquear
-                                <Lightning size={16} weight="fill" className="group-hover:animate-bounce" />
-                            </span>
+                            Desbloquear
                         </button>
                     </div>
                 </div>
