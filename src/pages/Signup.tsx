@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
+import * as api from "../lib/api";
 
 function Logo({ variant = "dark" }: { variant?: "dark" | "light" }) {
   const textColor = variant === "light" ? "text-white" : "text-[#4c0519]";
@@ -71,6 +72,7 @@ export default function Signup() {
   const [showPassword, setShowPassword] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [done, setDone] = useState(false);
+  const [error, setError] = useState("");
   const navigate = useNavigate();
 
   function formatCPF(value: string) {
@@ -81,16 +83,26 @@ export default function Signup() {
       .replace(/(\d{3})(\d{1,2})$/, "$1-$2");
   }
 
-  function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
+  async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setSubmitting(true);
-    setTimeout(() => {
-      setSubmitting(false);
+    setError("");
+
+    const data = new FormData(event.currentTarget);
+    const full_name = data.get("nome") as string;
+    const email = data.get("email") as string;
+    const cpf = data.get("cpf") as string;
+    const password = data.get("senha") as string;
+
+    const res = await api.signUp({ full_name, email, cpf, password });
+    setSubmitting(false);
+
+    if (res.ok) {
       setDone(true);
-      setTimeout(() => {
-        navigate("/painel");
-      }, 650);
-    }, 1100);
+      setTimeout(() => navigate("/painel"), 650);
+    } else {
+      setError(res.error || "Erro ao criar conta");
+    }
   }
 
   return (
@@ -258,6 +270,10 @@ export default function Signup() {
                     <a href="#" className="font-semibold text-[#e11d48] hover:underline">Política de Privacidade</a>.
                   </span>
                 </label>
+
+                {error && (
+                  <p className="text-center text-sm font-semibold text-red-600 bg-red-50 py-2 rounded-lg">{error}</p>
+                )}
 
                 <button
                   type="submit"

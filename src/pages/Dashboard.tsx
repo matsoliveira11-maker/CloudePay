@@ -6,166 +6,21 @@ import { Charge } from "../lib/api";
 import { formatBRL, formatDateTime, maskBRLInput, parseBRLToCents } from "../lib/format";
 import { sanitizeText } from "../lib/validators";
 import { X } from "phosphor-react";
+import Shell from "../components/Shell";
+import { MoneyIcon, ChargeIcon, FilterIcon, ArrowIcon } from "../components/Icons";
 
-// --- Icons & UI Components from Inspiration ---
-
-function Logo({ variant = "dark" }: { variant?: "dark" | "light" }) {
-  const textColor = variant === "light" ? "text-white" : "text-[#4c0519]";
-  return (
-    <div className="flex items-center gap-2.5">
-      <span className="logo-mark relative inline-flex h-9 w-9 items-center justify-center">
-        <svg viewBox="0 0 40 40" className="h-9 w-9" aria-hidden="true">
-          <defs>
-            <linearGradient id="logoGrad" x1="0" y1="0" x2="1" y2="1">
-              <stop offset="0%" stopColor="#fb7185" />
-              <stop offset="55%" stopColor="#e11d48" />
-              <stop offset="100%" stopColor="#881337" />
-            </linearGradient>
-            <linearGradient id="logoGloss" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor="#ffffff" stopOpacity="0.55" />
-              <stop offset="60%" stopColor="#ffffff" stopOpacity="0" />
-            </linearGradient>
-          </defs>
-          <path
-            d="M20 2.4c2.7 0 4.5 2.4 7.4 3.5 2.9 1.1 6.4.3 8 2.4 1.6 2.1.3 5.4 1.4 8.3 1.1 2.9 4.3 4.6 4.3 7.4 0 2.7-3.2 4.5-4.3 7.4-1.1 2.9.2 6.2-1.4 8.3-1.6 2.1-5.1 1.3-8 2.4-2.9 1.1-4.7 3.5-7.4 3.5s-4.5-2.4-7.4-3.5c-2.9-1.1-6.4-.3-8-2.4-1.6-2.1-.3-5.4-1.4-8.3C2.1 28.5-1 26.7-1 24c0-2.7 3.2-4.5 4.3-7.4 1.1-2.9-.2-6.2 1.4-8.3 1.6-2.1 5.1-1.3 8-2.4C15.5 4.8 17.3 2.4 20 2.4Z"
-            fill="url(#logoGrad)"
-            transform="translate(0 -2)"
-          />
-          <path
-            d="M14.5 16.8c1.5-2.6 4.4-4.3 7.6-4.3 4.9 0 8.9 3.9 8.9 8.7 0 4.9-4 8.7-8.9 8.7-3.2 0-6.1-1.6-7.6-4.3"
-            stroke="#fff"
-            strokeWidth="2.6"
-            strokeLinecap="round"
-            fill="none"
-          />
-          <circle cx="14.4" cy="21.2" r="2.2" fill="#fff" />
-          <path
-            d="M2 6c4 1 8 5 9 10"
-            stroke="url(#logoGloss)"
-            strokeWidth="2"
-            strokeLinecap="round"
-            fill="none"
-          />
-        </svg>
-      </span>
-      <span className={`text-xl font-semibold tracking-[-0.045em] ${textColor}`}>
-        Cloude<span className="text-[#e11d48]">Pay</span>
-      </span>
-    </div>
-  );
-}
-
-function ArrowIcon() {
-  return (
-    <svg className="h-4 w-4" viewBox="0 0 20 20" fill="none" aria-hidden="true">
-      <path d="M5 10h9M10 6l4 4-4 4" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
-    </svg>
-  );
-}
-
-function HelpIcon({ className = "h-4 w-4" }: { className?: string }) {
-  return (
-    <svg viewBox="0 0 24 24" className={className} fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-      <circle cx="12" cy="12" r="9" />
-      <path d="M9.5 9.5a2.5 2.5 0 1 1 3.5 2.3c-.7.3-1 .8-1 1.7" />
-      <circle cx="12" cy="17" r=".7" fill="currentColor" />
-    </svg>
-  );
-}
-
-function PanelIcon({ className = "h-4 w-4" }: { className?: string }) {
-  return (
-    <svg viewBox="0 0 24 24" className={className} fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-      <rect x="3" y="3" width="18" height="18" rx="2" />
-      <path d="M9 3v18M3 9h18" />
-    </svg>
-  );
-}
-
-function ProductIcon({ className = "h-4 w-4" }: { className?: string }) {
-  return (
-    <svg viewBox="0 0 24 24" className={className} fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-      <path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z" />
-      <path d="m3.3 7 8.7 5 8.7-5M12 22V12" />
-    </svg>
-  );
-}
-
-function UserIcon({ className = "h-4 w-4" }: { className?: string }) {
-  return (
-    <svg viewBox="0 0 24 24" className={className} fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-      <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" />
-      <circle cx="12" cy="7" r="4" />
-    </svg>
-  );
-}
-
-function MoneyIcon({ className = "h-5 w-5" }: { className?: string }) {
-  return (
-    <svg viewBox="0 0 24 24" className={className} fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <rect x="2" y="6" width="20" height="12" rx="2" />
-      <circle cx="12" cy="12" r="3" />
-      <path d="M6 12h.01M18 12h.01" />
-    </svg>
-  );
-}
-
-function ChargeIcon({ className = "h-5 w-5" }: { className?: string }) {
-  return (
-    <svg viewBox="0 0 24 24" className={className} fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" />
-      <rect x="8" y="2" width="8" height="4" rx="1" />
-      <path d="M12 11h4M12 16h4M8 11h.01M8 16h.01" />
-    </svg>
-  );
-}
-
-function FilterIcon({ className = "h-4 w-4" }: { className?: string }) {
-  return (
-    <svg viewBox="0 0 24 24" className={className} fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3" />
-    </svg>
-  );
-}
-
-function LinkIcon({ className = "h-4 w-4" }: { className?: string }) {
-  return (
-    <svg viewBox="0 0 24 24" className={className} fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
-      <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
-    </svg>
-  );
-}
-
-function WhatsAppIcon({ className = "h-4 w-4" }: { className?: string }) {
-  return (
-    <svg viewBox="0 0 24 24" className={className} fill="currentColor">
-      <path d="M17.5 14.4c-.3-.1-1.7-.8-2-.9-.3-.1-.5-.1-.7.2-.2.3-.7.9-.9 1.1-.2.2-.3.2-.6.1-1.6-.8-2.7-1.5-3.7-3.3-.3-.5.3-.5.8-1.5.1-.2 0-.3 0-.5-.1-.1-.7-1.6-.9-2.2-.2-.6-.4-.5-.7-.5h-.6c-.2 0-.5.1-.8.4-.3.3-1 1-1 2.5s1.1 2.9 1.2 3.1c.1.2 2.1 3.2 5 4.5 1.9.8 2.6.8 3.5.7.6-.1 1.7-.7 2-1.4.2-.7.2-1.3.2-1.4-.1-.2-.3-.3-.6-.4ZM12 2C6.5 2 2 6.5 2 12c0 1.8.5 3.5 1.3 5L2 22l5.2-1.3c1.4.8 3 1.3 4.8 1.3 5.5 0 10-4.5 10-10S17.5 2 12 2Z" />
-    </svg>
-  );
-}
-
-function MailIcon({ className = "h-4 w-4" }: { className?: string }) {
-  return (
-    <svg viewBox="0 0 24 24" className={className} fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <rect x="3" y="5" width="18" height="14" rx="2" />
-      <path d="m3 7 9 6 9-6" />
-    </svg>
-  );
-}
 
 // --- Logic ---
 
 type DashboardTab = "dashboard" | "produtos" | "perfil";
 
 export default function Dashboard() {
-  const { profile, signOut } = useAuth();
+  const { profile } = useAuth();
   const [charges, setCharges] = useState<Charge[]>([]);
   const [monthTotal, setMonthTotal] = useState(0);
-  const [tab, setTab] = useState<DashboardTab>("dashboard");
   const [showCreateModal, setShowCreateModal] = useState(false);
-  const [supportOpen, setSupportOpen] = useState(false);
   const [createdCharge, setCreatedCharge] = useState<Charge | null>(null);
+
 
   const openCreate = useCallback(() => {
     setCreatedCharge(null);
@@ -215,9 +70,10 @@ export default function Dashboard() {
 
   const chartValues = useMemo(() => {
     return chartDays.map(day => {
-      const dayCharges = charges.filter(c => 
-        new Date(c.created_at).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' }) === day
-      );
+      const dayCharges = charges.filter(c => {
+        const d = c.created_at ? new Date(c.created_at) : new Date();
+        return !isNaN(d.getTime()) && d.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' }) === day;
+      });
       return dayCharges.reduce((acc, curr) => acc + curr.amount_cents, 0) / 100;
     });
   }, [charges, chartDays]);
@@ -225,59 +81,9 @@ export default function Dashboard() {
   const maxChartValue = Math.max(...chartValues, 1);
 
   return (
-    <>
-      <main className="min-h-screen bg-[#fffafa] text-[#4c0519] antialiased page-grid">
-        <header className="sticky top-0 z-40 border-b border-[#fecdd3] bg-white/90 backdrop-blur-xl">
-          <div className="mx-auto flex h-16 max-w-[1280px] items-center justify-between px-4 sm:px-6 lg:h-20 lg:px-8">
-            <Link to="/painel" onClick={() => setTab("dashboard")} className="inline-flex"><Logo /></Link>
-            <div className="flex items-center gap-2">
-              <span className="hidden rounded-full border border-[#fecdd3] bg-white px-4 py-2 text-sm font-semibold text-[#881337] sm:inline-flex">
-                cloudepay.com.br/{profile?.slug || "carregando"}
-              </span>
-              <button
-                type="button"
-                onClick={() => setSupportOpen(true)}
-                className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-[#fecdd3] bg-white text-[#4c0519] transition hover:border-[#e11d48] hover:text-[#e11d48] sm:w-auto sm:gap-2 sm:px-4 sm:text-sm sm:font-semibold"
-              >
-                <HelpIcon className="h-4 w-4" />
-                <span className="hidden sm:inline">Suporte</span>
-              </button>
-              <button
-                type="button"
-                onClick={() => signOut()}
-                className="inline-flex h-10 items-center gap-2 rounded-full bg-[#4c0519] px-4 text-xs font-semibold text-white transition hover:bg-[#7f1235] sm:text-sm"
-              >
-                Sair
-              </button>
-            </div>
-          </div>
-        </header>
+    <Shell>
+      <div className="space-y-5 sm:space-y-6">
 
-        <div className="mx-auto grid max-w-[1280px] gap-6 px-4 pb-28 pt-5 sm:px-6 sm:pt-6 lg:grid-cols-[240px_1fr] lg:px-8 lg:py-8">
-          <aside className="hidden lg:block">
-            <div className="sticky top-28 rounded-3xl border border-[#fecdd3] bg-white/90 p-3 shadow-[0_24px_70px_rgba(136,19,55,0.08)]">
-              {[
-                { key: "dashboard" as const, label: "Dashboard", Icon: PanelIcon, path: "/painel" },
-                { key: "produtos" as const, label: "Produtos", Icon: ProductIcon, path: "/produtos" },
-                { key: "perfil" as const, label: "Meu perfil", Icon: UserIcon, path: "/configuracoes" },
-              ].map(({ key, label, Icon, path }) => (
-                <Link
-                  key={key}
-                  to={path}
-                  onClick={() => setTab(key)}
-                  className={`mb-2 flex w-full items-center gap-3 rounded-2xl px-4 py-3 text-left text-sm font-semibold transition last:mb-0 ${
-                    tab === key ? "bg-[#e11d48] text-white shadow-[0_12px_26px_rgba(225,29,72,0.22)]" : "text-[#881337] hover:bg-[#fff1f2] hover:text-[#4c0519]"
-                  }`}
-                >
-                  <Icon className="h-4 w-4" /> {label}
-                </Link>
-              ))}
-            </div>
-          </aside>
-
-          <section className="min-w-0">
-            {tab === "dashboard" && (
-              <div className="space-y-5 sm:space-y-6">
                 <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
                   <div>
                     <p className="text-base font-medium text-[#881337] sm:text-lg">Olá,</p>
@@ -424,60 +230,10 @@ export default function Dashboard() {
                   </div>
                 </section>
               </div>
-            )}
-          </section>
-        </div>
+    </Shell>
 
-        <nav className="fixed inset-x-0 bottom-0 z-50 border-t border-[#fecdd3] bg-white/92 px-3 pb-[calc(env(safe-area-inset-bottom)+0.7rem)] pt-2 shadow-[0_-18px_45px_rgba(136,19,55,0.08)] backdrop-blur-xl lg:hidden">
-          <div className="mx-auto grid max-w-md grid-cols-3 gap-2">
-            {[
-              { key: "dashboard" as const, label: "Dashboard", Icon: PanelIcon, path: "/painel" },
-              { key: "produtos" as const, label: "Produtos", Icon: ProductIcon, path: "/produtos" },
-              { key: "perfil" as const, label: "Meu perfil", Icon: UserIcon, path: "/configuracoes" },
-            ].map(({ key, label, Icon, path }) => (
-              <Link
-                key={key}
-                to={path}
-                onClick={() => setTab(key)}
-                className={`flex flex-col items-center justify-center gap-1 rounded-2xl px-2 py-2.5 text-[11px] font-semibold transition ${
-                  tab === key ? "bg-[#e11d48] text-white shadow-[0_10px_24px_rgba(225,29,72,0.24)]" : "text-[#881337] hover:bg-[#fff1f2]"
-                }`}
-              >
-                <Icon className="h-5 w-5" />
-                <span>{label}</span>
-              </Link>
-            ))}
-          </div>
-        </nav>
-      </main>
 
-      {supportOpen && (
-        <div className="fixed inset-0 z-[80] flex items-end bg-[#4c0519]/35 p-3 backdrop-blur-sm sm:items-center sm:justify-center sm:p-6" role="dialog" aria-modal="true">
-          <div className="w-full max-w-md rounded-3xl border border-[#fecdd3] bg-white p-5 shadow-[0_28px_90px_rgba(76,5,25,0.22)] sm:p-6">
-            <div className="flex items-start justify-between gap-4">
-              <div>
-                <span className="inline-flex items-center gap-2 rounded-full bg-[#fff1f2] px-3 py-1.5 text-xs font-semibold text-[#e11d48]">Suporte Direto</span>
-                <h2 className="mt-4 text-2xl font-semibold tracking-[-0.05em] text-[#4c0519]">Fale com o Fundador</h2>
-                <p className="mt-2 text-sm leading-6 text-[#881337]">Envie sua dúvida ou sugestão. Responderei o mais rápido possível.</p>
-              </div>
-              <button type="button" onClick={() => setSupportOpen(false)} className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#fff1f2] text-[#4c0519] transition hover:text-[#e11d48]">
-                <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none"><path d="m6 6 12 12M18 6 6 18" stroke="currentColor" strokeWidth="2" strokeLinecap="round" /></svg>
-              </button>
-            </div>
-            <form className="mt-6 space-y-4" onSubmit={(e) => { e.preventDefault(); alert("Mensagem enviada com sucesso! Entrarei em contato em breve."); setSupportOpen(false); }}>
-              <textarea 
-                className="w-full rounded-2xl border border-[#fecdd3] bg-[#fffafa] p-4 text-sm text-[#4c0519] outline-none transition focus:border-[#e11d48] focus:ring-1 focus:ring-[#e11d48]" 
-                rows={4} 
-                placeholder="Escreva sua mensagem aqui..." 
-                required 
-              />
-              <button type="submit" className="w-full rounded-2xl bg-[#e11d48] py-3.5 text-sm font-semibold text-white transition hover:bg-[#be123c]">
-                Enviar Mensagem
-              </button>
-            </form>
-          </div>
-        </div>
-      )}
+
       {showCreateModal && (
         <CreateChargeFlowModal
           onClose={closeCreate}
@@ -548,6 +304,7 @@ function CreateChargeFlowModal({
       onCreated(charge);
     } catch (error: any) {
       console.error(error);
+      alert(error.message || "Ocorreu um erro ao gerar a cobrança.");
     } finally {
       setLoading(false);
     }
@@ -572,6 +329,7 @@ function CreateChargeFlowModal({
       onCreated(charge);
     } catch (error: any) {
       console.error(error);
+      alert(error.message || "Ocorreu um erro ao gerar a cobrança avulsa.");
     } finally {
       setLoading(false);
     }
