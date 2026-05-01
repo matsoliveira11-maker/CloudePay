@@ -52,7 +52,11 @@ serve(async (req) => {
     const firstName = nameParts[0] || "Cliente"
     const lastName = nameParts.length > 1 ? nameParts.slice(1).join(" ") : "Final"
 
-    // 4. Chamar API do Mercado Pago (Server-side)
+    // 4. Calcular taxas e preparar dados do Mercado Pago
+    const total_fee_rate = 0.02
+    const fee_cents = Math.round(amount_cents * total_fee_rate)
+
+    // 5. Chamar API do Mercado Pago (Server-side)
     const mpResponse = await fetch("https://api.mercadopago.com/v1/payments", {
       method: "POST",
       headers: {
@@ -63,6 +67,7 @@ serve(async (req) => {
       },
       body: JSON.stringify({
         transaction_amount: amount_cents / 100,
+        application_fee: fee_cents / 100, // <--- Aqui acontece o SPLIT
         description: service_name || "Serviço CloudePay",
         external_reference: external_reference || `charge_${Date.now()}`,
         statement_descriptor: "CLOUDEPAY",
@@ -96,16 +101,14 @@ serve(async (req) => {
       })
     })
 
-    const mpData = await mpResponse.json()
+    const mpData = await mpResponse.json() as any
 
     if (!mpResponse.ok) {
       console.error("[MP Error]", JSON.stringify(mpData))
       throw new Error(mpData.message || 'Erro ao criar pagamento no Mercado Pago')
     }
 
-    // 5. Salvar no nosso banco de dados (Charges)
-    const total_fee_rate = 0.02
-    const fee_cents = Math.round(amount_cents * total_fee_rate)
+    // 6. Salvar no nosso banco de dados (Charges)
     const net_amount_cents = amount_cents - fee_cents
     const expires_at = new Date(Date.now() + 30 * 60 * 1000).toISOString()
     
@@ -123,9 +126,11 @@ serve(async (req) => {
         payer_email: payer_email || null,
         notes: null,
         status: 'pending',
-        gateway_id: mpData.id.toString(),
-        pix_code: mpData.point_of_interaction.transaction_data.qr_code,
-        qr_code_image: `data:image/png;base64,${mpData.point_of_interaction.transaction_data.qr_code_base64}`,
+        gateway_id: mpData.id?.toString() || "",
+        pix_code: mpData.point_of_interaction?.transaction_data?.qr_code || "",
+        qr_code_image: mpData.point_of_interaction?.transaction_data?.qr_code_base64 
+          ? `data:image/png;base64,${mpData.point_of_interaction.transaction_data.qr_code_base64}`
+          : "",
         expires_at: expires_at,
         charge_type: 'avulsa'
       })
@@ -137,7 +142,7 @@ serve(async (req) => {
       throw new Error('Pagamento criado no MP, mas erro ao salvar no banco local.')
     }
 
-    // 6. Retornar os dados para o Frontend
+    // 7. Retornar os dados para o Frontend
     return new Response(JSON.stringify(newCharge), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       status: 200,
