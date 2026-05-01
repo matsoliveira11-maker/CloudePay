@@ -199,7 +199,7 @@ export default function Dashboard() {
                       {[
                         ["Total bruto recebido", formatBRL(displayGross)],
                         ["Pix pendente", formatBRL(pendingCharges.reduce((acc, curr) => acc + curr.amount_cents, 0))],
-                        ["Taxa total (2%)", formatBRL(displayGross - displayNet)],
+                        ["Taxa total (1%)", formatBRL(displayGross - displayNet)],
                         ["Saldo total (líquido)", formatBRL(displayNet)],
                       ].map(([label, value], index, arr) => (
                         <div key={label} className="flex items-center justify-between rounded-2xl border border-white/10 bg-white/[0.06] px-4 py-3">
@@ -273,7 +273,7 @@ export default function Dashboard() {
                   <div className="hidden overflow-x-auto md:block">
                     <table className="min-w-[760px] w-full text-left text-sm">
                       <thead className="bg-[#fff5f5] text-xs uppercase tracking-[0.12em] text-[#9f1239]">
-                        <tr><th className="px-5 py-4">Serviço / Cliente</th><th className="px-5 py-4">Status</th><th className="px-5 py-4">Bruto</th><th className="px-5 py-4">Taxa (2%)</th><th className="px-5 py-4">Líquido</th></tr>
+                        <tr><th className="px-5 py-4">Serviço / Cliente</th><th className="px-5 py-4">Status</th><th className="px-5 py-4">Bruto</th><th className="px-5 py-4">Taxa (1%)</th><th className="px-5 py-4">Líquido</th></tr>
                       </thead>
                       <tbody>
                         {charges.map((charge) => (
@@ -351,15 +351,23 @@ function CreateChargeFlowModal({
 
   useEffect(() => {
     if (step === "share" && localCharge && localCharge.status === "pending") {
-      intervalRef.current = window.setInterval(async () => {
-        const c = await api.getCharge(localCharge.id);
-        if (c && c.status === "paid") {
-          setLocalCharge(c);
-          if (intervalRef.current) clearInterval(intervalRef.current);
-        }
-      }, 5000);
+      const channel = supabase
+        .channel(`modal_charge_realtime_${localCharge.id}`)
+        .on('postgres_changes', {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'charges',
+          filter: `id=eq.${localCharge.id}`,
+        }, (payload) => {
+          const updated = payload.new as Charge;
+          if (updated.status === 'paid') {
+            setLocalCharge(updated);
+          }
+        })
+        .subscribe();
+
+      return () => { supabase.removeChannel(channel); };
     }
-    return () => { if (intervalRef.current) clearInterval(intervalRef.current); };
   }, [step, localCharge?.id, localCharge?.status]);
 
   const checkoutUrl = useMemo(() => {

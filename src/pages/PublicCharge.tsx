@@ -115,17 +115,23 @@ export default function PublicCharge() {
   useEffect(() => {
     if (status === "paid" || status === "expired" || !chargeId) return;
 
-    intervalRef.current = window.setInterval(async () => {
-      const c = await api.getCharge(chargeId);
-      if (c && c.status !== status) {
-        setStatus(c.status);
-        if (c.status === "paid") {
-          if (intervalRef.current) clearInterval(intervalRef.current);
+    // Inscrição em tempo real: a tela muda instantaneamente quando o status no banco muda
+    const channel = api.supabase
+      .channel(`public_charge_${chargeId}`)
+      .on('postgres_changes', {
+        event: 'UPDATE',
+        schema: 'public',
+        table: 'charges',
+        filter: `id=eq.${chargeId}`,
+      }, (payload) => {
+        const newStatus = (payload.new as any).status;
+        if (newStatus !== status) {
+          setStatus(newStatus);
         }
-      }
-    }, 5000);
+      })
+      .subscribe();
 
-    return () => { if (intervalRef.current) clearInterval(intervalRef.current); };
+    return () => { api.supabase.removeChannel(channel); };
   }, [chargeId, status]);
 
   const copyPix = () => {

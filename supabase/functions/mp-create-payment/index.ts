@@ -53,7 +53,7 @@ serve(async (req) => {
     const lastName = nameParts.length > 1 ? nameParts.slice(1).join(" ") : "Final"
 
     // 4. Calcular taxas e preparar dados do Mercado Pago
-    const total_fee_rate = 0.02
+    const total_fee_rate = 0.01
     const fee_cents = Math.round(amount_cents * total_fee_rate)
 
     // 5. Chamar API do Mercado Pago (Server-side)
@@ -102,11 +102,50 @@ serve(async (req) => {
       })
     })
 
-    const mpData = await mpResponse.json() as any
+    let mpData = await mpResponse.json() as any
 
     if (!mpResponse.ok) {
-      console.error("[MP Error]", JSON.stringify(mpData))
-      throw new Error(mpData.message || 'Erro ao criar pagamento no Mercado Pago')
+      // Se for um usuário de teste tentando usar um sponsor_id real, o MP bloqueia o split.
+      // Neste caso, fazemos um fallback: criamos o PIX de teste sem o split para não travar o fluxo.
+      if (mpData.message?.includes('user_allowed_only_in_test') || JSON.stringify(mpData).includes('user_allowed_only_in_test')) {
+        console.warn("[MP Fallback] Usuário de teste detectado. Removendo sponsor_id para permitir o teste.")
+        
+        const fallbackResponse = await fetch("https://api.mercadopago.com/v1/payments", {
+          method: "POST",
+          headers: {
+            "Authorization": `Bearer ${sellerToken}`,
+            "Content-Type": "application/json",
+            "X-Idempotency-Key": `charge_${Date.now()}_${Math.random().toString(36).substring(7)}_fallback`,
+            "X-Meli-Session-Id": deviceId || ""
+          },
+          body: JSON.stringify({
+            transaction_amount: amount_cents / 100,
+            description: service_name || "Serviço CloudePay (Teste)",
+            external_reference: external_reference || `charge_${Date.now()}`,
+            payment_method_id: "pix",
+            notification_url: "https://crmhkvvjrblajemgtrpz.supabase.co/functions/v1/mp-webhook",
+            payer: {
+              email: payer_email || "pagamento@cloudepay.app",
+              first_name: firstName,
+              last_name: lastName,
+              identification: {
+                type: "CPF",
+                number: (payer_cpf || "00000000000").replace(/\D/g, "")
+              }
+            }
+          })
+        })
+        
+        mpData = await fallbackResponse.json()
+        
+        if (!fallbackResponse.ok) {
+           console.error("[MP Error Fallback]", JSON.stringify(mpData))
+           throw new Error(mpData.message || 'Erro ao criar pagamento de teste no Mercado Pago')
+        }
+      } else {
+        console.error("[MP Error]", JSON.stringify(mpData))
+        throw new Error(mpData.message || 'Erro ao criar pagamento no Mercado Pago')
+      }
     }
 
     // 6. Salvar no nosso banco de dados (Charges)

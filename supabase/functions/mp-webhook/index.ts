@@ -12,12 +12,24 @@ serve(async (req: Request) => {
   }
 
   try {
-    const body = await req.json();
-    console.log("[Webhook] Recebido:", JSON.stringify(body));
+    let body = {}
+    try { body = await req.json() } catch(e) {}
+    
+    const url = new URL(req.url)
+    const queryId = url.searchParams.get("id") || url.searchParams.get("data.id")
+    const queryTopic = url.searchParams.get("topic") || url.searchParams.get("type")
 
-    // O Mercado Pago envia o ID do pagamento em data.id
-    if (body.type === "payment" && body.data?.id) {
-      const paymentId = body.data.id.toString();
+    console.log("[Webhook] Body:", JSON.stringify(body));
+    console.log("[Webhook] Query Params:", url.searchParams.toString());
+
+    // Extrair o ID do pagamento de qualquer um dos formatos (Body Webhook, Body IPN ou Query IPN)
+    let paymentId = null;
+    
+    if (body?.data?.id) paymentId = body.data.id.toString();
+    else if (body?.id && (body?.type === "payment" || body?.topic === "payment")) paymentId = body.id.toString();
+    else if (queryId && (queryTopic === "payment" || url.searchParams.toString().includes("payment"))) paymentId = queryId.toString();
+
+    if (paymentId) {
 
       // Inicializa Supabase
       const supabaseAdmin = createClient(
