@@ -47,7 +47,13 @@ export async function signIn(email: string, password: string) {
     password,
   });
 
-  if (error) return { ok: false as const, error: "Email ou senha incorretos." };
+  if (error) {
+    console.error('[signIn] Supabase error:', error.message, error.status);
+    const msg = error.status === 400
+      ? "Email ou senha incorretos."
+      : `Erro de autenticação: ${error.message}`;
+    return { ok: false as const, error: msg };
+  }
   
   const p = await getCurrentProfile();
   return { ok: true as const, profile: p };
