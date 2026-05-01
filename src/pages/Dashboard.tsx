@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo, useCallback } from "react";
-import { Link } from "react-router-dom";
+import { useNavigate as _useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import * as api from "../lib/api";
 import { Charge } from "../lib/api";
@@ -12,7 +12,6 @@ import { MoneyIcon, ChargeIcon, FilterIcon, ArrowIcon, WhatsAppIcon, LinkIcon, P
 
 // --- Logic ---
 
-type DashboardTab = "dashboard" | "produtos" | "perfil";
 
 export default function Dashboard() {
   const { profile } = useAuth();

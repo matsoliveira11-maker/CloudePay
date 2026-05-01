@@ -118,10 +118,16 @@ export default function Shell({ children }: ShellProps) {
               <button
                 type="button"
                 onClick={() => setSupportOpen(true)}
-                className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-[#fecdd3] bg-white text-[#4c0519] transition hover:border-[#e11d48] hover:text-[#e11d48] sm:w-auto sm:gap-2 sm:px-4 sm:text-sm sm:font-semibold"
+                className="relative flex h-9 w-9 items-center justify-center rounded-full border border-[#fecdd3] bg-white text-[#881337] transition hover:bg-[#fff1f2]"
+                title={`${unreadCount} nova(s) notificação(ões)`}
+                aria-label="Notificações"
               >
                 <HelpIcon className="h-4 w-4" />
-                <span className="hidden sm:inline">Suporte</span>
+                {unreadCount > 0 && (
+                  <span className="absolute -right-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full bg-[#e11d48] text-[9px] font-bold text-white">
+                    {unreadCount > 9 ? '9+' : unreadCount}
+                  </span>
+                )}
               </button>
               <button
                 type="button"
