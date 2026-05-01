@@ -3,6 +3,7 @@ import { useNavigate as _useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import * as api from "../lib/api";
 import { Charge } from "../lib/api";
+import { supabase } from "../lib/supabase";
 import { formatBRL, formatDateTime, maskBRLInput, parseBRLToCents } from "../lib/format";
 import { sanitizeText } from "../lib/validators";
 import { X } from "phosphor-react";
@@ -39,24 +40,48 @@ export default function Dashboard() {
 
   const reload = useCallback(async () => {
     if (!profile) return;
-    const [list, total] = await Promise.all([
+    const [list] = await Promise.all([
       api.listChargesByProfile(profile.id),
-      api.getMonthTotalCents(profile.id),
     ]);
     setCharges(list);
-    setMonthTotal(total);
+    // Calcular total do mês a partir dos dados reais (net_amount_cents já descontado pelo banco)
+    const now = new Date();
+    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+    const monthNet = list
+      .filter(c => c.status === 'paid' && new Date(c.paid_at || c.created_at) >= startOfMonth)
+      .reduce((sum, c) => sum + (c.net_amount_cents || 0), 0);
+    setMonthTotal(monthNet);
   }, [profile]);
 
   useEffect(() => {
     reload();
-    const i = setInterval(reload, 5000);
-    return () => clearInterval(i);
-  }, [reload]);
+
+    if (!profile?.id) return;
+    // Realtime: atualiza instantaneamente quando pagamento é confirmado
+    const channel = supabase
+      .channel('dashboard_charges_realtime')
+      .on('postgres_changes', {
+        event: '*',
+        schema: 'public',
+        table: 'charges',
+        filter: `profile_id=eq.${profile.id}`,
+      }, () => {
+        reload();
+      })
+      .subscribe();
+
+    return () => { supabase.removeChannel(channel); };
+  }, [reload, profile?.id]);
 
   const paidCharges = charges.filter((c) => c.status === "paid");
   const pendingCharges = charges.filter((c) => c.status === "pending");
 
-  const monthNetTotal = monthTotal * 0.98;
+  // monthTotal já é o net_amount_cents (líquido real do banco)
+  const monthNetTotal = monthTotal;
+  // Bruto do mês para exibição secundária
+  const monthGrossTotal = paidCharges
+    .filter(c => { const now = new Date(); return new Date(c.paid_at || c.created_at) >= new Date(now.getFullYear(), now.getMonth(), 1); })
+    .reduce((sum, c) => sum + c.amount_cents, 0);
 
   // Chart Logic (Simple approximation of inspiration chart)
   const chartDays = useMemo(() => {
@@ -98,9 +123,9 @@ export default function Dashboard() {
 
                 <div className="grid gap-3 sm:grid-cols-3 sm:gap-4">
                   {[
-                    { label: "Recebido no mês", value: formatBRL(monthNetTotal), note: "Líquido após taxa de 2%", Icon: MoneyIcon },
+                    { label: "Recebido no mês", value: formatBRL(monthNetTotal), note: "Líquido real após taxa", Icon: MoneyIcon },
                     { label: "Total de cobranças", value: charges.length.toString(), note: `${pendingCharges.length} pendente(s)`, Icon: ChargeIcon },
-                    { label: "Ticket médio", value: formatBRL(paidCharges.length > 0 ? (monthTotal / paidCharges.length) : 0), note: "Somente pagamentos confirmados", Icon: PanelIcon },
+                    { label: "Ticket médio", value: formatBRL(paidCharges.length > 0 ? (monthGrossTotal / paidCharges.length) : 0), note: "Somente pagamentos confirmados", Icon: PanelIcon },
                   ].map(({ label, value, note, Icon }) => (
                     <section key={label} className="rounded-3xl border border-[#fecdd3] bg-white p-4 shadow-[0_14px_36px_rgba(136,19,55,0.06)] sm:p-5 sm:shadow-[0_18px_50px_rgba(136,19,55,0.07)]">
                       <div className="mb-4 flex items-center justify-between sm:mb-5">
@@ -130,13 +155,13 @@ export default function Dashboard() {
                   </section>
 
                   <section className="rounded-3xl border border-[#fecdd3] bg-[#4c0519] p-4 text-white shadow-[0_18px_50px_rgba(76,5,25,0.18)] sm:p-6 sm:shadow-[0_24px_70px_rgba(76,5,25,0.2)]">
-                    <h2 className="text-xl font-semibold tracking-[-0.04em]">Métodos de pagamento</h2>
+                    <h2 className="text-xl font-semibold tracking-[-0.04em]">Resumo financeiro</h2>
                     <div className="mt-5 space-y-3">
                       {[
-                        ["Pix QR Code", formatBRL(monthTotal)],
+                        ["Pix recebido (bruto)", formatBRL(monthGrossTotal)],
                         ["Pix pendente", formatBRL(pendingCharges.reduce((acc, curr) => acc + curr.amount_cents, 0))],
-                        ["Cartão de crédito", "R$ 0,00"],
-                        ["Total Bruto", formatBRL(monthTotal)],
+                        ["Taxa da plataforma", formatBRL(monthGrossTotal - monthNetTotal)],
+                        ["Total Líquido", formatBRL(monthNetTotal)],
                       ].map(([label, value], index, arr) => (
                         <div key={label} className="flex items-center justify-between rounded-2xl border border-white/10 bg-white/[0.06] px-4 py-3">
                           <span className="text-sm text-white/75">{label}</span>
@@ -152,7 +177,7 @@ export default function Dashboard() {
                     <div className="flex items-center justify-between gap-4">
                       <div>
                         <h2 className="text-xl font-semibold tracking-[-0.04em] text-[#4c0519]">Desempenho (últimos 7 dias)</h2>
-                        <p className="mt-1 text-sm text-[#881337]">{formatBRL(monthTotal)} volume total criado</p>
+                        <p className="mt-1 text-sm text-[#881337]">{formatBRL(monthGrossTotal)} volume total recebido</p>
                       </div>
                     </div>
                     <div className="mt-6 flex h-44 items-end gap-1.5 rounded-2xl border border-[#ffe4e6] bg-[#fffafa] p-3 sm:mt-8 sm:h-56 sm:gap-2 sm:p-4">
