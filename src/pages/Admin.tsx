@@ -191,56 +191,49 @@ export default function Admin() {
 
     if (!isAdmin) {
         return (
-            <div className="min-h-screen flex items-center justify-center relative overflow-hidden bg-black font-body">
-                {/* Cinematic macOS-like Wallpaper */}
-                <div aria-hidden className="absolute inset-0 pointer-events-none scale-110">
-                    <div
-                        className="absolute inset-0 animate-pulse-slow"
-                        style={{
-                            background:
-                                "radial-gradient(circle at 20% 30%, #4c0519 0%, transparent 50%), radial-gradient(circle at 80% 70%, #e11d48 0%, transparent 50%), radial-gradient(circle at 50% 50%, #1e1b4b 0%, #000000 100%)",
-                            filter: "blur(60px)",
-                            opacity: 0.8
-                        }}
-                    />
-                </div>
+            <div className="min-h-screen flex items-center justify-center bg-[#000000] p-6 font-sans antialiased selection:bg-white selection:text-black">
+                {/* Subtle Light Source (Visionary Touch) */}
+                <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[300px] bg-white/[0.03] blur-[120px] pointer-events-none" />
 
-                <div className="w-full max-w-sm relative z-10 text-center px-6">
-                    <div className="mb-8 animate-in fade-in slide-in-from-top-4 duration-1000">
-                        <div className="mx-auto w-24 h-24 rounded-full border border-white/20 bg-white/10 backdrop-blur-3xl shadow-2xl flex items-center justify-center mb-6 overflow-hidden p-5 transition-transform hover:scale-105 duration-500">
+                <div className="w-full max-w-[360px] relative z-10">
+                    <div className="mb-12 text-center animate-in fade-in duration-1000">
+                        <div className="mx-auto mb-10 flex justify-center scale-[1.2]">
                             <Logo variant="light" />
                         </div>
-                        <h1 className="text-3xl font-bold tracking-[-0.05em] text-white/90">CloudeOS</h1>
-                        <p className="text-white/40 text-sm font-medium mt-1 uppercase tracking-[0.2em]">Cofre de Fundadores</p>
+                        <h1 className="text-2xl font-bold tracking-[-0.04em] text-white">Vault Access</h1>
+                        <p className="text-zinc-600 text-[10px] font-black uppercase tracking-[0.4em] mt-3">Founder console v2.0</p>
                     </div>
 
-                    <div className="bg-white/[0.06] border border-white/10 rounded-[2.5rem] p-8 shadow-[0_40px_100px_-20px_rgba(0,0,0,0.5)] backdrop-blur-3xl animate-in zoom-in-95 duration-700">
-                        <div className="space-y-6">
-                            <div className="space-y-2 text-left">
-                                <label className="text-[10px] font-bold uppercase tracking-widest text-white/30 ml-4">Email de Acesso</label>
+                    <div className="bg-[#0a0a0a] border border-white/[0.05] rounded-[2rem] p-8 shadow-[0_0_1px_rgba(255,255,255,0.1)] relative group overflow-hidden">
+                        {/* Interactive light effect on border */}
+                        <div className="absolute inset-0 bg-gradient-to-br from-white/[0.05] to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none" />
+                        
+                        <div className="space-y-7 relative z-10">
+                            <div className="space-y-2.5">
+                                <label className="text-[9px] font-black uppercase tracking-[0.2em] text-zinc-500 ml-1">Identity</label>
                                 <input
                                     type="email"
                                     value={adminEmail}
                                     onChange={(e) => setAdminEmail(e.target.value)}
-                                    placeholder="fundador@cloudepay.com"
-                                    className="w-full h-14 bg-black/20 border border-white/10 rounded-2xl px-6 text-white placeholder:text-white/10 focus:outline-none focus:border-white/30 focus:bg-black/30 transition-all font-medium text-center"
+                                    placeholder="admin@cloudepay.com"
+                                    className="w-full h-12 bg-black border border-white/[0.08] rounded-xl px-5 text-sm text-white placeholder:text-zinc-800 focus:outline-none focus:border-white/20 focus:ring-1 focus:ring-white/5 transition-all"
                                 />
                             </div>
                             
-                            <div className="space-y-2 text-left">
-                                <label className="text-[10px] font-bold uppercase tracking-widest text-white/30 ml-4">Senha Mestra</label>
+                            <div className="space-y-2.5">
+                                <label className="text-[9px] font-black uppercase tracking-[0.2em] text-zinc-500 ml-1">Master Key</label>
                                 <input
                                     type="password"
                                     value={adminPassword}
                                     onChange={(e) => setAdminPassword(e.target.value)}
                                     onKeyDown={(e) => e.key === 'Enter' && handleAdminLogin()}
                                     placeholder="••••••••"
-                                    className="w-full h-14 bg-black/20 border border-white/10 rounded-2xl px-6 text-white placeholder:text-white/10 focus:outline-none focus:border-white/30 focus:bg-black/30 transition-all font-medium text-center"
+                                    className="w-full h-12 bg-black border border-white/[0.08] rounded-xl px-5 text-sm text-white placeholder:text-zinc-800 focus:outline-none focus:border-white/20 focus:ring-1 focus:ring-white/5 transition-all"
                                 />
                             </div>
 
                             {loginError && (
-                                <div className="px-4 py-3 rounded-xl bg-red-500/10 border border-red-500/20 text-red-300 text-[11px] font-semibold text-center animate-in fade-in zoom-in duration-300">
+                                <div className="px-4 py-3 rounded-lg bg-red-500/5 border border-red-500/10 text-red-500 text-[10px] font-bold text-center uppercase tracking-widest animate-in zoom-in-95">
                                     {loginError}
                                 </div>
                             )}
@@ -248,24 +241,17 @@ export default function Admin() {
                             <button 
                                 onClick={handleAdminLogin}
                                 disabled={isLoggingIn}
-                                className="w-full h-14 bg-white/90 hover:bg-white text-black rounded-2xl font-bold text-sm transition-all active:scale-[0.98] mt-2 shadow-xl shadow-black/20 flex items-center justify-center gap-2"
+                                className="w-full h-12 bg-white hover:bg-[#f2f2f2] disabled:opacity-30 text-black rounded-xl font-bold text-[11px] uppercase tracking-[0.1em] transition-all active:scale-[0.98] mt-2 shadow-[0_8px_30px_rgb(255,255,255,0.05)]"
                             >
-                                {isLoggingIn ? (
-                                    <div className="h-5 w-5 border-2 border-black/30 border-t-black rounded-full animate-spin" />
-                                ) : "Entrar no Sistema"}
+                                {isLoggingIn ? "Authenticating..." : "Authorize Access"}
                             </button>
                         </div>
                     </div>
 
-                    <div className="mt-12 flex flex-col items-center gap-6 animate-in fade-in duration-1000 delay-500">
-                        <Link to="/painel" className="text-xs font-bold uppercase tracking-widest text-white/30 hover:text-white transition-colors">
-                            Reiniciar para o Painel Principal
+                    <div className="mt-16 text-center animate-in fade-in duration-1000 delay-500">
+                        <Link to="/painel" className="text-[9px] font-bold uppercase tracking-[0.3em] text-zinc-700 hover:text-zinc-400 transition-colors">
+                            Return to Dashboard
                         </Link>
-                        <div className="flex items-center gap-4 text-white/10">
-                            <span className="w-12 h-px bg-current" />
-                            <Lock size={16} weight="duotone" />
-                            <span className="w-12 h-px bg-current" />
-                        </div>
                     </div>
                 </div>
             </div>
@@ -274,44 +260,33 @@ export default function Admin() {
 
     if (!isUnlocked) {
         return (
-            <div className="min-h-screen flex items-center justify-center relative overflow-hidden bg-black">
-                {/* Cinematic macOS-like Wallpaper */}
-                <div aria-hidden className="absolute inset-0 pointer-events-none scale-110">
-                    <div
-                        className="absolute inset-0 animate-pulse-slow"
-                        style={{
-                            background:
-                                "radial-gradient(circle at 20% 30%, #4c0519 0%, transparent 50%), radial-gradient(circle at 80% 70%, #e11d48 0%, transparent 50%), radial-gradient(circle at 50% 50%, #1e1b4b 0%, #000000 100%)",
-                            filter: "blur(60px)",
-                            opacity: 0.8
-                        }}
-                    />
-                </div>
+            <div className="min-h-screen flex items-center justify-center bg-[#000000] p-6 selection:bg-white selection:text-black">
+                <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[300px] bg-white/[0.03] blur-[120px] pointer-events-none" />
 
-                <div className="w-full max-w-sm bg-white/[0.06] border border-white/10 rounded-[2.5rem] p-10 text-center relative z-10 shadow-[0_40px_100px_-20px_rgba(0,0,0,0.5)] backdrop-blur-3xl animate-in zoom-in-95 duration-500">
-                    <div className="mx-auto w-20 h-20 rounded-full bg-white/10 text-white flex items-center justify-center mb-8 border border-white/20">
-                        <ShieldCheck size={40} weight="bold" />
+                <div className="w-full max-w-[400px] bg-[#0a0a0a] border border-white/[0.05] rounded-[2.5rem] p-12 text-center relative z-10 shadow-2xl">
+                    <div className="mx-auto w-16 h-16 rounded-full bg-white text-black flex items-center justify-center mb-10 shadow-[0_0_40px_rgba(255,255,255,0.1)]">
+                        <ShieldCheck size={32} weight="bold" />
                     </div>
-                    <h1 className="text-2xl font-bold text-white mb-2">Chave de Segurança</h1>
-                    <p className="text-xs text-white/40 mb-10 uppercase tracking-[0.4em] font-bold">Unlocking CloudeOS</p>
+                    <h1 className="text-xl font-bold text-white mb-2 tracking-tight">Access Control</h1>
+                    <p className="text-[9px] text-zinc-600 mb-12 uppercase tracking-[0.5em] font-black">Authorized Personnel Only</p>
                     
-                    <div className="space-y-4">
+                    <div className="space-y-6">
                         <input
                             type="password"
                             value={masterToken}
                             onChange={(e) => setMasterToken(e.target.value)}
                             onKeyDown={(e) => e.key === 'Enter' && handleUnlock()}
-                            placeholder="TOKEN"
-                            className="w-full h-14 bg-black/20 border border-white/10 rounded-2xl px-6 text-center text-white font-mono text-xl tracking-[0.5em] placeholder:text-white/5 focus:outline-none focus:border-white/30 transition-all"
+                            placeholder="MASTER_TOKEN"
+                            className="w-full h-14 bg-black border border-white/[0.08] rounded-2xl px-6 text-center text-white font-mono text-lg tracking-[0.4em] placeholder:text-zinc-900 focus:outline-none focus:border-white/20 transition-all"
                         />
                         {tokenError && (
-                            <p className="text-[10px] text-red-400 font-bold uppercase tracking-widest animate-pulse">Token de Acesso Inválido</p>
+                            <p className="text-[9px] text-red-500 font-black uppercase tracking-widest animate-pulse">Encryption Mismatch</p>
                         )}
                         <button 
                             onClick={handleUnlock}
-                            className="w-full h-14 bg-white/90 hover:bg-white text-black rounded-2xl font-bold uppercase tracking-widest text-xs transition-all active:scale-[0.98] shadow-lg shadow-black/20"
+                            className="w-full h-14 bg-white hover:bg-[#f2f2f2] text-black rounded-2xl font-black uppercase tracking-[0.2em] text-[10px] transition-all active:scale-[0.98]"
                         >
-                            Desbloquear Console
+                            Execute Unlock
                         </button>
                     </div>
                 </div>
