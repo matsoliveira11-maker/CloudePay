@@ -73,6 +73,7 @@ export default function Login() {
   const [showPassword, setShowPassword] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [done, setDone] = useState(false);
+  const [forgotSent, setForgotSent] = useState(false);
   const [error, setError] = useState("");
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
@@ -92,6 +93,25 @@ export default function Login() {
       setTimeout(() => navigate("/painel"), 650);
     } else {
       setError(res.error || "Erro ao fazer login");
+    }
+  }
+
+  async function handleForgotPassword() {
+    const emailInput = document.getElementById("email") as HTMLInputElement;
+    const email = emailInput?.value?.trim();
+    if (!email) {
+      setError("Digite seu email no campo acima antes de redefinir a senha.");
+      return;
+    }
+    const { supabase } = await import("../lib/supabase");
+    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: `${window.location.origin}/#/redefinir-senha`,
+    });
+    if (!error) {
+      setForgotSent(true);
+      setError("");
+    } else {
+      setError("Erro ao enviar email de redefinição. Tente novamente.");
     }
   }
 
@@ -230,7 +250,9 @@ export default function Login() {
                     <input type="checkbox" className="auth-checkbox" defaultChecked />
                     Manter conectado
                   </label>
-                  <a href="#" className="font-semibold text-[#e11d48] hover:underline">Esqueci a senha</a>
+                  <button type="button" onClick={handleForgotPassword} className="font-semibold text-[#e11d48] hover:underline">
+                    {forgotSent ? "✓ Email enviado!" : "Esqueci a senha"}
+                  </button>
                 </div>
 
                 {error && (
