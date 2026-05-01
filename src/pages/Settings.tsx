@@ -89,7 +89,7 @@ export default function Settings() {
                 <input className="auth-input" value={formData.slug} onChange={e => setFormData({...formData, slug: e.target.value})} />
               </Field>
               <Field label="Link público" id="perfil-link">
-                <input className="auth-input" readOnly value={`cloudepay.com.br/${formData.slug}`} />
+                <input className="auth-input" readOnly value={`${window.location.origin}/${formData.slug}`} />
               </Field>
               <div className="md:col-span-2">
                 <button type="submit" disabled={loading} className="inline-flex items-center gap-2 rounded-full bg-[#e11d48] px-6 py-4 text-sm font-semibold text-white shadow-[0_18px_40px_rgba(225,29,72,0.28)] transition hover:-translate-y-0.5">

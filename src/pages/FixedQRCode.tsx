@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { useParams, Link } from "react-router-dom";
 import * as api from "../lib/api";
 import { formatBRL, maskBRLInput, parseBRLToCents, maskCPFInput } from "../lib/format";
+import QRCode from "qrcode";
 import { isValidCPF, sanitizeText } from "../lib/validators";
 
 // --- Icons ---
@@ -110,6 +111,17 @@ export default function FixedQRCode() {
 
   const [copied, setCopied] = useState(false);
   const intervalRef = useRef<number | null>(null);
+  const [generatedQr, setGeneratedQr] = useState<string>("");
+
+  useEffect(() => {
+    if (charge?.pix_code && !charge?.qr_code_image) {
+      QRCode.toDataURL(charge.pix_code, {
+        margin: 1,
+        width: 400,
+        color: { dark: "#000000", light: "#ffffff" }
+      }).then(setGeneratedQr);
+    }
+  }, [charge?.pix_code, charge?.qr_code_image]);
 
   useEffect(() => {
     async function load() {
@@ -245,8 +257,12 @@ export default function FixedQRCode() {
             <div className="mt-2 text-4xl font-semibold tracking-tight text-[#4c0519]">{formatBRL(charge.amount_cents)}</div>
             
             <div className="mt-6 flex justify-center">
-                <div className="rounded-2xl border border-[#fecdd3] bg-[#fffafa] p-3">
-                    <img src={charge.qr_code_image} alt="QR Code" className="h-48 w-48" />
+                <div className="rounded-2xl border border-[#fecdd3] bg-[#fffafa] p-3 flex items-center justify-center min-w-[216px] min-h-[216px]">
+                    {(charge.qr_code_image || generatedQr) ? (
+                      <img src={charge.qr_code_image || generatedQr} alt="QR Code" className="h-48 w-48" />
+                    ) : (
+                      <div className="h-48 w-48 animate-pulse bg-zinc-100 rounded-xl" />
+                    )}
                 </div>
             </div>
 

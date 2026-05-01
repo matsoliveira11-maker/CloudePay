@@ -340,7 +340,7 @@ function CreateChargeFlowModal({
 
   const checkoutUrl = useMemo(() => {
     if (!createdCharge || !profile?.slug) return "";
-    return `${window.location.origin}/#/pagamento/${createdCharge.id}`;
+    return `${window.location.origin}/${profile.slug}/${createdCharge.id}`;
   }, [createdCharge, profile?.slug]);
 
   async function createFromProduct() {

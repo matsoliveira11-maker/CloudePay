@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { useParams, Link } from "react-router-dom";
 import * as api from "../lib/api";
 import { formatBRL } from "../lib/format";
+import QRCode from "qrcode";
 
 // --- Icons ---
 
@@ -86,7 +87,17 @@ export default function PublicCharge() {
   const [loading, setLoading] = useState(true);
   const [copied, setCopied] = useState(false);
   const [status, setStatus] = useState<"pending" | "paid" | "expired">("pending");
-  const intervalRef = useRef<number | null>(null);
+  const [generatedQr, setGeneratedQr] = useState<string>("");
+
+  useEffect(() => {
+    if (charge?.pix_code && !charge?.qr_code_image) {
+      QRCode.toDataURL(charge.pix_code, {
+        margin: 1,
+        width: 400,
+        color: { dark: "#000000", light: "#ffffff" }
+      }).then(setGeneratedQr);
+    }
+  }, [charge?.pix_code, charge?.qr_code_image]);
 
   useEffect(() => {
     async function load() {
@@ -184,8 +195,12 @@ export default function PublicCharge() {
                 <h1 className="mt-1 text-2xl font-semibold tracking-tight text-[#4c0519]">{charge.service_name}</h1>
                 <p className="mt-1 text-sm text-[#881337]">Para: <strong>{profile?.full_name}</strong></p>
               </div>
-              <div className="rounded-2xl border border-[#fecdd3] bg-[#fffafa] p-2">
-                <img src={charge.qr_code_image} alt="QR Code PIX" className="h-24 w-24 sm:h-28 sm:w-28" />
+              <div className="rounded-2xl border border-[#fecdd3] bg-[#fffafa] p-2 flex items-center justify-center min-w-[112px] min-h-[112px]">
+                {(charge.qr_code_image || generatedQr) ? (
+                  <img src={charge.qr_code_image || generatedQr} alt="QR Code PIX" className="h-24 w-24 sm:h-28 sm:w-28" />
+                ) : (
+                  <div className="h-24 w-24 sm:h-28 sm:w-28 animate-pulse bg-zinc-100 rounded-xl" />
+                )}
               </div>
             </div>
 
