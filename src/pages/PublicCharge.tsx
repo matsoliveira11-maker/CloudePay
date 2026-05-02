@@ -1,5 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useParams, Link } from "react-router-dom";
+import { motion, AnimatePresence } from "framer-motion";
+
 import * as api from "../lib/api";
 import { supabase } from "../lib/supabase";
 
@@ -55,18 +57,10 @@ function Logo({ variant = "dark" }: { variant?: "dark" | "light" }) {
   );
 }
 
-function ShieldIcon() {
+function ShieldIcon({ className = "h-4 w-4" }: { className?: string }) {
   return (
-    <svg className="h-4 w-4 text-[#e11d48]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
       <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
-    </svg>
-  );
-}
-
-function ArrowIcon() {
-  return (
-    <svg className="h-4 w-4" viewBox="0 0 20 20" fill="none" aria-hidden="true">
-      <path d="M5 10h9M10 6l4 4-4 4" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
     </svg>
   );
 }
@@ -172,184 +166,177 @@ export default function PublicCharge() {
         <p className="mt-3 text-sm text-zinc-500 max-w-[280px]">O link pode ter expirado ou o endereço de destino está incorreto.</p>
         <Link to="/" className="mt-10 text-[10px] font-black uppercase tracking-[0.3em] text-white/40 hover:text-white transition-colors">Voltar ao Início</Link>
       </div>
-    );
-  }
+    );  return (
+    <main className="min-h-screen bg-[#000000] text-white antialiased flex flex-col items-center justify-center p-4 selection:bg-rose-500/30">
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute -top-[20%] -left-[10%] h-[60%] w-[60%] rounded-full bg-rose-900/10 blur-[120px]" />
+        <div className="absolute -bottom-[20%] -right-[10%] h-[60%] w-[60%] rounded-full bg-rose-950/10 blur-[120px]" />
+      </div>
 
-  return (
-    <main className="min-h-screen bg-[#000000] text-white antialiased flex flex-col items-center justify-center p-4">
-      <div className="w-full max-w-5xl animate-in fade-in zoom-in-95 duration-1000">
-        <div className="mb-12 flex items-center justify-between">
+      <motion.div 
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="w-full max-w-[440px] relative z-10"
+      >
+        <div className="mb-6 flex items-center justify-between px-2">
           <Logo variant="light" />
-          <div className="hidden sm:flex items-center gap-2 rounded-full border border-white/[0.05] bg-white/[0.02] px-4 py-1.5 text-[9px] font-black uppercase tracking-[0.2em] text-zinc-400">
-            <ShieldIcon /> Pagamento 100% Seguro
+          <div className="flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.03] px-3 py-1 text-[8px] font-black uppercase tracking-[0.2em] text-rose-400/80 backdrop-blur-md">
+            <ShieldIcon className="h-3 w-3" /> <span>Transação Protegida</span>
           </div>
         </div>
 
-        {status === "paid" ? (
-          <div className="flex flex-col items-center">
-            <div ref={receiptRef} className="w-full max-w-md rounded-[3rem] border border-white/[0.05] bg-[#050505] p-10 text-center shadow-2xl relative overflow-hidden">
-                <div className="absolute top-0 right-0 p-10 opacity-5 pointer-events-none">
+        <AnimatePresence mode="wait">
+          {status === "paid" ? (
+            <motion.div 
+              key="paid"
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              ref={receiptRef}
+              className="rounded-[2.5rem] border border-white/10 bg-gradient-to-b from-zinc-900/50 to-black p-8 text-center shadow-2xl backdrop-blur-2xl overflow-hidden relative"
+            >
+                <div className="absolute top-0 right-0 p-8 opacity-[0.03] pointer-events-none">
                     <Logo variant="light" />
                 </div>
                 
-                <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-full bg-emerald-500/10 text-emerald-500 mb-8">
-                  <svg className="h-10 w-10" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M5 13l4 4L19 7" />
+                <motion.div 
+                    initial={{ scale: 0 }}
+                    animate={{ scale: 1 }}
+                    transition={{ type: "spring", damping: 12 }}
+                    className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-emerald-500/10 text-emerald-500 mb-6"
+                >
+                  <svg className="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M5 13l4 4L19 7" />
                   </svg>
-                </div>
+                </motion.div>
                 
-                <p className="text-[10px] font-black uppercase tracking-[0.3em] text-zinc-600">Comprovante de Pagamento</p>
-                <h1 className="mt-4 text-5xl font-bold tracking-tighter text-white">{formatBRL(charge.amount_cents)}</h1>
+                <p className="text-[9px] font-black uppercase tracking-[0.3em] text-zinc-500">Pagamento Confirmado</p>
+                <h1 className="mt-2 text-5xl font-bold tracking-tighter text-white">{formatBRL(charge.amount_cents)}</h1>
                 
-                <div className="mt-10 space-y-4 text-left">
-                  <div className="flex justify-between border-b border-white/[0.03] pb-4">
-                    <span className="text-[9px] font-black uppercase tracking-widest text-zinc-600">Status</span>
-                    <span className="text-[10px] font-bold text-emerald-500 uppercase tracking-widest">Confirmado</span>
+                <div className="mt-8 space-y-3.5">
+                  <div className="flex justify-between border-b border-white/[0.05] pb-3 text-[10px]">
+                    <span className="font-bold uppercase tracking-widest text-zinc-600">Recebedor</span>
+                    <span className="text-white font-bold tracking-tight">{profile?.full_name}</span>
                   </div>
-                  <div className="flex justify-between border-b border-white/[0.03] pb-4 text-sm">
-                    <span className="text-[9px] font-black uppercase tracking-widest text-zinc-600">Destinatário</span>
-                    <span className="text-white font-bold tracking-tight text-xs">{profile?.full_name}</span>
+                  <div className="flex justify-between border-b border-white/[0.05] pb-3 text-[10px]">
+                    <span className="font-bold uppercase tracking-widest text-zinc-600">Data e Hora</span>
+                    <span className="text-white font-medium tracking-tight">{new Date().toLocaleString('pt-BR')}</span>
                   </div>
-                  <div className="flex justify-between border-b border-white/[0.03] pb-4 text-sm">
-                    <span className="text-[9px] font-black uppercase tracking-widest text-zinc-600">Data e Hora</span>
-                    <span className="text-white font-medium tracking-tight text-xs">{new Date().toLocaleString('pt-BR')}</span>
-                  </div>
-                  <div className="flex justify-between border-b border-white/[0.03] pb-4 text-sm">
-                    <span className="text-[9px] font-black uppercase tracking-widest text-zinc-600">ID da Transação</span>
-                    <span className="text-zinc-500 font-mono text-[10px]">{charge.id.toUpperCase()}</span>
+                  <div className="flex justify-between pb-1 text-[10px]">
+                    <span className="font-bold uppercase tracking-widest text-zinc-600">ID Único</span>
+                    <span className="text-zinc-500 font-mono">{charge.id.slice(0, 12).toUpperCase()}</span>
                   </div>
                 </div>
 
-                <div className="mt-10 pt-6 border-t border-white/[0.05]">
-                    <p className="text-[8px] font-bold uppercase tracking-[0.4em] text-zinc-800">
-                        Autenticado via CloudePay Network
+                <div className="mt-8 pt-6 border-t border-white/[0.05] flex flex-col gap-3">
+                    <button 
+                        onClick={downloadReceipt}
+                        className="w-full rounded-2xl bg-white h-12 text-[10px] font-black uppercase tracking-[0.2em] text-black hover:bg-zinc-200 transition-all active:scale-95 shadow-lg shadow-white/5"
+                    >
+                        Baixar Comprovante
+                    </button>
+                    <p className="text-[7px] font-bold uppercase tracking-[0.4em] text-zinc-700">
+                        CloudePay Network Verified
                     </p>
                 </div>
-            </div>
-            
-            <div className="mt-8 flex gap-4">
-                <button 
-                    onClick={downloadReceipt}
-                    className="flex items-center gap-2 rounded-2xl bg-white px-8 h-14 text-[10px] font-black uppercase tracking-[0.2em] text-black hover:bg-zinc-200 transition-all active:scale-95"
-                >
-                    Baixar Imagem (PNG)
-                </button>
-                <button 
-                    onClick={() => window.print()}
-                    className="flex items-center gap-2 rounded-2xl border border-white/10 bg-white/5 px-8 h-14 text-[10px] font-black uppercase tracking-[0.2em] text-white hover:bg-white/10 transition-all active:scale-95"
-                >
-                    Imprimir PDF
-                </button>
-            </div>
-          </div>
-        ) : (
-          <div className="grid lg:grid-cols-[1fr_400px] gap-8">
-            {/* Lado Esquerdo: Checkout Principal */}
-            <section className="rounded-[3rem] border border-white/[0.05] bg-[#050505] overflow-hidden shadow-2xl relative">
-                <div className="bg-gradient-to-br from-zinc-900 to-black p-10 sm:p-12 border-b border-white/[0.03]">
-                    <p className="text-[10px] font-black uppercase tracking-[0.3em] text-zinc-600">Checkout CloudePay</p>
-                    <h1 className="mt-4 text-7xl font-bold tracking-tighter text-white">{formatBRL(charge.amount_cents)}</h1>
-                    <p className="mt-3 text-zinc-400 font-medium">Cobrança {charge.charge_type === 'avulsa' ? 'Avulsa' : 'Recorrente'}</p>
+            </motion.div>
+          ) : (
+            <motion.div 
+              key="unpaid"
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              className="rounded-[2.5rem] border border-white/10 bg-gradient-to-b from-zinc-900/80 to-black shadow-[0_40px_100px_rgba(0,0,0,0.8)] backdrop-blur-2xl overflow-hidden relative"
+            >
+                {/* Top Section: Amount & Store */}
+                <div className="p-6 text-center border-b border-white/[0.05]">
+                    <p className="text-[9px] font-black uppercase tracking-[0.4em] text-rose-500/60 mb-2">Valor da Cobrança</p>
+                    <h1 className="text-5xl md:text-6xl font-bold tracking-tighter text-white drop-shadow-2xl">{formatBRL(charge.amount_cents)}</h1>
                     
-                    <div className="mt-10 flex items-center gap-4 rounded-3xl border border-white/[0.05] bg-white/[0.02] p-5 w-fit pr-8">
-                      <div className="flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-white font-black text-[#e11d48] text-lg shadow-xl shadow-rose-900/10">
+                    <div className="mt-6 inline-flex items-center gap-3 rounded-2xl border border-white/[0.05] bg-white/[0.02] p-3 pr-5">
+                      <div className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-white shadow-xl shadow-rose-950/20">
                         {profile?.avatar_url ? (
                           <img src={profile.avatar_url} alt="Logo" className="h-full w-full object-cover" />
                         ) : (
-                          profile?.full_name?.slice(0, 2).toUpperCase() || "CL"
+                          <div className="font-black text-[#e11d48] text-sm uppercase">{profile?.full_name?.slice(0, 2)}</div>
                         )}
                       </div>
-                      <div>
-                          <p className="text-sm font-bold text-white">{profile?.full_name}</p>
-                          <p className="text-xs text-zinc-500 tracking-tight">cloudepay.com.br/{profile?.slug}</p>
+                      <div className="text-left">
+                          <p className="text-[11px] font-bold text-white tracking-tight">{profile?.full_name}</p>
+                          <p className="text-[9px] text-zinc-500 font-medium">@{profile?.slug}</p>
                       </div>
                     </div>
                 </div>
 
-                <div className="p-10 sm:p-12 grid md:grid-cols-[200px_1fr] gap-12 items-center">
-                    <div className="flex flex-col items-center gap-4">
-                        <div className="rounded-[2.5rem] border border-white/10 bg-white p-3 shadow-[0_0_50px_rgba(255,255,255,0.05)]">
+                {/* Middle Section: QR Code */}
+                <div className="p-6 flex flex-col items-center gap-6">
+                    <div className="relative group">
+                        <div className="absolute inset-0 bg-rose-500/20 blur-3xl rounded-full scale-50 group-hover:scale-75 transition-transform duration-1000" />
+                        <div className="relative rounded-[2rem] border border-white/10 bg-white p-2.5 shadow-2xl transition-transform hover:scale-[1.02] duration-500">
                             {(charge.qr_code_image || generatedQr) ? (
-                                <img src={charge.qr_code_image || generatedQr} alt="Pix QR" className="h-40 w-40 rounded-2xl sm:h-44 sm:w-44" />
+                                <img src={charge.qr_code_image || generatedQr} alt="Pix QR" className="h-32 w-32 rounded-xl" />
                             ) : (
-                                <div className="h-40 w-40 sm:h-44 sm:w-44 animate-pulse bg-zinc-800 rounded-2xl" />
+                                <div className="h-32 w-32 animate-pulse bg-zinc-800 rounded-xl" />
                             )}
                         </div>
-                        <p className="text-[10px] font-black uppercase tracking-widest text-zinc-600">Escaneie o QR Code</p>
                     </div>
 
-                    <div className="space-y-6">
-                        <div>
-                            <h3 className="text-xl font-bold text-white">Pague com PIX</h3>
-                            <p className="mt-2 text-sm text-zinc-500 leading-relaxed max-w-sm">
-                                Abra o app do seu banco, escaneie o QR Code ou copie o código PIX abaixo. A confirmação é instantânea.
-                            </p>
-                        </div>
-
+                    <div className="w-full space-y-4">
                         <div className="space-y-2">
-                            <p className="text-[9px] font-black uppercase tracking-[0.2em] text-zinc-600 ml-1">Código Copia-e-Cola</p>
-                            <div className="flex flex-col gap-2">
-                                <div className="rounded-2xl border border-white/[0.03] bg-white/[0.01] p-4 font-mono text-[10px] text-zinc-500 break-all leading-relaxed max-h-24 overflow-y-auto">
+                            <div className="flex items-center justify-between px-1">
+                                <p className="text-[9px] font-black uppercase tracking-[0.2em] text-zinc-500">Copia e Cola</p>
+                                <div className="flex items-center gap-2">
+                                    <div className="h-1 w-1 rounded-full bg-amber-500 animate-pulse" />
+                                    <span className="text-[8px] font-bold uppercase tracking-widest text-amber-500/80">Aguardando PIX</span>
+                                </div>
+                            </div>
+                            <div className="relative">
+                                <div className="rounded-2xl border border-white/[0.05] bg-white/[0.01] p-3.5 pr-12 font-mono text-[10px] text-zinc-400 break-all line-clamp-2 leading-relaxed h-[52px]">
                                     {charge.pix_code}
                                 </div>
                                 <button
                                     onClick={copyPix}
-                                    className={`w-full h-14 rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] transition-all active:scale-[0.98] ${
-                                        copied ? "bg-emerald-500 text-white" : "bg-white text-black hover:bg-zinc-200"
+                                    className={`absolute right-2 top-2 h-9 w-9 rounded-xl flex items-center justify-center transition-all active:scale-90 ${
+                                        copied ? "bg-emerald-500 text-white" : "bg-white/10 text-white hover:bg-white/20"
                                     }`}
                                 >
-                                    {copied ? "Código Copiado!" : "Copiar Código PIX"}
+                                    {copied ? (
+                                        <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M5 13l4 4L19 7" /></svg>
+                                    ) : (
+                                        <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" /></svg>
+                                    )}
                                 </button>
                             </div>
                         </div>
+
+                        <button
+                            onClick={copyPix}
+                            className={`w-full h-14 rounded-2xl text-[10px] font-black uppercase tracking-[0.3em] transition-all active:scale-[0.98] shadow-lg ${
+                                copied ? "bg-emerald-500 text-white shadow-emerald-500/20" : "bg-white text-black hover:bg-zinc-100 shadow-white/5"
+                            }`}
+                        >
+                            {copied ? "PIX Copiado!" : "Copiar Código PIX"}
+                        </button>
                     </div>
                 </div>
-            </section>
 
-            {/* Lado Direito: Instruções e Status */}
-            <aside className="space-y-6">
-                <div className="rounded-[2.5rem] border border-white/[0.05] bg-[#050505] p-8 shadow-xl">
-                    <div className="flex items-center gap-3 mb-6">
-                        <div className="h-2 w-2 rounded-full bg-amber-500 animate-pulse" />
-                        <span className="text-[10px] font-black uppercase tracking-[0.3em] text-amber-500">Aguardando Pagamento</span>
-                    </div>
-
-                    <h2 className="text-2xl font-bold tracking-tight text-white mb-6 leading-tight">
-                        Assim que o PIX cair, esta tela muda sozinha.
-                    </h2>
-
-                    <div className="space-y-4">
-                        {[
-                            { step: 1, text: "Escaneie o QR Code ou copie o código PIX." },
-                            { step: 2, text: "Confirme o pagamento no app do banco." },
-                            { step: 3, text: "A CloudePay valida e envia o comprovante." }
-                        ].map((item) => (
-                            <div key={item.step} className="flex items-center gap-4 rounded-2xl border border-white/[0.03] bg-white/[0.01] p-4 group transition-all hover:bg-white/[0.03]">
-                                <div className="h-8 w-8 flex items-center justify-center rounded-full bg-white/5 text-white text-xs font-black">
-                                    {item.step}
-                                </div>
-                                <p className="text-xs font-medium text-zinc-400 group-hover:text-white transition-colors">{item.text}</p>
-                            </div>
-                        ))}
-                    </div>
-
-                    <button 
-                        onClick={() => setStatus("paid")}
-                        className="mt-8 flex w-full items-center justify-center gap-3 rounded-2xl bg-white/5 border border-white/10 h-14 text-[9px] font-black uppercase tracking-[0.2em] text-white/50 hover:text-white hover:bg-white/10 transition-all"
-                    >
-                        Simular pagamento confirmado <ArrowIcon />
-                    </button>
-                </div>
-
-                <div className="rounded-[2.5rem] border border-white/[0.05] bg-white/[0.01] p-6 text-center">
-                     <p className="text-[9px] font-black uppercase tracking-[0.4em] text-zinc-800">
-                        Powered by CloudePay Network
+                {/* Bottom Section: Hint */}
+                <div className="p-4 bg-white/[0.02] border-t border-white/[0.05] text-center">
+                    <p className="text-[8px] font-medium text-zinc-500 tracking-tight">
+                        A tela atualizará <span className="text-white font-bold italic">automaticamente</span> após o pagamento.
                     </p>
                 </div>
-            </aside>
-          </div>
-        )}
-      </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        <div className="mt-6 flex justify-center opacity-30">
+             <p className="text-[7px] font-black uppercase tracking-[0.5em] text-zinc-600">
+                CLOUDEPAY NETWORK · SECURE TRANSACTION
+            </p>
+        </div>
+      </motion.div>
     </main>
   );
+}
 }
