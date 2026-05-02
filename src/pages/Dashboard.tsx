@@ -6,7 +6,8 @@ import { Charge } from "../lib/api";
 import { supabase } from "../lib/supabase";
 import { formatBRL, formatDateTime, maskBRLInput, parseBRLToCents } from "../lib/format";
 import { sanitizeText } from "../lib/validators";
-import { X } from "phosphor-react";
+import { X, WhatsappLogo, InstagramLogo, TiktokLogo, TelegramLogo, ShareNetwork } from "phosphor-react";
+
 import Shell from "../components/Shell";
 import { MoneyIcon, ChargeIcon, FilterIcon, ArrowIcon, PanelIcon } from "../components/Icons";
 import toast from "react-hot-toast";
@@ -455,21 +456,21 @@ function CreateChargeFlowModal({
         {step === "share" ? (
           <div className="flex flex-col md:flex-row w-full h-full md:min-h-[560px]">
             {/* Left Column - Deep Red Brand Gradient */}
-            <div className="relative w-full md:w-[45%] bg-gradient-to-br from-[#881337] to-[#e11d48] p-6 md:p-10 flex flex-col">
+            <div className="relative w-full md:w-[45%] bg-gradient-to-br from-[#881337] to-[#e11d48] p-5 md:p-10 flex flex-col">
               <div className="flex items-center justify-between mb-8">
                 <span className="text-[10px] font-black uppercase tracking-[0.2em] text-white/70">
                   Cobrança Pronta
                 </span>
-                <button onClick={onClose} className="flex h-10 w-10 md:h-8 md:w-8 items-center justify-center rounded-full bg-white/10 text-white hover:bg-white/20 transition-all">
+                <button onClick={onClose} className="flex h-9 w-9 md:h-8 md:w-8 items-center justify-center rounded-full bg-white/10 text-white hover:bg-white/20 transition-all">
                   <X size={16} weight="bold" />
                 </button>
               </div>
 
               <div className="flex-1">
-                <h2 className="text-4xl md:text-5xl font-bold tracking-tighter text-white mb-2">
+                <h2 className="text-3xl md:text-5xl font-bold tracking-tighter text-white mb-1 md:mb-2">
                   {formatBRL(localCharge!.amount_cents)}
                 </h2>
-                <p className="text-sm text-white/80 font-medium mb-6 md:mb-10">
+                <p className="text-xs md:text-sm text-white/80 font-medium mb-4 md:mb-10">
                   {localCharge!.service_name || "Cobrança avulsa"}
                 </p>
 
@@ -479,10 +480,10 @@ function CreateChargeFlowModal({
                       {profile?.full_name?.slice(0, 2).toUpperCase() || "CL"}
                     </div>
                     <div className="min-w-0">
-                      <p className="text-base font-bold text-white truncate">
+                      <p className="text-sm md:text-base font-bold text-white truncate">
                         {profile?.full_name || "Nome da Loja"}
                       </p>
-                      <p className="text-xs text-white/60 truncate">
+                      <p className="text-[10px] md:text-xs text-white/60 truncate">
                         cloudepay.com.br/{profile?.slug || "loja"}
                       </p>
                     </div>
@@ -503,14 +504,14 @@ function CreateChargeFlowModal({
 
               <button 
                   onClick={() => window.open(checkoutUrl, '_blank')}
-                  className="mt-8 flex w-full items-center justify-center gap-2 rounded-full bg-white py-4 text-[11px] font-black uppercase tracking-[0.1em] text-[#881337] hover:bg-zinc-100 transition-all shadow-lg active:scale-[0.98]"
+                  className="mt-6 md:mt-8 flex w-full items-center justify-center gap-2 rounded-full bg-white py-3 md:py-4 text-[10px] md:text-[11px] font-black uppercase tracking-[0.1em] text-[#881337] hover:bg-zinc-100 transition-all shadow-lg active:scale-[0.98]"
               >
                   Abrir página de pagamento <ArrowIcon />
               </button>
             </div>
 
             {/* Right Column - White Background */}
-            <div className="relative w-full md:w-[55%] bg-white p-6 md:p-10 flex flex-col items-center justify-center">
+            <div className="relative w-full md:w-[55%] bg-white p-5 md:p-10 flex flex-col items-center justify-center">
               <div className="w-full max-w-[320px] flex flex-col items-center">
                 {localCharge?.status === "paid" ? (
                     <div className="w-full flex flex-col items-center">
@@ -540,50 +541,49 @@ function CreateChargeFlowModal({
                     </div>
                 ) : (
                   <>
-                    <div className="mb-6 rounded-[2rem] border border-[#fecdd3] p-4 shadow-sm bg-white">
+                    <div className="mb-4 md:mb-6 rounded-[2rem] border border-[#fecdd3] p-3 md:p-4 shadow-sm bg-white">
                         {(localCharge?.qr_code_image || localCharge?.pix_code) ? (
                             localCharge?.qr_code_image ? (
-                                <img src={localCharge.qr_code_image} alt="QR Code" className="h-48 w-48 object-contain" />
+                                <img src={localCharge.qr_code_image} alt="QR Code" className="h-32 w-32 md:h-48 md:w-48 object-contain" />
                             ) : (
-                                <div className="h-48 w-48 flex items-center justify-center text-[#fecdd3]">
-                                    <PanelIcon className="h-10 w-10 animate-pulse" />
+                                <div className="h-32 w-32 md:h-48 md:w-48 flex items-center justify-center text-[#fecdd3]">
+                                    <PanelIcon className="h-8 w-8 md:h-10 md:w-10 animate-pulse" />
                                 </div>
                             )
                         ) : (
-                            <div className="h-48 w-48 animate-pulse bg-zinc-100 rounded-2xl" />
+                            <div className="h-32 w-32 md:h-48 md:w-48 animate-pulse bg-zinc-100 rounded-2xl" />
                         )}
                     </div>
 
-                    <p className="text-center text-[11px] font-medium leading-relaxed text-[#881337] mb-8">
-                        QR Code PIX gerado. Compartilhe o link ou abra a página de pagamento para o cliente.
+                    <p className="text-center text-[10px] md:text-[11px] font-medium leading-relaxed text-[#881337] mb-4 md:mb-8">
+                        QR Code PIX gerado.
                     </p>
 
-                <div className="w-full flex items-center gap-2 rounded-2xl border border-[#fecdd3] bg-white p-1.5 pl-4 mb-8">
-                  <span className="flex-1 truncate text-xs font-medium text-[#881337]/70">
+                <div className="w-full flex items-center gap-2 rounded-2xl border border-[#fecdd3] bg-white p-1 md:p-1.5 pl-3 md:pl-4 mb-4 md:mb-8">
+                  <span className="flex-1 truncate text-[10px] md:text-xs font-medium text-[#881337]/70">
                     {checkoutUrl.replace('https://', '')}
                   </span>
-                  <button onClick={copyLink} className={`rounded-xl px-6 py-3 text-xs font-bold transition-all ${copied ? 'bg-emerald-500 text-white' : 'bg-[#e11d48] text-white hover:bg-[#be123c]'}`}>
+                  <button onClick={copyLink} className={`rounded-xl px-4 md:px-6 py-2.5 md:py-3 text-[10px] md:text-xs font-bold transition-all ${copied ? 'bg-emerald-500 text-white' : 'bg-[#e11d48] text-white hover:bg-[#be123c]'}`}>
                     {copied ? 'Copiado!' : 'Copiar'}
                   </button>
                 </div>
 
-                <div className="w-full mb-6">
-                  <p className="text-[10px] font-black uppercase tracking-[0.15em] text-[#881337]/70 mb-3 text-center">
-                    Compartilhar em
+                <div className="w-full">
+                  <p className="text-[9px] font-black uppercase tracking-[0.15em] text-[#881337]/70 mb-3 text-center">
+                    Compartilhar
                   </p>
-                  <div className="grid grid-cols-5 gap-2">
+                  <div className="grid grid-cols-5 gap-3">
                     {[
-                      { icon: 'WA', label: 'WhatsApp' },
-                      { icon: 'IG', label: 'Instagram' },
-                      { icon: 'TT', label: 'TikTok' },
-                      { icon: 'KW', label: 'Kwai' },
-                      { icon: 'TG', label: 'Telegram' },
+                      { icon: <WhatsappLogo size={20} weight="bold" />, label: 'WhatsApp' },
+                      { icon: <InstagramLogo size={20} weight="bold" />, label: 'Instagram' },
+                      { icon: <TiktokLogo size={20} weight="bold" />, label: 'TikTok' },
+                      { icon: <ShareNetwork size={20} weight="bold" />, label: 'Kwai' },
+                      { icon: <TelegramLogo size={20} weight="bold" />, label: 'Telegram' },
                     ].map((app) => (
-                      <button key={app.label} className="flex flex-col items-center gap-1.5 group">
-                        <div className="h-12 w-12 flex items-center justify-center rounded-2xl border border-[#fecdd3] bg-white transition-all group-hover:bg-[#fff1f2] group-active:scale-95 text-[#e11d48]">
-                          <span className="text-[11px] font-black">{app.icon}</span>
+                      <button key={app.label} className="flex flex-col items-center group">
+                        <div className="h-10 w-10 flex items-center justify-center rounded-xl border border-[#fecdd3] bg-white transition-all group-hover:bg-[#fff1f2] group-active:scale-95 text-[#e11d48]">
+                          {app.icon}
                         </div>
-                        <span className="text-[9px] font-semibold text-[#881337]/70">{app.label}</span>
                       </button>
                     ))}
                   </div>
