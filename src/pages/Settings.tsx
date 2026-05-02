@@ -2,7 +2,9 @@ import { useState, useEffect } from "react";
 import { useAuth } from "../context/AuthContext";
 import * as api from "../lib/api";
 import Shell from "../components/Shell";
-import { LinkIcon, ArrowIcon } from "../components/Icons";
+import { LinkIcon, ArrowIcon, CameraIcon } from "../components/Icons";
+import toast from "react-hot-toast";
+
 
 function Field({ label, id, hint, children }: { label: string; id: string; hint?: string; children: React.ReactNode }) {
   return (
@@ -21,6 +23,8 @@ function Field({ label, id, hint, children }: { label: string; id: string; hint?
 export default function Settings() {
   const { profile, refresh } = useAuth();
   const [loading, setLoading] = useState(false);
+  const [uploading, setUploading] = useState(false);
+
 
 
   const [formData, setFormData] = useState({
@@ -58,6 +62,28 @@ export default function Settings() {
     }
   }
 
+  async function handleAvatarUpload(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file || !profile) return;
+
+    if (file.size > 2 * 1024 * 1024) {
+      toast.error("A imagem deve ter no máximo 2MB");
+      return;
+    }
+
+    setUploading(true);
+    const tid = toast.loading("Enviando logo...");
+    try {
+      await api.uploadAvatar(profile.id, file);
+      await refresh();
+      toast.success("Logo atualizada com sucesso!", { id: tid });
+    } catch (err: any) {
+      toast.error("Erro ao enviar imagem: " + err.message, { id: tid });
+    } finally {
+      setUploading(false);
+    }
+  }
+
   const handleConnectMP = () => {
     const clientId = (import.meta as any).env.VITE_MP_CLIENT_ID;
     const redirectUri = window.location.origin + "/auth/callback";
@@ -77,6 +103,30 @@ export default function Settings() {
         </div>
         <div className="grid gap-6 xl:grid-cols-[1fr_420px]">
           <section className="rounded-3xl border border-[#fecdd3] bg-white p-4 shadow-[0_14px_36px_rgba(136,19,55,0.06)] sm:p-6 sm:shadow-[0_18px_50px_rgba(136,19,55,0.07)]">
+            <div className="mb-8 flex flex-col items-center gap-6 sm:flex-row">
+                <div className="relative group">
+                    <div className="h-24 w-24 overflow-hidden rounded-[2rem] border-4 border-[#fff1f2] bg-white shadow-xl sm:h-28 sm:w-28">
+                        {profile?.avatar_url ? (
+                            <img src={profile.avatar_url} alt="Logo" className="h-full w-full object-cover" />
+                        ) : (
+                            <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-[#881337] to-[#e11d48] text-3xl font-black text-white">
+                                {profile?.full_name?.slice(0, 2).toUpperCase()}
+                            </div>
+                        )}
+                    </div>
+                    <label className="absolute -bottom-2 -right-2 flex h-10 w-10 cursor-pointer items-center justify-center rounded-2xl bg-[#e11d48] text-white shadow-lg transition hover:scale-110 active:scale-95">
+                        <CameraIcon className="h-5 w-5" />
+                        <input type="file" className="hidden" accept="image/*" onChange={handleAvatarUpload} disabled={uploading} />
+                    </label>
+                </div>
+                <div>
+                    <h2 className="text-xl font-semibold tracking-[-0.04em] text-[#4c0519]">Sua marca</h2>
+                    <p className="mt-1 text-sm text-[#881337]/70">Essa imagem aparecerá em todas as suas cobranças e faturas.</p>
+                </div>
+            </div>
+
+            <hr className="mb-8 border-[#fecdd3]/50" />
+
             <h2 className="text-xl font-semibold tracking-[-0.04em] text-[#4c0519]">Informações pessoais</h2>
             <form className="mt-5 grid gap-4 md:grid-cols-2" onSubmit={handleUpdate}>
               <Field label="Nome completo" id="perfil-nome">

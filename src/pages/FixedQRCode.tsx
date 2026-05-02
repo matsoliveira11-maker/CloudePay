@@ -216,8 +216,14 @@ export default function FixedQRCode() {
         {stage === "form" && (
           <section className="rounded-[3rem] border border-white/[0.05] bg-[#050505] p-8 shadow-2xl backdrop-blur-xl">
             <div className="mb-8 text-center">
-                <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-full bg-white/[0.02] border border-white/[0.05] text-white mb-4">
-                    <UserIcon className="h-10 w-10" />
+                <div className="mx-auto h-20 w-20 overflow-hidden rounded-[1.5rem] border border-white/[0.1] bg-white/[0.02] mb-4">
+                    {profile?.avatar_url ? (
+                        <img src={profile.avatar_url} alt="Logo" className="h-full w-full object-cover" />
+                    ) : (
+                        <div className="flex h-full w-full items-center justify-center text-white">
+                            <UserIcon className="h-10 w-10" />
+                        </div>
+                    )}
                 </div>
               <h1 className="text-2xl font-bold tracking-tight text-white">{profile.full_name}</h1>
               <p className="mt-1 text-sm text-zinc-500">{profile.service_name || "Profissional Verificado"}</p>

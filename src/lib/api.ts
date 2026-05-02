@@ -79,7 +79,7 @@ export async function getCurrentProfile(): Promise<Profile | null> {
 
 export async function updateProfile(
   id: string,
-  patch: Partial<Pick<Profile, "service_name" | "description" | "slug" | "full_name" | "cpf" | "email">>
+  patch: Partial<Pick<Profile, "service_name" | "description" | "slug" | "full_name" | "cpf" | "email" | "avatar_url">>
 ) {
   const { data, error } = await supabase
     .from('profiles')
@@ -90,6 +90,32 @@ export async function updateProfile(
 
   if (error) return { ok: false as const, error: error.message };
   return { ok: true as const, profile: data as Profile };
+}
+
+export async function uploadAvatar(profileId: string, file: File) {
+  const fileExt = file.name.split('.').pop();
+  const filePath = `${profileId}/avatar-${Date.now()}.${fileExt}`;
+
+  // 1. Upload the file
+  const { error: uploadError } = await supabase.storage
+    .from('avatars')
+    .upload(filePath, file, { 
+      upsert: true,
+      contentType: file.type 
+    });
+
+  if (uploadError) {
+    console.error("Error uploading avatar:", uploadError);
+    throw uploadError;
+  }
+
+  // 2. Get the public URL
+  const { data: { publicUrl } } = supabase.storage
+    .from('avatars')
+    .getPublicUrl(filePath);
+
+  // 3. Update the profile
+  return updateProfile(profileId, { avatar_url: publicUrl });
 }
 
 export async function updateAuthCredentials(email?: string, password?: string) {

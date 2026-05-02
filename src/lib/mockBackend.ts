@@ -27,6 +27,7 @@ export interface Profile {
   onboarding_step: number;
   fixed_qr_code: FixedQRCode | null;  // QR Code fixo gerado no onboarding
   mp_access_token?: string | null;    // Mercado Pago integration
+  avatar_url: string | null;
   created_at: string;
 }
 
@@ -167,6 +168,7 @@ export async function signUp(input: {
     onboarding_skipped_at: null,
     onboarding_step: 0,
     fixed_qr_code: null,
+    avatar_url: null,
     created_at: new Date().toISOString(),
   };
   db.profiles.push(profile);

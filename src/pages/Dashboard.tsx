@@ -337,7 +337,6 @@ function CreateChargeFlowModal({
   const [payerName, setPayerName] = useState("");
   const [copied, setCopied] = useState(false);
   
-  const intervalRef = useRef<number | null>(null);
   const receiptRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -476,8 +475,12 @@ function CreateChargeFlowModal({
 
                 <div className="rounded-2xl bg-white/10 border border-white/5 p-3 md:p-5">
                   <div className="flex items-center gap-3 mb-3 md:mb-6">
-                    <div className="flex h-10 w-10 md:h-12 md:w-12 shrink-0 items-center justify-center rounded-xl md:rounded-2xl bg-white font-black text-[#e11d48] text-sm md:text-lg">
-                      {profile?.full_name?.slice(0, 2).toUpperCase() || "CL"}
+                    <div className="flex h-10 w-10 md:h-12 md:w-12 shrink-0 items-center justify-center overflow-hidden rounded-xl md:rounded-2xl bg-white font-black text-[#e11d48] text-sm md:text-lg">
+                      {profile?.avatar_url ? (
+                        <img src={profile.avatar_url} alt="Logo" className="h-full w-full object-cover" />
+                      ) : (
+                        profile?.full_name?.slice(0, 2).toUpperCase() || "CL"
+                      )}
                     </div>
                     <div className="min-w-0">
                       <p className="text-xs md:text-base font-bold text-white truncate">

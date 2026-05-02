@@ -81,7 +81,6 @@ export default function PublicCharge() {
   const [copied, setCopied] = useState(false);
   const [status, setStatus] = useState<"pending" | "paid" | "expired">("pending");
   const [generatedQr, setGeneratedQr] = useState<string>("");
-  const intervalRef = useRef<number | null>(null);
 
   useEffect(() => {
     if (charge?.pix_code && !charge?.qr_code_image) {
@@ -253,11 +252,17 @@ export default function PublicCharge() {
                     <p className="mt-3 text-zinc-400 font-medium">Cobrança {charge.charge_type === 'avulsa' ? 'Avulsa' : 'Recorrente'}</p>
                     
                     <div className="mt-10 flex items-center gap-4 rounded-3xl border border-white/[0.05] bg-white/[0.02] p-5 w-fit pr-8">
-                        <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white/5 font-bold text-white uppercase text-sm">{profile?.full_name?.slice(0, 2)}</div>
-                        <div>
-                            <p className="text-sm font-bold text-white">{profile?.full_name}</p>
-                            <p className="text-xs text-zinc-500 tracking-tight">cloudepay.com.br/{profile?.slug}</p>
-                        </div>
+                      <div className="flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-white font-black text-[#e11d48] text-lg shadow-xl shadow-rose-900/10">
+                        {profile?.avatar_url ? (
+                          <img src={profile.avatar_url} alt="Logo" className="h-full w-full object-cover" />
+                        ) : (
+                          profile?.full_name?.slice(0, 2).toUpperCase() || "CL"
+                        )}
+                      </div>
+                      <div>
+                          <p className="text-sm font-bold text-white">{profile?.full_name}</p>
+                          <p className="text-xs text-zinc-500 tracking-tight">cloudepay.com.br/{profile?.slug}</p>
+                      </div>
                     </div>
                 </div>
 

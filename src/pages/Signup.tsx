@@ -48,14 +48,6 @@ function Logo({ variant = "dark" }: { variant?: "dark" | "light" }) {
   );
 }
 
-function ArrowIcon() {
-  return (
-    <svg className="h-4 w-4" viewBox="0 0 20 20" fill="none" aria-hidden="true">
-      <path d="M5 10h9M10 6l4 4-4 4" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
-    </svg>
-  );
-}
-
 function Field({ label, id, hint, children }: { label: string; id: string; hint?: string; children: React.ReactNode }) {
   return (
     <div>
