@@ -443,7 +443,7 @@ function CreateChargeFlowModal({
     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
       <div className="absolute inset-0 bg-black/80 backdrop-blur-md" onClick={onClose} />
       
-      <div className={`relative w-full overflow-hidden rounded-[2.5rem] shadow-[0_40px_120px_rgba(136,19,55,0.15)] transition-all duration-500 ${step === "share" ? "max-w-4xl bg-transparent" : "max-w-xl bg-white"}`}>
+      <div className={`relative w-full overflow-y-auto max-h-[90vh] md:max-h-none rounded-[2rem] md:rounded-[2.5rem] shadow-[0_40px_120px_rgba(136,19,55,0.15)] transition-all duration-500 ${step === "share" ? "max-w-4xl bg-white md:bg-transparent" : "max-w-xl bg-white"}`}>
         {step !== "share" && (
           <div className="absolute top-6 right-6 z-10">
             <button onClick={onClose} className="flex h-10 w-10 items-center justify-center rounded-full bg-[#fff1f2] text-[#881337] hover:bg-[#ffe4e6] hover:scale-105 transition-all">
@@ -453,23 +453,23 @@ function CreateChargeFlowModal({
         )}
 
         {step === "share" ? (
-          <div className="flex flex-col md:flex-row w-full h-full min-h-[560px]">
+          <div className="flex flex-col md:flex-row w-full h-full md:min-h-[560px]">
             {/* Left Column - Deep Red Brand Gradient */}
-            <div className="relative w-full md:w-[45%] bg-gradient-to-br from-[#881337] to-[#e11d48] p-10 flex flex-col">
+            <div className="relative w-full md:w-[45%] bg-gradient-to-br from-[#881337] to-[#e11d48] p-6 md:p-10 flex flex-col">
               <div className="flex items-center justify-between mb-8">
                 <span className="text-[10px] font-black uppercase tracking-[0.2em] text-white/70">
                   Cobrança Pronta
                 </span>
-                <button onClick={onClose} className="flex h-8 w-8 items-center justify-center rounded-full bg-white/10 text-white hover:bg-white/20 transition-all">
-                  <X size={14} weight="bold" />
+                <button onClick={onClose} className="flex h-10 w-10 md:h-8 md:w-8 items-center justify-center rounded-full bg-white/10 text-white hover:bg-white/20 transition-all">
+                  <X size={16} weight="bold" />
                 </button>
               </div>
 
               <div className="flex-1">
-                <h2 className="text-5xl font-bold tracking-tighter text-white mb-2">
+                <h2 className="text-4xl md:text-5xl font-bold tracking-tighter text-white mb-2">
                   {formatBRL(localCharge!.amount_cents)}
                 </h2>
-                <p className="text-sm text-white/80 font-medium mb-10">
+                <p className="text-sm text-white/80 font-medium mb-6 md:mb-10">
                   {localCharge!.service_name || "Cobrança avulsa"}
                 </p>
 
@@ -489,11 +489,11 @@ function CreateChargeFlowModal({
                   </div>
 
                   <div className="grid grid-cols-2 gap-3">
-                    <div className="rounded-xl bg-white/5 p-4">
+                    <div className="rounded-xl bg-white/5 p-3 md:p-4">
                       <p className="text-[10px] font-bold text-white/60 mb-1">Taxa CloudePay</p>
                       <p className="text-sm font-bold text-white">2%</p>
                     </div>
-                    <div className="rounded-xl bg-white/5 p-4">
+                    <div className="rounded-xl bg-white/5 p-3 md:p-4">
                       <p className="text-[10px] font-bold text-white/60 mb-1">Expiração</p>
                       <p className="text-sm font-bold text-white">15 min</p>
                     </div>
@@ -510,7 +510,7 @@ function CreateChargeFlowModal({
             </div>
 
             {/* Right Column - White Background */}
-            <div className="relative w-full md:w-[55%] bg-white p-10 flex flex-col items-center justify-center">
+            <div className="relative w-full md:w-[55%] bg-white p-6 md:p-10 flex flex-col items-center justify-center">
               <div className="w-full max-w-[320px] flex flex-col items-center">
                 {localCharge?.status === "paid" ? (
                     <div className="w-full flex flex-col items-center">

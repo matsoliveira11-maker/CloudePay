@@ -1,6 +1,8 @@
 import { useState, useEffect, useRef } from "react";
 import { useParams, Link } from "react-router-dom";
 import * as api from "../lib/api";
+import { supabase } from "../lib/supabase";
+
 import { formatBRL } from "../lib/format";
 import QRCode from "qrcode";
 import html2canvas from "html2canvas";
@@ -116,7 +118,7 @@ export default function PublicCharge() {
     if (status === "paid" || status === "expired" || !chargeId) return;
 
     // Inscrição em tempo real: a tela muda instantaneamente quando o status no banco muda
-    const channel = api.supabase
+    const channel = supabase
       .channel(`public_charge_${chargeId}`)
       .on('postgres_changes', {
         event: 'UPDATE',
@@ -131,7 +133,7 @@ export default function PublicCharge() {
       })
       .subscribe();
 
-    return () => { api.supabase.removeChannel(channel); };
+    return () => { supabase.removeChannel(channel); };
   }, [chargeId, status]);
 
   const copyPix = () => {
