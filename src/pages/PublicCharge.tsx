@@ -166,7 +166,10 @@ export default function PublicCharge() {
         <p className="mt-3 text-sm text-zinc-500 max-w-[280px]">O link pode ter expirado ou o endereço de destino está incorreto.</p>
         <Link to="/" className="mt-10 text-[10px] font-black uppercase tracking-[0.3em] text-white/40 hover:text-white transition-colors">Voltar ao Início</Link>
       </div>
-    );  return (
+    );
+  }
+
+  return (
     <main className="min-h-screen bg-[#000000] text-white antialiased flex flex-col items-center justify-center p-4 selection:bg-rose-500/30">
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div className="absolute -top-[20%] -left-[10%] h-[60%] w-[60%] rounded-full bg-rose-900/10 blur-[120px]" />
@@ -338,5 +341,4 @@ export default function PublicCharge() {
       </motion.div>
     </main>
   );
-}
 }
