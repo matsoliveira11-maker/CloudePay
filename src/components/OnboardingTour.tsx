@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
+
 import { useAuth } from "../context/AuthContext";
 
 // --- Icons ---
@@ -64,15 +65,27 @@ const tourSteps: TourStep[] = [
 export default function OnboardingTour() {
   const { profile, needsOnboarding, onboardingStep, updateOnboarding } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
+
 
   const [isOpen, setIsOpen] = useState(false);
   const [currentStep, setCurrentStep] = useState(0);
 
   useEffect(() => {
     if (!profile || !needsOnboarding) return;
+    
+    // O tour só deve INICIAR em páginas internas do dashboard
+    const internalPaths = ["/painel", "/produtos", "/configuracoes"];
+    const isInternal = internalPaths.some(path => location.pathname.startsWith(path));
+    
+    if (!isInternal) {
+      setIsOpen(false);
+      return;
+    }
+
     const timer = setTimeout(() => setIsOpen(true), 1000);
     return () => clearTimeout(timer);
-  }, [profile?.id, needsOnboarding]);
+  }, [profile?.id, needsOnboarding, location.pathname]);
 
   useEffect(() => {
     if (!profile || !needsOnboarding) return;
@@ -98,7 +111,12 @@ export default function OnboardingTour() {
     setIsOpen(false);
   };
 
-  if (!isOpen || !profile) return null;
+  // Verificação de segurança: não renderiza se não houver perfil, se não precisar de onboarding
+  // ou se não estiver em uma rota interna permitida.
+  const internalPaths = ["/painel", "/produtos", "/configuracoes"];
+  const isInternal = internalPaths.some(path => location.pathname.startsWith(path));
+
+  if (!isOpen || !profile || !needsOnboarding || !isInternal) return null;
 
   return (
     <div className="pointer-events-none fixed inset-0 z-[1000] flex items-end justify-center p-4 sm:items-center sm:justify-end">
