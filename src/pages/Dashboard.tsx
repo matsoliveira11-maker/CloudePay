@@ -101,35 +101,7 @@ export default function Dashboard() {
       <div className="space-y-8 a-fade pb-10">
         
         {/* CTA Banner Section */}
-        <div className="a-up">
-           <div className="flex flex-col lg:flex-row items-start justify-between gap-6">
-              <div className="flex-1">
-                 <p className="text-[11px] font-bold tracking-[0.1em] uppercase text-[#a1a1aa] mb-2">Visão Geral</p>
-                 <h2 className="text-[24px] lg:text-[28px] font-bold tracking-[-0.03em] text-[#1a1a2e] leading-tight">
-                    Bem-vindo, {profile?.full_name?.split(' ')[0]}
-                 </h2>
-                 <p className="mt-1.5 text-[14px] text-[#71717a] leading-relaxed max-w-md">
-                    Monitore suas vendas em tempo real e gere links de pagamento instantâneos para seus clientes.
-                 </p>
-              </div>
-              <div className="flex items-center gap-3 w-full lg:w-auto">
-                 <button 
-                   onClick={() => navigate("/produtos")}
-                   className="flex-1 lg:flex-none inline-flex items-center justify-center gap-2 px-5 py-3 rounded-xl text-[13px] font-bold text-[#e11d48] bg-white border border-[#fce4ec] hover:bg-[#fff1f2] transition-all active:scale-[0.97]"
-                 >
-                    <Package size={18} weight="bold" />
-                    Produtos
-                 </button>
-                 <button 
-                   onClick={() => setShowCreateModal(true)}
-                   className="flex-1 lg:flex-none inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl text-[13px] font-bold text-white bg-[#e11d48] hover:bg-[#be123c] shadow-lg shadow-rose-100 transition-all active:scale-[0.97]"
-                 >
-                    Nova cobrança
-                    <ArrowRight size={16} weight="bold" />
-                 </button>
-              </div>
-           </div>
-        </div>
+        <CtaBanner name={profile?.full_name?.split(' ')[0] || "Usuário"} />
 
         {/* Filters and KPI Row */}
         <div className="space-y-4">
@@ -140,7 +112,7 @@ export default function Dashboard() {
                     key={p}
                     onClick={() => setPeriod(p)}
                     className={cn(
-                      "px-4 py-2 text-[11px] font-semibold uppercase tracking-widest rounded-lg transition-all",
+                      "px-4 py-2 text-[10px] sm:text-[11px] font-bold uppercase tracking-widest rounded-lg transition-all",
                       period === p ? "bg-[#e11d48] text-white shadow-md" : "text-[#8c8c8c] hover:text-[#e11d48]"
                     )}
                   >
@@ -152,7 +124,7 @@ export default function Dashboard() {
 
            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 a-up-1">
               <KpiCard label="Total em vendas" value={formatBRL(kpis.gross)} icon={<TrendUp size={18} weight="bold" />} accent />
-              <KpiCard label="Total de transações" value={String(kpis.count)} icon={<Receipt size={18} weight="bold" />} />
+              <KpiCard label="Transações" value={String(kpis.count)} icon={<Receipt size={18} weight="bold" />} />
               <KpiCard label="Ticket Médio" value={formatBRL(kpis.avg)} icon={<ArrowCircleUp size={18} weight="bold" />} />
            </div>
         </div>
@@ -199,24 +171,64 @@ export default function Dashboard() {
 
 // --- Sub-components ---
 
+function CtaBanner({ name }: { name: string }) {
+  const handleCreateCharge = () => window.dispatchEvent(new CustomEvent("open-create-charge"));
+  const navigate = useNavigate();
+  return (
+    <div className="relative overflow-hidden rounded-[24px] sm:rounded-[32px] bg-white border border-[#fce4ec] p-6 sm:p-8 lg:p-12 mb-2 sm:mb-4 a-up">
+      <div className="relative z-10 max-w-2xl">
+        <span className="inline-block px-3 py-1 rounded-full bg-[#fff1f2] text-[#e11d48] text-[10px] font-bold uppercase tracking-[0.15em] mb-4">
+          Visão Geral
+        </span>
+        <h2 className="text-[28px] sm:text-[36px] lg:text-[42px] font-bold text-[#1a1a2e] leading-[1.1] tracking-tight mb-3">
+          Bem-vindo, {name}
+        </h2>
+        <p className="text-[14px] sm:text-[16px] text-[#5c5c6d] leading-relaxed mb-8 max-w-md">
+          Monitore suas vendas em tempo real e gere links de pagamento instantâneos para seus clientes.
+        </p>
+        
+        <div className="flex flex-col sm:flex-row items-center gap-3">
+          <button 
+            onClick={() => navigate("/produtos")}
+            className="w-full sm:w-auto flex items-center justify-center gap-2 px-6 py-3 rounded-xl border border-[#fce4ec] text-[13px] font-bold text-[#1a1a2e] transition-all hover:bg-[#f8f7f5] active:scale-95"
+          >
+             <Package size={18} weight="bold" />
+             Produtos
+          </button>
+          <button 
+            onClick={handleCreateCharge}
+            className="w-full sm:w-auto flex items-center justify-center gap-2 px-8 py-3 rounded-xl bg-[#e11d48] text-[13px] font-bold text-white shadow-lg shadow-rose-100 transition-all hover:bg-[#be123c] active:scale-95"
+          >
+             Nova cobrança
+             <ArrowRight size={18} weight="bold" />
+          </button>
+        </div>
+      </div>
+      
+      {/* Decorative gradient */}
+      <div className="absolute top-[-10%] right-[-5%] w-[300px] h-[300px] bg-[#fff1f2] rounded-full blur-[80px] opacity-60" />
+    </div>
+  );
+}
+
 function KpiCard({ label, value, icon, accent }: { label: string; value: string; icon: React.ReactNode; accent?: boolean }) {
   const bg = accent ? "linear-gradient(135deg, #e11d48, #be123c)" : "#ffffff";
   const textColor = accent ? "#ffffff" : "#1a1a2e";
   const labelColor = accent ? "rgba(255,255,255,0.7)" : "#8c8c8c";
-  const iconBg = accent ? "rgba(255,255,255,0.2)" : "#fff1f2";
+  const iconBg = accent ? "rgba(255,255,255,0.2)" : "#f8f7f5";
   const iconColor = accent ? "#ffffff" : "#e11d48";
   const border = accent ? "none" : "1px solid #e8e8ec";
 
   return (
-    <div className="rounded-[14px] p-5 transition-all duration-200 hover:shadow-md"
+    <div className="rounded-[18px] p-5 sm:p-6 transition-all duration-200 hover:shadow-md group"
       style={{ background: bg, border, color: textColor }}>
-      <div className="flex items-center gap-2.5 mb-3">
-        <div className="w-9 h-9 rounded-xl flex items-center justify-center" style={{ background: iconBg, color: iconColor }}>
+      <div className="flex items-center justify-between mb-4">
+        <div className="w-9 h-9 rounded-xl flex items-center justify-center transition-colors" style={{ background: iconBg, color: iconColor }}>
           {icon}
         </div>
-        <span className="text-[13px] font-medium" style={{ color: labelColor }}>{label}</span>
+        <span className="text-[11px] font-bold uppercase tracking-wider" style={{ color: labelColor }}>{label}</span>
       </div>
-      <p className="text-[28px] font-semibold tracking-[-0.03em] num leading-none">{value}</p>
+      <p className="text-[26px] sm:text-[30px] font-bold tracking-tight num leading-none">{value}</p>
     </div>
   );
 }
@@ -275,11 +287,13 @@ function PerformanceChart({ charges }: { charges: Charge[] }) {
   return (
     <div className="rounded-[14px] p-5 lg:p-6 bg-white transition-all duration-200 hover:shadow-md"
       style={{ border: "1px solid #fce4ec" }}>
-      <div className="flex items-center gap-2 mb-5">
-        <TrendUp size={18} className="text-[#e11d48]" weight="bold" />
-        <h3 className="text-[14px] font-bold text-[#1a1a2e]">Desempenho de vendas</h3>
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+        <div className="flex items-center gap-2">
+          <TrendUp size={18} className="text-[#e11d48]" weight="bold" />
+          <h3 className="text-[14px] font-bold text-[#1a1a2e]">Desempenho de vendas</h3>
+        </div>
       </div>
-      <div className="h-[200px] -mx-2">
+      <div className="h-[220px] sm:h-[280px] lg:h-[320px] -mx-2">
         <ResponsiveContainer width="100%" height="100%">
           <AreaChart data={data} margin={{ top: 4, right: 4, left: 0, bottom: 0 }}>
             <defs>
@@ -423,18 +437,18 @@ function SalesHistory({ charges }: { charges: Charge[] }) {
         </label>
       </div>
 
-      <div className="flex gap-1 mb-4 overflow-x-auto pb-1 scrollbar-hide">
+      <div className="flex gap-2 mb-4 overflow-x-auto pb-1 scrollbar-hide">
         {TABS.map(t => (
           <button
             key={t.id}
             onClick={() => setTab(t.id)}
-            className={cn("px-3 py-1.5 rounded-lg text-[12px] font-medium whitespace-nowrap transition-all",
-              tab === t.id ? "text-white shadow-sm" : "text-[#8c8c8c] hover:text-[#e11d48]"
+            className={cn("px-4 py-2 rounded-xl text-[12px] font-bold whitespace-nowrap transition-all flex items-center gap-2",
+              tab === t.id ? "text-white shadow-md" : "text-[#8c8c8c] hover:text-[#e11d48] bg-white border border-[#fce4ec]"
             )}
-            style={tab === t.id ? { background: "linear-gradient(135deg, #e11d48, #be123c)" } : { background: "#ffffff", border: "1px solid #fce4ec" }}
+            style={tab === t.id ? { background: "linear-gradient(135deg, #e11d48, #be123c)" } : undefined}
           >
             {t.label}
-            <span className={cn("ml-1.5 num text-[11px]", tab === t.id ? "text-white/70" : "text-[#d4d4d8]")}>
+            <span className={cn("px-1.5 py-0.5 rounded-md text-[10px] num", tab === t.id ? "bg-white/20 text-white" : "bg-[#f8f7f5] text-[#8c8c8c]")}>
               {charges.filter(c => t.id === "all" ? true : c.status === t.id).length}
             </span>
           </button>
@@ -497,26 +511,21 @@ function MobileRow({ charge: c }: { charge: Charge }) {
   const net = (c.amount_cents / 100) * 0.99;
   const isIncoming = c.status === "paid";
   return (
-    <li className="flex items-center gap-3 px-4 py-3.5 hover:bg-[#fff1f2] transition-all">
+    <li className="flex items-center gap-4 px-5 py-4 hover:bg-[#f8f7f5] transition-all">
       <Avatar name={c.payer_name || "CF"} />
       <div className="flex-1 min-w-0">
         <div className="flex items-center justify-between gap-2">
-          <p className="text-[13px] font-medium text-[#1a1a2e] truncate">{c.service_name}</p>
-          <div className="flex items-center gap-1">
-            {isIncoming ? (
-              <ArrowUpRight className="w-3 h-3 text-[#e11d48]" weight="bold" />
-            ) : (
-              <ArrowDownRight className="w-3 h-3 text-[#8c8c8c]" weight="bold" />
-            )}
-            <p className="text-[13px] font-semibold text-[#1a1a2e] num whitespace-nowrap">{formatBRL(net * 100)}</p>
-          </div>
+          <p className="text-[14px] font-bold text-[#1a1a2e] truncate tracking-tight">{c.service_name}</p>
+          <p className="text-[14px] font-bold text-[#1a1a2e] num whitespace-nowrap">{formatBRL(net * 100)}</p>
         </div>
-        <div className="flex items-center justify-between mt-0.5">
-          <p className="text-[11px] text-[#8c8c8c]">{c.payer_name || "Cliente Final"} · {formatDate(c.created_at)}</p>
-          <span className="flex items-center gap-1.5 text-[11px] text-[#5c5c6d]">
+        <div className="flex items-center justify-between mt-1">
+          <p className="text-[12px] text-[#8c8c8c] font-medium">{c.payer_name || "Cliente Final"} · {formatDate(c.created_at)}</p>
+          <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-[#f8f7f5] border border-[#fce4ec]">
             <StatusDot status={c.status} />
-            {c.status === 'paid' ? 'Pago' : c.status === 'pending' ? 'Pendente' : 'Expirado'}
-          </span>
+            <span className="text-[10px] font-bold uppercase tracking-wider text-[#5c5c6d]">
+               {c.status === 'paid' ? 'Pago' : c.status === 'pending' ? 'Pendente' : 'Expirado'}
+            </span>
+          </div>
         </div>
       </div>
     </li>

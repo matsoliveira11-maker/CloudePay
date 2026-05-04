@@ -115,14 +115,14 @@ export default function Shell({ children }: ShellProps) {
       {/* Main Wrapper */}
       <div className="flex flex-1 flex-col lg:pl-[68px] xl:pl-[220px]">
         {/* Topbar */}
-        <header className="sticky top-0 z-30 h-14 flex items-center justify-between px-4 sm:px-6 lg:px-8 bg-white/70 backdrop-blur-xl"
+        <header className="sticky top-0 z-30 h-16 flex items-center justify-between px-4 sm:px-6 lg:px-8 bg-white/80 backdrop-blur-md"
           style={{ borderBottom: "1px solid #fce4ec" }}>
           
           <div className="flex items-center gap-3">
-            <button onClick={() => setMobileMenuOpen(true)} className="lg:hidden">
-               <Logo size="sm" />
+            <button onClick={() => setMobileMenuOpen(true)} className="lg:hidden p-1">
+               <Logo size="sm" iconOnly />
             </button>
-            <h1 className="text-[17px] font-semibold tracking-tight text-[#1a1a2e]">
+            <h1 className="text-[16px] sm:text-[17px] font-bold tracking-tight text-[#1a1a2e]">
                {menuItems.find(i => i.path === location.pathname)?.label || "Dashboard"}
             </h1>
           </div>
@@ -130,13 +130,13 @@ export default function Shell({ children }: ShellProps) {
           <div className="flex items-center gap-2">
             <button
               onClick={handleCreateCharge}
-              className="hidden sm:flex items-center gap-1.5 px-4 py-2 rounded-xl text-[12px] font-semibold text-white transition-all active:scale-[0.97]"
-              style={{ background: "linear-gradient(135deg, #e11d48, #be123c)", boxShadow: "0 2px 8px rgba(225,29,72,0.25)" }}>
-              <Plus size={16} weight="bold" />
-              Nova cobrança
+              className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-[12px] font-bold text-white transition-all active:scale-[0.95]"
+              style={{ background: "linear-gradient(135deg, #e11d48, #be123c)", boxShadow: "0 4px 12px rgba(225,29,72,0.2)" }}>
+              <Plus size={18} weight="bold" />
+              <span className="hidden sm:inline">Nova cobrança</span>
             </button>
-            <button className="relative w-9 h-9 rounded-full flex items-center justify-center hover:bg-[#fff1f2] transition-colors">
-              <Bell size={18} className="text-[#8c8c8c]" />
+            <button className="relative w-10 h-10 rounded-full flex items-center justify-center hover:bg-[#fff1f2] transition-colors text-[#8c8c8c]">
+              <Bell size={20} />
             </button>
           </div>
         </header>
@@ -158,7 +158,8 @@ export default function Shell({ children }: ShellProps) {
                   <X size={24} />
                </button>
             </div>
-            <nav className="flex-1 px-4 py-6 space-y-1">
+            <nav className="flex-1 px-4 py-8 space-y-2">
+              <p className="px-4 text-[10px] font-bold uppercase tracking-[0.2em] text-[#a1a1aa] mb-4">Navegação</p>
               {menuItems.concat(bottomItems).map((item) => {
                 const on = location.pathname === item.path;
                 return (
@@ -167,8 +168,8 @@ export default function Shell({ children }: ShellProps) {
                     to={item.path}
                     onClick={() => setMobileMenuOpen(false)}
                     className={cn(
-                      "flex items-center gap-4 px-4 py-3.5 rounded-xl text-sm font-semibold transition-all",
-                      on ? "text-white" : "text-[#8c8c8c]"
+                      "flex items-center gap-4 px-4 py-4 rounded-2xl text-[14px] font-bold transition-all active:scale-[0.98]",
+                      on ? "text-white shadow-lg shadow-rose-100" : "text-[#5c5c6d] hover:bg-[#f8f7f5]"
                     )}
                     style={on ? { background: "linear-gradient(135deg, #e11d48, #be123c)" } : undefined}
                   >
