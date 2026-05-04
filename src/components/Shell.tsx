@@ -20,7 +20,7 @@ interface ShellProps {
 }
 
 export default function Shell({ children }: ShellProps) {
-  const { profile, signOut } = useAuth();
+  const { signOut } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const [supportOpen, setSupportOpen] = useState(false);
