@@ -14,16 +14,19 @@
   -moz-osx-font-smoothing: grayscale;
 }
 
-html {
-  scroll-behavior: smooth;
-}
-
-body {
+html, body {
   margin: 0;
-  min-width: 320px;
+  padding: 0;
+  width: 100%;
+  min-width: 100%;
   overflow-x: hidden;
   font-family: "Sora", sans-serif;
   background-color: #f8f7f5;
+  -webkit-text-size-adjust: 100%;
+}
+
+* {
+  box-sizing: border-box;
 }
 
 button,
