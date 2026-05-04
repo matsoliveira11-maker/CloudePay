@@ -142,12 +142,12 @@ export default function Shell({ children }: ShellProps) {
         </header>
 
         {/* Content */}
-        <main className="flex-1 p-4 sm:p-6 lg:p-8 max-w-[1320px] w-full mx-auto">
+        <main className="flex-1 p-4 sm:p-6 lg:p-8 max-w-[1320px] w-full mx-auto pb-24 lg:pb-8">
           {children}
         </main>
       </div>
 
-      {/* Mobile Menu Overlay */}
+      {/* Mobile Menu Overlay (Mantido para o botão de Sair e outros) */}
       {mobileMenuOpen && (
         <div className="fixed inset-0 z-[100] lg:hidden">
           <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={() => setMobileMenuOpen(false)} />
@@ -178,10 +178,47 @@ export default function Shell({ children }: ShellProps) {
                   </Link>
                 );
               })}
+              
+              <button
+                onClick={() => signOut().then(() => navigate("/login"))}
+                className="w-full flex items-center gap-4 px-4 py-4 rounded-2xl text-[14px] font-bold text-[#e11d48] hover:bg-rose-50 transition-all mt-4"
+              >
+                <SignOut size={22} weight="bold" />
+                Sair da conta
+              </button>
             </nav>
           </aside>
         </div>
       )}
+
+      {/* Bottom Navigation - Mobile Always Visible */}
+      <nav className="fixed bottom-0 left-0 right-0 z-[60] lg:hidden bg-white/80 backdrop-blur-xl border-t border-[#fce4ec] px-4 pb-safe-area-inset-bottom">
+        <div className="flex items-center justify-around h-16">
+          {menuItems.concat(bottomItems).map((item) => {
+            const on = location.pathname === item.path;
+            return (
+              <Link
+                key={item.id}
+                to={item.path}
+                className={cn(
+                  "flex flex-col items-center justify-center gap-1 min-w-[64px] transition-all",
+                  on ? "text-[#e11d48]" : "text-[#8c8c8c]"
+                )}
+              >
+                <item.Icon size={22} weight={on ? "bold" : "regular"} />
+                <span className="text-[10px] font-bold uppercase tracking-tight">{item.label}</span>
+              </Link>
+            );
+          })}
+          <button
+            onClick={() => setSupportOpen(true)}
+            className="flex flex-col items-center justify-center gap-1 min-w-[64px] text-[#8c8c8c]"
+          >
+            <Question size={22} weight="regular" />
+            <span className="text-[10px] font-bold uppercase tracking-tight">Suporte</span>
+          </button>
+        </div>
+      </nav>
 
       <SupportWidget isOpen={supportOpen} onClose={() => setSupportOpen(false)} />
     </div>
