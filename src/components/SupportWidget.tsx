@@ -2,52 +2,20 @@ import { useState, useEffect, useRef } from "react";
 import { useAuth } from "../context/AuthContext";
 import { getClientTickets, getTicketMessages, sendTicketMessage, createTicket } from "../lib/api";
 import { supabase } from "../lib/supabase";
+import { cn } from "../lib/utils";
+import { 
+  CaretLeft, 
+  PaperPlaneTilt, 
+  X, 
+  Plus, 
+  Headset,
+  CheckCircle,
+  Clock
+} from "phosphor-react";
 
 interface SupportWidgetProps {
   isOpen: boolean;
   onClose: () => void;
-}
-
-function ChevronLeft() {
-  return (
-    <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <path d="m15 18-6-6 6-6" />
-    </svg>
-  );
-}
-
-function SendIcon() {
-  return (
-    <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <line x1="22" y1="2" x2="11" y2="13" />
-      <polygon points="22 2 15 22 11 13 2 9 22 2" />
-    </svg>
-  );
-}
-
-function CloseIcon() {
-  return (
-    <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none">
-      <path d="m6 6 12 12M18 6 6 18" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-    </svg>
-  );
-}
-
-function PlusIcon() {
-  return (
-    <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" />
-    </svg>
-  );
-}
-
-function HeadsetIcon() {
-  return (
-    <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M3 18v-6a9 9 0 0 1 18 0v6" />
-      <path d="M21 19a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3zM3 19a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2v-3a2 2 0 0 0-2-2H3z" />
-    </svg>
-  );
 }
 
 export default function SupportWidget({ isOpen, onClose }: SupportWidgetProps) {
@@ -76,7 +44,7 @@ export default function SupportWidget({ isOpen, onClose }: SupportWidgetProps) {
     if (!profile || !isOpen) return;
     getClientTickets(profile.id).then(setTickets);
 
-    const sub = supabase.channel("client_tickets_channel")
+    const sub = supabase.channel("client_tickets_v2")
       .on("postgres_changes", { event: "*", schema: "public", table: "tickets", filter: `user_id=eq.${profile.id}` }, () => {
         getClientTickets(profile.id).then(setTickets);
       })
@@ -94,7 +62,7 @@ export default function SupportWidget({ isOpen, onClose }: SupportWidgetProps) {
       setTimeout(scrollToBottom, 100);
     });
 
-    const sub = supabase.channel(`client_messages_${selectedTicket.id}`)
+    const sub = supabase.channel(`client_messages_v2_${selectedTicket.id}`)
       .on("postgres_changes", { event: "INSERT", schema: "public", table: "ticket_messages", filter: `ticket_id=eq.${selectedTicket.id}` }, () => {
         getTicketMessages(selectedTicket.id).then((msgs) => {
           setMessages(msgs);
@@ -145,102 +113,107 @@ export default function SupportWidget({ isOpen, onClose }: SupportWidgetProps) {
   if (!profile || !isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-[80] flex items-end bg-[#4c0519]/35 p-3 backdrop-blur-sm sm:items-center sm:justify-center sm:p-6" role="dialog" aria-modal="true">
+    <div className="fixed inset-0 z-[100] flex items-end bg-[#1a1a2e]/40 p-3 backdrop-blur-md sm:items-center sm:justify-center sm:p-6">
       {/* Backdrop */}
       <div className="absolute inset-0" onClick={onClose} />
 
-      {/* Widget */}
-      <div className="relative flex w-full max-w-md flex-col overflow-hidden rounded-3xl border border-[#fecdd3] bg-white shadow-[0_24px_70px_rgba(136,19,55,0.08)] sm:h-[620px]">
+      {/* Widget Container */}
+      <div className="relative flex w-full max-w-md flex-col overflow-hidden rounded-[28px] border border-[#e8e8ec] bg-white shadow-2xl sm:h-[620px] a-up">
 
         {/* Header */}
-        <div className="flex items-center justify-between border-b border-[#fecdd3] bg-white/90 px-6 py-5">
+        <div className="flex items-center justify-between border-b border-[#e8e8ec] bg-white px-6 py-5">
           <div className="flex items-center gap-4">
             {selectedTicket && (
               <button
                 onClick={() => setSelectedTicket(null)}
-                className="flex h-9 w-9 items-center justify-center rounded-2xl border border-[#fecdd3] bg-white text-[#881337] transition hover:bg-[#fff1f2] active:scale-95"
+                className="flex h-9 w-9 items-center justify-center rounded-xl border border-[#e8e8ec] bg-white text-[#8c8c8c] transition hover:bg-[#f8f7f5] active:scale-95"
               >
-                <ChevronLeft />
+                <CaretLeft size={18} weight="bold" />
               </button>
             )}
-            <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-[#e11d48] text-white shadow-[0_12px_26px_rgba(225,29,72,0.22)]">
-              <HeadsetIcon />
+            <div className="flex h-11 w-11 items-center justify-center rounded-[14px] bg-[#e11d48] text-white shadow-lg shadow-rose-100">
+              <Headset size={22} weight="bold" />
             </div>
             <div>
-              <h2 className="text-base font-semibold tracking-tight text-[#4c0519]">
-                {selectedTicket ? selectedTicket.subject : isCreating ? "Novo Chamado" : "Suporte VIP"}
+              <h2 className="text-[15px] font-bold tracking-tight text-[#1a1a2e]">
+                {selectedTicket ? selectedTicket.subject : isCreating ? "Novo Chamado" : "Central de Ajuda"}
               </h2>
               <div className="flex items-center gap-1.5">
-                <span className="h-2 w-2 animate-pulse rounded-full bg-[#10b981]" />
-                <p className="text-[11px] font-semibold text-[#881337]">
+                <span className="h-2 w-2 animate-pulse rounded-full bg-emerald-500" />
+                <p className="text-[11px] font-bold text-[#8c8c8c] uppercase tracking-wider">
                   {selectedTicket
-                    ? `Chamado #${selectedTicket.id.slice(-4).toUpperCase()} · ${selectedTicket.status === "open" ? "Aberto" : "Encerrado"}`
-                    : "Time online · Resposta em minutos"}
+                    ? `Chamado #${selectedTicket.id.slice(-4).toUpperCase()}`
+                    : "Suporte Online agora"}
                 </p>
               </div>
             </div>
           </div>
           <button
             onClick={onClose}
-            className="flex h-9 w-9 items-center justify-center rounded-2xl border border-[#fecdd3] bg-white text-[#881337] transition hover:bg-[#fff1f2] hover:text-[#e11d48]"
+            className="flex h-9 w-9 items-center justify-center rounded-xl border border-[#e8e8ec] bg-white text-[#8c8c8c] transition hover:bg-[#fff1f2] hover:text-[#e11d48]"
           >
-            <CloseIcon />
+            <X size={18} weight="bold" />
           </button>
         </div>
 
-        {/* Body */}
-        <div className="flex flex-1 flex-col overflow-hidden">
+        {/* Body Content */}
+        <div className="flex flex-1 flex-col overflow-hidden bg-[#f8f7f5]/30">
 
-          {/* --- CRIAR NOVO CHAMADO --- */}
+          {/* --- NEW TICKET FORM --- */}
           {isCreating ? (
-            <form onSubmit={handleCreate} className="flex flex-1 flex-col gap-4 overflow-y-auto p-5">
-              <p className="text-sm text-[#881337]">Descreva seu problema e entraremos em contato.</p>
-              <div className="space-y-3">
-                <input
-                  placeholder="Assunto (ex: Problema com saque)"
-                  value={subject}
-                  onChange={(e) => setSubject(e.target.value)}
-                  className="w-full rounded-2xl border border-[#fecdd3] bg-[#fffafa] px-4 py-3 text-sm text-[#4c0519] outline-none placeholder:text-[#9f1239]/40 transition focus:border-[#e11d48] focus:ring-1 focus:ring-[#e11d48]"
-                  required
-                />
-                <textarea
-                  placeholder="Descreva o problema com detalhes..."
-                  value={initialMsg}
-                  onChange={(e) => setInitialMsg(e.target.value)}
-                  rows={5}
-                  className="w-full resize-none rounded-2xl border border-[#fecdd3] bg-[#fffafa] px-4 py-3 text-sm text-[#4c0519] outline-none placeholder:text-[#9f1239]/40 transition focus:border-[#e11d48] focus:ring-1 focus:ring-[#e11d48]"
-                  required
-                />
+            <form onSubmit={handleCreate} className="flex flex-1 flex-col gap-5 overflow-y-auto p-6">
+              <p className="text-[13px] text-[#71717a]">Descreva sua dúvida ou problema detalhadamente para que possamos te ajudar.</p>
+              <div className="space-y-4">
+                <div className="space-y-1.5">
+                   <label className="text-[11px] font-bold uppercase tracking-wider text-[#8c8c8c]">Assunto</label>
+                   <input
+                     placeholder="Ex: Dúvida sobre taxas de saque"
+                     value={subject}
+                     onChange={(e) => setSubject(e.target.value)}
+                     className="w-full rounded-xl border border-[#e8e8ec] bg-white px-4 py-3.5 text-[13px] font-medium text-[#1a1a2e] outline-none transition focus:border-[#e11d48] focus:ring-1 focus:ring-[#e11d48]"
+                     required
+                   />
+                </div>
+                <div className="space-y-1.5">
+                   <label className="text-[11px] font-bold uppercase tracking-wider text-[#8c8c8c]">Mensagem</label>
+                   <textarea
+                     placeholder="Descreva aqui..."
+                     value={initialMsg}
+                     onChange={(e) => setInitialMsg(e.target.value)}
+                     rows={6}
+                     className="w-full resize-none rounded-xl border border-[#e8e8ec] bg-white px-4 py-3.5 text-[13px] font-medium text-[#1a1a2e] outline-none transition focus:border-[#e11d48] focus:ring-1 focus:ring-[#e11d48]"
+                     required
+                   />
+                </div>
               </div>
               {createError && (
-                <p className="rounded-xl bg-[#fff1f2] px-4 py-2 text-xs font-medium text-[#e11d48]">{createError}</p>
+                <p className="rounded-xl bg-rose-50 px-4 py-2.5 text-xs font-bold text-[#e11d48]">{createError}</p>
               )}
-              <div className="mt-auto flex gap-2">
+              <div className="mt-auto flex gap-3">
                 <button
                   type="button"
                   onClick={() => setIsCreating(false)}
-                  className="flex-1 rounded-2xl border border-[#fecdd3] py-3 text-sm font-semibold text-[#881337] transition hover:bg-[#fff1f2]"
+                  className="flex-1 rounded-xl border border-[#e8e8ec] py-3.5 text-[13px] font-bold text-[#8c8c8c] transition hover:bg-[#f8f7f5]"
                 >
                   Cancelar
                 </button>
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  className="flex-1 rounded-2xl bg-[#e11d48] py-3 text-sm font-semibold text-white shadow-[0_8px_20px_rgba(225,29,72,0.25)] transition hover:bg-[#be123c] disabled:opacity-50"
+                  className="flex-1 rounded-xl bg-[#e11d48] py-3.5 text-[13px] font-bold text-white shadow-lg shadow-rose-100 transition hover:bg-[#be123c] disabled:opacity-50 active:scale-95"
                 >
                   {isSubmitting ? "Enviando..." : "Abrir Chamado"}
                 </button>
               </div>
             </form>
 
-          /* --- CHAT DO TICKET SELECIONADO --- */
+          /* --- CHAT VIEW --- */
           ) : selectedTicket ? (
             <div className="flex flex-1 flex-col overflow-hidden">
-              {/* Messages */}
-              <div className="flex flex-1 flex-col gap-3 overflow-y-auto p-4">
+              <div className="flex flex-1 flex-col gap-4 overflow-y-auto p-5 scrollbar-hide">
                 {messages.length === 0 ? (
-                  <div className="flex flex-1 items-center justify-center">
-                    <p className="text-center text-sm text-[#9f1239]/60">Nenhuma mensagem ainda. Digite abaixo.</p>
+                  <div className="flex flex-1 items-center justify-center p-10">
+                    <p className="text-center text-[13px] text-[#8c8c8c]">Nenhuma mensagem ainda. Digite abaixo.</p>
                   </div>
                 ) : (
                   messages.map((m) => {
@@ -248,20 +221,20 @@ export default function SupportWidget({ isOpen, onClose }: SupportWidgetProps) {
                     return (
                       <div
                         key={m.id}
-                        className={`flex max-w-[80%] flex-col ${isMe ? "self-end items-end" : "self-start items-start"}`}
+                        className={cn("flex max-w-[85%] flex-col", isMe ? "self-end items-end" : "self-start items-start")}
                       >
                         <div
-                          className={`rounded-2xl px-4 py-2.5 text-sm leading-relaxed ${
+                          className={cn(
+                            "rounded-[18px] px-4 py-3 text-[13px] leading-relaxed shadow-sm",
                             isMe
-                              ? "rounded-tr-sm bg-[#e11d48] text-white shadow-[0_4px_12px_rgba(225,29,72,0.2)]"
-                              : "rounded-tl-sm border border-[#fecdd3] bg-[#fffafa] text-[#4c0519]"
-                          }`}
+                              ? "rounded-tr-sm bg-[#e11d48] text-white"
+                              : "rounded-tl-sm border border-[#e8e8ec] bg-white text-[#1a1a2e]"
+                          )}
                         >
                           {m.message}
                         </div>
-                        <span className="mt-1 px-1 text-[10px] text-[#9f1239]/50">
+                        <span className="mt-1.5 px-1 text-[10px] font-bold text-[#8c8c8c] uppercase tracking-tighter">
                           {new Date(m.created_at).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}
-                          {!isMe && m.profiles?.full_name && ` · ${m.profiles.full_name}`}
                         </span>
                       </div>
                     );
@@ -270,8 +243,8 @@ export default function SupportWidget({ isOpen, onClose }: SupportWidgetProps) {
                 <div ref={messagesEndRef} />
               </div>
 
-              {/* Input */}
-              <div className="border-t border-[#fecdd3] bg-[#fffafa] p-3">
+              {/* Chat Input */}
+              <div className="border-t border-[#e8e8ec] bg-white p-4">
                 {selectedTicket.status === "open" ? (
                   <div className="flex items-center gap-2">
                     <input
@@ -279,76 +252,83 @@ export default function SupportWidget({ isOpen, onClose }: SupportWidgetProps) {
                       onChange={(e) => setNewMessage(e.target.value)}
                       onKeyDown={(e) => e.key === "Enter" && !e.shiftKey && handleSend()}
                       placeholder="Digite sua mensagem..."
-                      className="flex-1 rounded-2xl border border-[#fecdd3] bg-white px-4 py-2.5 text-sm text-[#4c0519] outline-none placeholder:text-[#9f1239]/40 focus:border-[#e11d48] focus:ring-1 focus:ring-[#e11d48]"
+                      className="flex-1 rounded-xl border border-[#e8e8ec] bg-[#f8f7f5] px-4 py-3 text-[13px] font-medium text-[#1a1a2e] outline-none transition focus:bg-white focus:border-[#e11d48]"
                     />
                     <button
                       onClick={handleSend}
                       disabled={isSending || !newMessage.trim()}
-                      className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-[#e11d48] text-white shadow-[0_4px_12px_rgba(225,29,72,0.25)] transition hover:-translate-y-0.5 disabled:opacity-40"
+                      className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-[#e11d48] text-white shadow-lg shadow-rose-100 transition hover:bg-[#be123c] disabled:opacity-40 active:scale-95"
                     >
-                      <SendIcon />
+                      <PaperPlaneTilt size={20} weight="bold" />
                     </button>
                   </div>
                 ) : (
-                  <p className="text-center text-xs text-[#9f1239]/60">Este chamado foi encerrado.</p>
+                  <div className="flex items-center justify-center gap-2 py-2 text-amber-600">
+                     <Clock size={16} weight="bold" />
+                     <p className="text-[12px] font-bold uppercase tracking-wider">Este chamado foi encerrado.</p>
+                  </div>
                 )}
               </div>
             </div>
 
-          /* --- LISTA DE CHAMADOS --- */
+          /* --- TICKETS LIST --- */
           ) : (
             <div className="flex flex-1 flex-col overflow-hidden">
-              <div className="flex items-center justify-between border-b border-[#fecdd3] px-5 py-3">
-                <p className="text-sm font-semibold text-[#4c0519]">Meus Chamados</p>
+              <div className="flex items-center justify-between border-b border-[#e8e8ec] px-6 py-4 bg-white">
+                <p className="text-[13px] font-bold text-[#1a1a2e]">Chamados Recentes</p>
                 <button
                   onClick={() => setIsCreating(true)}
-                  className="inline-flex items-center gap-1.5 rounded-xl bg-[#e11d48] px-3 py-1.5 text-xs font-semibold text-white shadow-[0_4px_12px_rgba(225,29,72,0.2)] transition hover:-translate-y-0.5"
+                  className="inline-flex items-center gap-1.5 rounded-lg bg-[#fff1f2] px-3 py-1.5 text-[11px] font-bold text-[#e11d48] transition hover:bg-[#e11d48] hover:text-white"
                 >
-                  <PlusIcon />
-                  Novo
+                  <Plus size={14} weight="bold" />
+                  NOVO
                 </button>
               </div>
 
-              <div className="flex-1 overflow-y-auto p-3">
+              <div className="flex-1 overflow-y-auto p-4 scrollbar-hide">
                 {tickets.length === 0 ? (
-                  <div className="flex h-full flex-col items-center justify-center gap-3 px-6 py-8 text-center">
-                    <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-[#fff1f2] text-[#e11d48]">
-                      <HeadsetIcon />
+                  <div className="flex h-full flex-col items-center justify-center gap-4 px-6 py-12 text-center">
+                    <div className="flex h-16 w-16 items-center justify-center rounded-[20px] bg-[#f8f7f5] text-[#e11d48]">
+                      <Headset size={32} weight="bold" />
                     </div>
                     <div>
-                      <p className="font-semibold text-[#4c0519]">Nenhum chamado aberto</p>
-                      <p className="mt-1 text-sm text-[#881337]">Clique em "Novo" para entrar em contato com o suporte.</p>
+                      <p className="font-bold text-[#1a1a2e]">Nenhum chamado aberto</p>
+                      <p className="mt-1 text-[13px] text-[#8c8c8c]">Estamos prontos para te ajudar com qualquer dúvida.</p>
                     </div>
                     <button
                       onClick={() => setIsCreating(true)}
-                      className="mt-2 rounded-2xl bg-[#e11d48] px-6 py-3 text-sm font-semibold text-white shadow-[0_8px_20px_rgba(225,29,72,0.25)] transition hover:-translate-y-0.5"
+                      className="mt-2 rounded-xl bg-[#e11d48] px-6 py-3.5 text-[13px] font-bold text-white shadow-lg shadow-rose-100 transition hover:bg-[#be123c] active:scale-95"
                     >
                       Abrir primeiro chamado
                     </button>
                   </div>
                 ) : (
-                  <div className="flex flex-col gap-2">
+                  <div className="flex flex-col gap-3">
                     {tickets.map((t) => (
                       <button
                         key={t.id}
                         onClick={() => setSelectedTicket(t)}
-                        className="w-full rounded-2xl border border-[#fecdd3] bg-[#fffafa] p-4 text-left transition hover:border-[#fda4af] hover:bg-[#fff1f2]"
+                        className="w-full rounded-2xl border border-[#e8e8ec] bg-white p-4 text-left transition-all hover:border-[#e11d48] hover:shadow-md group"
                       >
-                        <div className="flex items-start justify-between gap-2">
-                          <p className="font-semibold text-[#4c0519] leading-tight">{t.subject}</p>
+                        <div className="flex items-start justify-between gap-3">
+                          <p className="font-bold text-[#1a1a2e] text-[14px] leading-tight group-hover:text-[#e11d48] transition-colors">{t.subject}</p>
                           <span
-                            className={`shrink-0 rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider ${
+                            className={cn(
+                              "shrink-0 rounded-full px-2.5 py-0.5 text-[9px] font-bold uppercase tracking-wider",
                               t.status === "open"
-                                ? "bg-amber-100 text-amber-700"
-                                : "bg-[#dcfce7] text-[#166534]"
-                            }`}
+                                ? "bg-amber-50 text-amber-600"
+                                : "bg-emerald-50 text-emerald-600"
+                            )}
                           >
                             {t.status === "open" ? "Aberto" : "Encerrado"}
                           </span>
                         </div>
-                        <p className="mt-1 text-xs text-[#881337]">
-                          Atualizado em {new Date(t.updated_at).toLocaleDateString("pt-BR")}
-                        </p>
+                        <div className="flex items-center gap-2 mt-2">
+                           <CheckCircle size={12} className={t.status === 'open' ? 'text-[#8c8c8c]' : 'text-emerald-500'} />
+                           <p className="text-[11px] font-medium text-[#8c8c8c]">
+                             Atualizado em {new Date(t.updated_at).toLocaleDateString("pt-BR")}
+                           </p>
+                        </div>
                       </button>
                     ))}
                   </div>

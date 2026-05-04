@@ -3,6 +3,7 @@ import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import LogoMark from "./LogoMark";
 import SupportWidget from "./SupportWidget";
+import { cn } from "../lib/utils";
 import { 
   Layout, 
   Receipt, 
@@ -14,17 +15,24 @@ import {
   Bell,
   Plus,
   X,
-  Question
+  Question,
+  Flask
 } from "phosphor-react";
-import { clsx } from "clsx";
-import { twMerge } from "tailwind-merge";
-
-function cn(...inputs: any[]) {
-  return twMerge(clsx(inputs));
-}
 
 interface ShellProps {
   children: React.ReactNode;
+}
+
+function SandboxBanner() {
+  return (
+    <div className="w-full flex items-center justify-center gap-2.5 px-4 sm:px-6 py-2"
+      style={{ background: "linear-gradient(135deg, #fecdd3 0%, #fda4af 100%)" }}>
+      <div className="w-5 h-5 rounded-full bg-white/30 flex items-center justify-center">
+        <Flask size={12} weight="bold" className="text-[#be123c]" />
+      </div>
+      <span className="text-[12px] font-medium text-[#be123c]">Sandbox Mode · Você está em um ambiente de teste</span>
+    </div>
+  );
 }
 
 export default function Shell({ children }: ShellProps) {
@@ -73,9 +81,9 @@ export default function Shell({ children }: ShellProps) {
                 to={item.path}
                 className={cn(
                   "w-full flex items-center justify-center xl:justify-start gap-3 px-3 py-2.5 rounded-lg text-[12px] font-medium transition-all duration-200",
-                  on ? "text-white shadow-[0_2px_8px_rgba(225,29,72,0.3)]" : "text-[#8c8c8c] hover:text-[#e11d48] hover:bg-[#fff1f2]"
+                  on ? "text-white" : "text-[#8c8c8c] hover:text-[#e11d48] hover:bg-[#fff1f2]"
                 )}
-                style={on ? { background: "linear-gradient(135deg, #e11d48, #be123c)" } : undefined}
+                style={on ? { background: "linear-gradient(135deg, #e11d48, #be123c)", boxShadow: "0 2px 8px rgba(225,29,72,0.3)" } : undefined}
               >
                 <item.Icon size={18} weight={on ? "bold" : "regular"} />
                 <span className="hidden xl:block">{item.label}</span>
@@ -104,9 +112,9 @@ export default function Shell({ children }: ShellProps) {
                 to={item.path}
                 className={cn(
                   "w-full flex items-center justify-center xl:justify-start gap-3 px-3 py-2.5 rounded-lg text-[12px] font-medium transition-all duration-200",
-                  on ? "text-white shadow-[0_2px_8px_rgba(225,29,72,0.3)]" : "text-[#8c8c8c] hover:text-[#e11d48] hover:bg-[#fff1f2]"
+                  on ? "text-white" : "text-[#8c8c8c] hover:text-[#e11d48] hover:bg-[#fff1f2]"
                 )}
-                style={on ? { background: "linear-gradient(135deg, #e11d48, #be123c)" } : undefined}
+                style={on ? { background: "linear-gradient(135deg, #e11d48, #be123c)", boxShadow: "0 2px 8px rgba(225,29,72,0.3)" } : undefined}
               >
                 <item.Icon size={18} weight={on ? "bold" : "regular"} />
                 <span className="hidden xl:block">{item.label}</span>
@@ -126,6 +134,8 @@ export default function Shell({ children }: ShellProps) {
 
       {/* Main Wrapper */}
       <div className="flex flex-1 flex-col lg:pl-[68px] xl:pl-[220px]">
+        <SandboxBanner />
+        
         {/* Topbar */}
         <header className="sticky top-0 z-30 h-14 flex items-center justify-between px-4 sm:px-6 lg:px-8 bg-white/70 backdrop-blur-xl"
           style={{ borderBottom: "1px solid #fce4ec" }}>

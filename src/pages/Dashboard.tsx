@@ -4,17 +4,16 @@ import { useAuth } from "../context/AuthContext";
 import * as api from "../lib/api";
 import { Charge } from "../lib/api";
 import { supabase } from "../lib/supabase";
+import Shell from "../components/Shell";
 import { formatBRL, maskBRLInput, parseBRLToCents, formatDate } from "../lib/format";
 import { sanitizeText } from "../lib/validators";
+import { cn } from "../lib/utils";
 import { 
   TrendUp, 
   Receipt, 
   ArrowCircleUp, 
   Wallet, 
-  CalendarBlank, 
   ChartPie, 
-  CaretLeft, 
-  CaretRight,
   MagnifyingGlass,
   ArrowUpRight,
   ArrowDownRight,
@@ -24,7 +23,9 @@ import {
   TiktokLogo,
   TelegramLogo,
   ShareNetwork,
-  X
+  X,
+  ArrowRight,
+  Plus
 } from "phosphor-react";
 import { 
   Area, 
@@ -43,6 +44,14 @@ import {
 import QRCode from "qrcode";
 
 type PeriodFilter = "today" | "month" | "all";
+type ChargeStatus = "paid" | "pending" | "canceled";
+
+const TABS: { id: "all" | ChargeStatus; label: string }[] = [
+  { id: "all", label: "Todas" },
+  { id: "paid", label: "Pagas" },
+  { id: "pending", label: "Pendentes" },
+  { id: "canceled", label: "Canceladas" },
+];
 
 // --- Main Page Component ---
 
@@ -73,7 +82,7 @@ export default function Dashboard() {
        setShowCreateModal(true);
     };
     window.addEventListener("open-create-charge", handleOpenCreate);
-    const sub = supabase.channel('dashboard_v2').on('postgres_changes', { event: '*', schema: 'public', table: 'charges', filter: `profile_id=eq.${profile.id}` }, () => reload()).subscribe();
+    const sub = supabase.channel('dashboard_v4').on('postgres_changes', { event: '*', schema: 'public', table: 'charges', filter: `profile_id=eq.${profile.id}` }, () => reload()).subscribe();
     return () => { 
       window.removeEventListener("open-create-charge", handleOpenCreate);
       supabase.removeChannel(sub); 
@@ -89,80 +98,103 @@ export default function Dashboard() {
   }, [charges, stats, period]);
 
   return (
-    <div className="space-y-5">
-      
-      {/* Period Selector & Quick Add */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 a-up">
-        <div className="flex gap-1 bg-white p-1 rounded-xl border border-[#fce4ec]">
-          {(["today", "month", "all"] as const).map((p) => (
-            <button
-              key={p}
-              onClick={() => setPeriod(p)}
-              className={`px-4 py-2 text-[11px] font-semibold uppercase tracking-widest rounded-lg transition-all ${
-                period === p ? "bg-[#e11d48] text-white shadow-md" : "text-[#8c8c8c] hover:text-[#e11d48]"
-              }`}
-            >
-              {p === "today" ? "Hoje" : p === "month" ? "Mês" : "Total"}
-            </button>
-          ))}
+    <Shell>
+      <div className="space-y-8 a-fade pb-10">
+        
+        {/* CTA Banner Section */}
+        <div className="a-up">
+           <div className="flex flex-col lg:flex-row items-start justify-between gap-6">
+              <div className="flex-1">
+                 <p className="text-[11px] font-bold tracking-[0.1em] uppercase text-[#a1a1aa] mb-2">Visão Geral</p>
+                 <h2 className="text-[24px] lg:text-[28px] font-bold tracking-[-0.03em] text-[#1a1a2e] leading-tight">
+                    Bem-vindo, {profile?.full_name?.split(' ')[0]}
+                 </h2>
+                 <p className="mt-1.5 text-[14px] text-[#71717a] leading-relaxed max-w-md">
+                    Monitore suas vendas em tempo real e gere links de pagamento instantâneos para seus clientes.
+                 </p>
+              </div>
+              <div className="flex items-center gap-3 w-full lg:w-auto">
+                 <button 
+                   onClick={() => navigate("/produtos")}
+                   className="flex-1 lg:flex-none inline-flex items-center justify-center gap-2 px-5 py-3 rounded-xl text-[13px] font-bold text-[#e11d48] bg-white border border-[#fce4ec] hover:bg-[#fff1f2] transition-all active:scale-[0.97]"
+                 >
+                    <Package size={18} weight="bold" />
+                    Produtos
+                 </button>
+                 <button 
+                   onClick={() => setShowCreateModal(true)}
+                   className="flex-1 lg:flex-none inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl text-[13px] font-bold text-white bg-[#e11d48] hover:bg-[#be123c] shadow-lg shadow-rose-100 transition-all active:scale-[0.97]"
+                 >
+                    Nova cobrança
+                    <ArrowRight size={16} weight="bold" />
+                 </button>
+              </div>
+           </div>
         </div>
-        <button 
-          onClick={() => navigate("/produtos")}
-          className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-[11px] font-bold uppercase tracking-widest text-[#e11d48] bg-white border border-[#fce4ec] hover:bg-[#fff1f2] transition-all active:scale-[0.98]"
-        >
-          <Package size={18} weight="bold" />
-          Adicionar Produto
-        </button>
-      </div>
 
-      {/* KPI Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 a-up-1">
-         <KpiCard label="Total em vendas" value={formatBRL(kpis.gross)} icon={<TrendUp size={18} weight="bold" />} accent />
-         <KpiCard label="Total de transações" value={String(kpis.count)} icon={<Receipt size={18} weight="bold" />} />
-         <KpiCard label="Ticket Médio" value={formatBRL(kpis.avg)} icon={<ArrowCircleUp size={18} weight="bold" />} />
-      </div>
+        {/* Filters and KPI Row */}
+        <div className="space-y-4">
+           <div className="flex justify-start">
+              <div className="flex gap-1 bg-white p-1 rounded-xl border border-[#e8e8ec]">
+                {(["today", "month", "all"] as const).map((p) => (
+                  <button
+                    key={p}
+                    onClick={() => setPeriod(p)}
+                    className={cn(
+                      "px-4 py-2 text-[11px] font-semibold uppercase tracking-widest rounded-lg transition-all",
+                      period === p ? "bg-[#e11d48] text-white shadow-md" : "text-[#8c8c8c] hover:text-[#e11d48]"
+                    )}
+                  >
+                    {p === "today" ? "Hoje" : p === "month" ? "Mês" : "Total"}
+                  </button>
+                ))}
+              </div>
+           </div>
 
-      {/* Payment Method Banner */}
-      <div className="a-up-2">
-        <PaymentMethodsBanner charges={charges} />
-      </div>
+           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 a-up-1">
+              <KpiCard label="Total em vendas" value={formatBRL(kpis.gross)} icon={<TrendUp size={18} weight="bold" />} accent />
+              <KpiCard label="Total de transações" value={String(kpis.count)} icon={<Receipt size={18} weight="bold" />} />
+              <KpiCard label="Ticket Médio" value={formatBRL(kpis.avg)} icon={<ArrowCircleUp size={18} weight="bold" />} />
+           </div>
+        </div>
 
-      {/* Charts Row */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
-         <div className="a-up-3">
-            <PerformanceChart charges={charges} />
-         </div>
-         <div className="a-up-4">
-            <TicketEvolutionChart charges={charges} />
-         </div>
-      </div>
+        {/* Charts Row */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
+           <div className="lg:col-span-2 a-up-2">
+              <PerformanceChart charges={charges} />
+           </div>
+           <div className="a-up-3">
+              <PaymentMethodsBanner charges={charges} />
+           </div>
+        </div>
 
-      {/* Bottom Row: Distribution & Calendar */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
-         <div className="a-up-5 h-full">
-            <StatusDistribution charges={charges} />
-         </div>
-         <div className="a-up-6 h-full">
-            <SalesCalendar />
-         </div>
-      </div>
+        {/* Distribution Row */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
+           <div className="a-up-4">
+              <StatusDistribution charges={charges} />
+           </div>
+           <div className="lg:col-span-2 a-up-5">
+              <TicketEvolutionChart charges={charges} />
+           </div>
+        </div>
 
-      {/* Sales History Table */}
-      <div className="a-up-6 pt-5">
-         <SalesHistory charges={charges} />
-      </div>
+        {/* Sales History Table */}
+        <div className="pt-4 a-up-6">
+           <SalesHistory charges={charges} />
+        </div>
 
-      {showCreateModal && (
-        <CreateChargeFlowModal
-          onClose={() => setShowCreateModal(false)}
-          onCreated={(charge) => {
-            setCreatedCharge(charge);
-            reload();
-          }}
-          createdCharge={createdCharge}
-        />
-      )}
-    </div>
+        {showCreateModal && (
+          <CreateChargeFlowModal
+            onClose={() => setShowCreateModal(false)}
+            onCreated={(charge) => {
+              setCreatedCharge(charge);
+              reload();
+            }}
+            createdCharge={createdCharge}
+          />
+        )}
+      </div>
+    </Shell>
   );
 }
 
@@ -174,18 +206,18 @@ function KpiCard({ label, value, icon, accent }: { label: string; value: string;
   const labelColor = accent ? "rgba(255,255,255,0.7)" : "#8c8c8c";
   const iconBg = accent ? "rgba(255,255,255,0.2)" : "#fff1f2";
   const iconColor = accent ? "#ffffff" : "#e11d48";
-  const border = accent ? "none" : "1px solid #fce4ec";
+  const border = accent ? "none" : "1px solid #e8e8ec";
 
   return (
-    <div className="rounded-[14px] p-6 transition-all duration-300 hover:shadow-lg hover:-translate-y-1"
+    <div className="rounded-[14px] p-5 transition-all duration-200 hover:shadow-md"
       style={{ background: bg, border, color: textColor }}>
-      <div className="flex items-center gap-3 mb-4">
-        <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: iconBg, color: iconColor }}>
+      <div className="flex items-center gap-2.5 mb-3">
+        <div className="w-9 h-9 rounded-xl flex items-center justify-center" style={{ background: iconBg, color: iconColor }}>
           {icon}
         </div>
         <span className="text-[13px] font-medium" style={{ color: labelColor }}>{label}</span>
       </div>
-      <p className="text-[32px] font-bold tracking-[-0.03em] num leading-none">{value}</p>
+      <p className="text-[28px] font-semibold tracking-[-0.03em] num leading-none">{value}</p>
     </div>
   );
 }
@@ -193,7 +225,7 @@ function KpiCard({ label, value, icon, accent }: { label: string; value: string;
 function PaymentMethodsBanner({ charges }: { charges: Charge[] }) {
   const pixTotal = charges.filter(c => c.status === "paid").reduce((s, c) => s + c.amount_cents, 0);
   return (
-    <div className="rounded-[14px] p-6 bg-white transition-all duration-200 hover:shadow-md"
+    <div className="rounded-[14px] p-5 lg:p-6 bg-white transition-all duration-200 hover:shadow-md h-full"
       style={{ border: "1px solid #fce4ec" }}>
       <div className="flex items-center gap-2 mb-5">
         <Wallet size={18} className="text-[#8c8c8c]" weight="bold" />
@@ -203,23 +235,25 @@ function PaymentMethodsBanner({ charges }: { charges: Charge[] }) {
         <div className="h-full rounded-full transition-all duration-700"
           style={{ width: "100%", background: "linear-gradient(90deg, #e11d48, #be123c)" }} />
       </div>
-      <div className="flex items-center justify-between py-2">
-        <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-lg flex items-center justify-center bg-[#fff1f2]">
-            <span className="text-[#e11d48] font-bold text-[10px]">PIX</span>
+      <div className="space-y-4">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2.5">
+            <div className="w-7 h-7 rounded-lg flex items-center justify-center bg-[#fff1f2]">
+               <span className="text-[#e11d48] font-bold text-[9px]">PIX</span>
+            </div>
+            <span className="text-[13px] text-[#1a1a2e]">Pix</span>
           </div>
-          <span className="text-[13px] font-medium text-[#1a1a2e]">Pix Instantâneo</span>
+          <span className="text-[13px] font-medium text-[#1a1a2e] num">{formatBRL(pixTotal)}</span>
         </div>
-        <span className="text-[13px] font-bold text-[#1a1a2e] num">{formatBRL(pixTotal)}</span>
-      </div>
-      <div className="mt-4 pt-4 flex items-center justify-between border-t border-[#fce4ec]">
-        <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-lg flex items-center justify-center bg-[#fff1f2]">
-            <div className="w-2 h-2 rounded-full bg-[#e11d48]" />
+        <div className="pt-4 flex items-center justify-between border-t border-[#fce4ec]">
+          <div className="flex items-center gap-2.5">
+            <div className="w-7 h-7 rounded-lg flex items-center justify-center bg-[#fff1f2]">
+               <div className="w-2 h-2 rounded-full bg-[#e11d48]" />
+            </div>
+            <span className="text-[13px] font-bold text-[#1a1a2e]">Total</span>
           </div>
-          <span className="text-[13px] font-bold text-[#1a1a2e]">Total Recebido</span>
+          <span className="text-[13px] font-bold text-[#1a1a2e] num">{formatBRL(pixTotal)}</span>
         </div>
-        <span className="text-[13px] font-bold text-[#1a1a2e] num">{formatBRL(pixTotal)}</span>
       </div>
     </div>
   );
@@ -235,34 +269,35 @@ function PerformanceChart({ charges }: { charges: Charge[] }) {
       const value = charges
         .filter(c => c.status === "paid" && new Date(c.paid_at || c.created_at).toLocaleDateString() === d.toLocaleDateString())
         .reduce((s, c) => s + (c.amount_cents / 100), 0);
-      return { name: label.toUpperCase(), value };
+      return { name: label, value };
     });
   }, [charges]);
 
   return (
-    <div className="rounded-[14px] p-6 bg-white transition-all duration-200 hover:shadow-md"
+    <div className="rounded-[14px] p-5 lg:p-6 bg-white transition-all duration-200 hover:shadow-md"
       style={{ border: "1px solid #fce4ec" }}>
-      <div className="flex items-center gap-2 mb-6">
+      <div className="flex items-center gap-2 mb-5">
         <TrendUp size={18} className="text-[#e11d48]" weight="bold" />
-        <h3 className="text-[14px] font-bold text-[#1a1a2e]">Faturamento Semanal</h3>
+        <h3 className="text-[14px] font-bold text-[#1a1a2e]">Desempenho de vendas</h3>
       </div>
-      <div className="h-[220px] -mx-2">
+      <div className="h-[200px] -mx-2">
         <ResponsiveContainer width="100%" height="100%">
-          <AreaChart data={data}>
+          <AreaChart data={data} margin={{ top: 4, right: 4, left: 0, bottom: 0 }}>
             <defs>
               <linearGradient id="salesGrad" x1="0" y1="0" x2="0" y2="1">
                 <stop offset="0%" stopColor="#e11d48" stopOpacity={0.15} />
                 <stop offset="100%" stopColor="#e11d48" stopOpacity={0} />
               </linearGradient>
             </defs>
-            <XAxis dataKey="name" tickLine={false} axisLine={false} tick={{ fill: "#8c8c8c", fontSize: 10, fontWeight: 700 }} dy={10} />
+            <XAxis dataKey="name" tickLine={false} axisLine={false} tick={{ fill: "#8c8c8c", fontSize: 11 }} dy={6} />
             <YAxis hide />
             <Tooltip
-              contentStyle={{ background: "#fff", border: "1px solid #fce4ec", borderRadius: "12px", boxShadow: "0 4px 12px rgba(0,0,0,0.05)", padding: "10px" }}
+              cursor={{ stroke: "#fce4ec", strokeWidth: 1 }}
+              contentStyle={{ background: "#fff", border: "1px solid #fce4ec", borderRadius: "10px", padding: "6px 12px", fontSize: 12, boxShadow: "0 2px 8px rgba(0,0,0,0.06)" }}
               formatter={(v: any) => [formatBRL(Number(v) * 100), ""]}
-              labelStyle={{ fontSize: 11, fontWeight: 800, color: "#8c8c8c", marginBottom: 4 }}
+              labelStyle={{ color: "#8c8c8c", fontSize: 11 }}
             />
-            <Area type="monotone" dataKey="value" stroke="#e11d48" strokeWidth={3} fill="url(#salesGrad)" dot={false} activeDot={{ r: 6, fill: "#e11d48", stroke: "#fff", strokeWidth: 2 }} />
+            <Area type="monotone" dataKey="value" stroke="#e11d48" strokeWidth={2} fill="url(#salesGrad)" dot={false} activeDot={{ r: 4, fill: "#e11d48", stroke: "#fff", strokeWidth: 2 }} />
           </AreaChart>
         </ResponsiveContainer>
       </div>
@@ -279,28 +314,29 @@ function TicketEvolutionChart({ charges }: { charges: Charge[] }) {
       const label = d.toLocaleDateString("pt-BR", { weekday: "short" }).replace(".", "");
       const dayPaid = charges.filter(c => c.status === "paid" && new Date(c.paid_at || c.created_at).toLocaleDateString() === d.toLocaleDateString());
       const value = dayPaid.length ? (dayPaid.reduce((s, c) => s + (c.amount_cents / 100), 0) / dayPaid.length) : 0;
-      return { name: label.toUpperCase(), value };
+      return { name: label, value };
     });
   }, [charges]);
 
   return (
-    <div className="rounded-[14px] p-6 bg-white transition-all duration-200 hover:shadow-md"
+    <div className="rounded-[14px] p-5 lg:p-6 bg-white transition-all duration-200 hover:shadow-md"
       style={{ border: "1px solid #fce4ec" }}>
-      <div className="flex items-center gap-2 mb-6">
+      <div className="flex items-center gap-2 mb-5">
         <ArrowCircleUp size={18} className="text-[#e11d48]" weight="bold" />
         <h3 className="text-[14px] font-bold text-[#1a1a2e]">Evolução do Ticket Médio</h3>
       </div>
-      <div className="h-[220px] -mx-2">
+      <div className="h-[200px] -mx-2">
         <ResponsiveContainer width="100%" height="100%">
-          <LineChart data={data}>
-            <XAxis dataKey="name" tickLine={false} axisLine={false} tick={{ fill: "#8c8c8c", fontSize: 10, fontWeight: 700 }} dy={10} />
+          <LineChart data={data} margin={{ top: 4, right: 4, left: 0, bottom: 0 }}>
+            <XAxis dataKey="name" tickLine={false} axisLine={false} tick={{ fill: "#8c8c8c", fontSize: 11 }} dy={6} />
             <YAxis hide />
             <Tooltip
-              contentStyle={{ background: "#fff", border: "1px solid #fce4ec", borderRadius: "12px", boxShadow: "0 4px 12px rgba(0,0,0,0.05)", padding: "10px" }}
+              cursor={{ stroke: "#fce4ec", strokeWidth: 1 }}
+              contentStyle={{ background: "#fff", border: "1px solid #fce4ec", borderRadius: "10px", padding: "6px 12px", fontSize: 12, boxShadow: "0 2px 8px rgba(0,0,0,0.06)" }}
               formatter={(v: any) => [formatBRL(Number(v) * 100), ""]}
-              labelStyle={{ fontSize: 11, fontWeight: 800, color: "#8c8c8c", marginBottom: 4 }}
+              labelStyle={{ color: "#8c8c8c", fontSize: 11 }}
             />
-            <Line type="monotone" dataKey="value" stroke="#be123c" strokeWidth={3} dot={false} activeDot={{ r: 6, fill: "#be123c", stroke: "#fff", strokeWidth: 2 }} />
+            <Line type="monotone" dataKey="value" stroke="#be123c" strokeWidth={2} dot={false} activeDot={{ r: 4, fill: "#be123c", stroke: "#fff", strokeWidth: 2 }} />
           </LineChart>
         </ResponsiveContainer>
       </div>
@@ -311,41 +347,46 @@ function TicketEvolutionChart({ charges }: { charges: Charge[] }) {
 function StatusDistribution({ charges }: { charges: Charge[] }) {
   const paid = charges.filter(c => c.status === "paid").length;
   const pending = charges.filter(c => c.status === "pending").length;
+  const canceled = charges.filter(c => c.status === "canceled").length;
   const total = charges.length;
   const data = total ? [
     { name: "Pago", value: paid, color: "#e11d48" },
     { name: "Pendente", value: pending, color: "#f59e0b" },
-    { name: "Outros", value: total - paid - pending, color: "#d4d4d8" }
+    { name: "Cancelado", value: canceled, color: "#d4d4d8" }
   ] : [{ name: "Vazio", value: 1, color: "#f8f7f5" }];
 
   return (
-    <div className="rounded-[14px] p-6 bg-white transition-all duration-200 hover:shadow-md h-full"
+    <div className="rounded-[14px] p-5 lg:p-6 bg-white transition-all duration-200 hover:shadow-md h-full"
       style={{ border: "1px solid #fce4ec" }}>
-      <div className="flex items-center gap-2 mb-6">
+      <div className="flex items-center gap-2 mb-5">
         <ChartPie size={18} className="text-[#e11d48]" weight="bold" />
-        <h3 className="text-[14px] font-bold text-[#1a1a2e]">Divisão por Status</h3>
+        <h3 className="text-[14px] font-bold text-[#1a1a2e]">Distribuição por status</h3>
       </div>
-      <div className="flex items-center gap-8">
-         <div className="relative w-28 h-28 shrink-0">
+      <div className="flex items-center gap-5">
+         <div className="relative shrink-0 w-[100px] h-[100px]">
             <ResponsiveContainer width="100%" height="100%">
                <PieChart>
-                  <Pie data={data} dataKey="value" innerRadius={35} outerRadius={50} paddingAngle={4} stroke="none">
+                  <Pie data={data} dataKey="value" innerRadius={32} outerRadius={48} paddingAngle={total ? 3 : 0} stroke="none">
                      {data.map((d, i) => <Cell key={i} fill={d.color} />)}
                   </Pie>
                </PieChart>
             </ResponsiveContainer>
-            <div className="absolute inset-0 flex flex-col items-center justify-center">
-               <span className="text-xl font-bold text-[#1a1a2e] num leading-none">{total}</span>
+            <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+               <span className="text-[18px] font-bold text-[#1a1a2e] num">{total}</span>
             </div>
          </div>
-         <div className="flex-1 space-y-3">
-            {data.map((item, i) => (
-               <div key={i} className="flex items-center justify-between">
+         <div className="flex-1 space-y-2.5">
+            {[
+               { label: "Pago", value: paid, color: "#e11d48" },
+               { label: "Pendente", value: pending, color: "#f59e0b" },
+               { label: "Cancelado", value: canceled, color: "#d4d4d8" },
+            ].map(item => (
+               <div key={item.label} className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
-                     <div className="w-2 h-2 rounded-full" style={{ background: item.color }} />
-                     <span className="text-[12px] font-medium text-[#5c5c6d]">{item.name}</span>
+                     <div className="w-2 h-2 rounded-full shrink-0" style={{ background: item.color }} />
+                     <span className="text-[12px] text-[#5c5c6d]">{item.label}</span>
                   </div>
-                  <span className="text-[12px] font-bold text-[#1a1a2e] num">{item.value}</span>
+                  <span className="text-[12px] font-medium text-[#1a1a2e] num">{item.value}</span>
                </div>
             ))}
          </div>
@@ -354,105 +395,172 @@ function StatusDistribution({ charges }: { charges: Charge[] }) {
   );
 }
 
-function SalesCalendar() {
-  const days = ["D", "S", "T", "Q", "Q", "S", "S"];
+function SalesHistory({ charges }: { charges: Charge[] }) {
+  const [tab, setTab] = useState<"all" | ChargeStatus>("all");
+  const [search, setSearch] = useState("");
+
+  const filtered = useMemo(() => {
+    return charges
+      .filter(c => tab === "all" || c.status === tab)
+      .filter(c => !search || `${c.service_name} ${c.payer_name}`.toLowerCase().includes(search.toLowerCase()))
+      .sort((a, b) => +new Date(b.created_at) - +new Date(a.created_at));
+  }, [charges, tab, search]);
+
   return (
-    <div className="rounded-[14px] p-6 bg-white transition-all duration-200 hover:shadow-md h-full"
-      style={{ border: "1px solid #fce4ec" }}>
-      <div className="flex items-center justify-between mb-6">
-        <div className="flex items-center gap-2">
-          <CalendarBlank size={18} className="text-[#e11d48]" weight="bold" />
-          <h3 className="text-[14px] font-bold text-[#1a1a2e]">Calendário</h3>
+    <div className="a-up-6">
+      <div className="flex flex-col sm:flex-row sm:items-end gap-4 sm:justify-between mb-5">
+        <div>
+           <p className="text-[11px] font-semibold uppercase tracking-[0.15em] text-[#8c8c8c]">Histórico de vendas</p>
+           <p className="text-[13px] text-[#8c8c8c] mt-0.5">{filtered.length} transação{filtered.length !== 1 ? "s" : ""} no período</p>
         </div>
-        <div className="flex items-center gap-2">
-           <CaretLeft size={16} className="text-[#8c8c8c] cursor-pointer" />
-           <span className="text-[11px] font-bold text-[#5c5c6d] uppercase">Mai 2025</span>
-           <CaretRight size={16} className="text-[#8c8c8c] cursor-pointer" />
-        </div>
+        <label className="relative sm:w-64">
+           <MagnifyingGlass className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#d4d4d8] pointer-events-none" />
+           <input 
+              value={search} onChange={e => setSearch(e.target.value)}
+              placeholder="Buscar cliente ou serviço..." 
+              className="w-full text-[13px] pl-9 pr-4 py-2.5 rounded-xl placeholder:text-[#d4d4d8] text-[#1a1a2e] focus:outline-none focus:ring-2 focus:ring-[#fecdd3] transition-all"
+              style={{ background: "#ffffff", border: "1px solid #fce4ec" }}
+           />
+        </label>
       </div>
-      <div className="grid grid-cols-7 gap-1 mb-2">
-        {days.map(d => <div key={d} className="text-center text-[10px] font-bold text-[#8c8c8c] py-1">{d}</div>)}
+
+      <div className="flex gap-1 mb-4 overflow-x-auto pb-1 scrollbar-hide">
+        {TABS.map(t => (
+          <button
+            key={t.id}
+            onClick={() => setTab(t.id)}
+            className={cn("px-3 py-1.5 rounded-lg text-[12px] font-medium whitespace-nowrap transition-all",
+              tab === t.id ? "text-white shadow-sm" : "text-[#8c8c8c] hover:text-[#e11d48]"
+            )}
+            style={tab === t.id ? { background: "linear-gradient(135deg, #e11d48, #be123c)" } : { background: "#ffffff", border: "1px solid #fce4ec" }}
+          >
+            {t.label}
+            <span className={cn("ml-1.5 num text-[11px]", tab === t.id ? "text-white/70" : "text-[#d4d4d8]")}>
+              {charges.filter(c => t.id === "all" ? true : c.status === t.id).length}
+            </span>
+          </button>
+        ))}
       </div>
-      <div className="grid grid-cols-7 gap-1">
-        {Array.from({ length: 31 }, (_, i) => {
-          const isToday = i + 1 === new Date().getDate();
-          return (
-            <div key={i} className={`aspect-square flex items-center justify-center text-[11px] font-bold rounded-lg transition-all ${isToday ? 'bg-[#e11d48] text-white shadow-lg' : 'text-[#1a1a2e] hover:bg-[#fff1f2]'}`}>
-               {i + 1}
+
+      <div className="rounded-[14px] overflow-hidden bg-white" style={{ border: "1px solid #fce4ec" }}>
+        {filtered.length === 0 ? (
+          <div className="px-6 py-16 text-center">
+            <p className="text-[13px] text-[#8c8c8c]">Nenhuma transação encontrada</p>
+          </div>
+        ) : (
+          <>
+            <ul className="lg:hidden divide-y divide-[#fce4ec]">
+              {filtered.map(c => <MobileRow key={c.id} charge={c} />)}
+            </ul>
+            <div className="hidden lg:block overflow-x-auto">
+              <table className="w-full">
+                <thead>
+                  <tr style={{ borderBottom: "1px solid #fce4ec" }}>
+                    {["Serviço / Cliente", "Data", "Status", "Bruto", "Taxa (1%)", "Líquido"].map(h => (
+                      <th key={h} className="text-left px-6 py-3 text-[10px] font-semibold uppercase tracking-[0.12em] text-[#8c8c8c]">
+                        {h}
+                      </th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-[#fce4ec]">
+                  {filtered.map(c => <DesktopRow key={c.id} charge={c} />)}
+                </tbody>
+              </table>
             </div>
-          );
-        })}
+          </>
+        )}
       </div>
     </div>
   );
 }
 
-function SalesHistory({ charges }: { charges: Charge[] }) {
-  const [search, setSearch] = useState("");
-  const filtered = charges.filter(c => !search || c.service_name.toLowerCase().includes(search.toLowerCase()) || c.payer_name?.toLowerCase().includes(search.toLowerCase())).slice(0, 10);
+function Avatar({ name }: { name: string }) {
+  const initials = name.split(" ").slice(0, 2).map(w => w[0]).join("").toUpperCase() || "CF";
+  return (
+    <div className="w-8 h-8 rounded-full flex items-center justify-center shrink-0 text-[10px] font-semibold"
+      style={{ background: "#fff1f2", color: "#e11d48" }}>
+      {initials}
+    </div>
+  );
+}
+
+function StatusDot({ status }: { status: string }) {
+  const colors: Record<string, string> = {
+    paid: "#e11d48",
+    pending: "#f59e0b",
+    canceled: "#d4d4d8",
+  };
+  return <span className="w-1.5 h-1.5 rounded-full shrink-0" style={{ background: colors[status] || "#d4d4d8" }} />;
+}
+
+function MobileRow({ charge: c }: { charge: Charge }) {
+  const net = (c.amount_cents / 100) * 0.99;
+  const isIncoming = c.status === "paid";
+  return (
+    <li className="flex items-center gap-3 px-4 py-3.5 hover:bg-[#fff1f2] transition-all">
+      <Avatar name={c.payer_name || "CF"} />
+      <div className="flex-1 min-w-0">
+        <div className="flex items-center justify-between gap-2">
+          <p className="text-[13px] font-medium text-[#1a1a2e] truncate">{c.service_name}</p>
+          <div className="flex items-center gap-1">
+            {isIncoming ? (
+              <ArrowUpRight className="w-3 h-3 text-[#e11d48]" weight="bold" />
+            ) : (
+              <ArrowDownRight className="w-3 h-3 text-[#8c8c8c]" weight="bold" />
+            )}
+            <p className="text-[13px] font-semibold text-[#1a1a2e] num whitespace-nowrap">{formatBRL(net * 100)}</p>
+          </div>
+        </div>
+        <div className="flex items-center justify-between mt-0.5">
+          <p className="text-[11px] text-[#8c8c8c]">{c.payer_name || "Cliente Final"} · {formatDate(c.created_at)}</p>
+          <span className="flex items-center gap-1.5 text-[11px] text-[#5c5c6d]">
+            <StatusDot status={c.status} />
+            {c.status === 'paid' ? 'Pago' : c.status === 'pending' ? 'Pendente' : 'Cancelado'}
+          </span>
+        </div>
+      </div>
+    </li>
+  );
+}
+
+function DesktopRow({ charge: c }: { charge: Charge }) {
+  const gross = c.amount_cents / 100;
+  const fee = gross * 0.01;
+  const net = gross - fee;
+  const isIncoming = c.status === "paid";
 
   return (
-    <div>
-      <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-5">
-        <div>
-           <p className="text-[11px] font-bold uppercase tracking-[0.15em] text-[#8c8c8c]">Histórico Recente</p>
-           <p className="text-[13px] text-[#8c8c8c] mt-1">Exibindo as últimas transações</p>
+    <tr className="hover:bg-[#fff1f2] transition-all">
+      <td className="px-6 py-3">
+        <div className="flex items-center gap-3">
+          <Avatar name={c.payer_name || "CF"} />
+          <div>
+            <p className="text-[13px] font-medium text-[#1a1a2e]">{c.service_name}</p>
+            <p className="text-[11px] text-[#8c8c8c]">{c.payer_name || "Cliente Final"}</p>
+          </div>
         </div>
-        <div className="relative sm:w-72">
-           <MagnifyingGlass className="absolute left-3 top-1/2 -translate-y-1/2 text-[#d4d4d8]" size={16} />
-           <input 
-              placeholder="Buscar por cliente ou serviço..." 
-              value={search} onChange={e => setSearch(e.target.value)}
-              className="w-full bg-white border border-[#fce4ec] rounded-xl py-2.5 pl-10 pr-4 text-[13px] font-medium placeholder:text-[#d4d4d8] focus:outline-none focus:ring-2 focus:ring-[#fecdd3] transition-all"
-           />
+      </td>
+      <td className="px-6 py-3 text-[12px] text-[#8c8c8c]">{formatDate(c.created_at)}</td>
+      <td className="px-6 py-3">
+        <span className="flex items-center gap-1.5 text-[12px] text-[#5c5c6d]">
+          <StatusDot status={c.status} />
+          {c.status === 'paid' ? 'Pago' : c.status === 'pending' ? 'Pendente' : 'Cancelado'}
+        </span>
+      </td>
+      <td className="px-6 py-3 text-right text-[13px] text-[#5c5c6d] num">{formatBRL(c.amount_cents)}</td>
+      <td className="px-6 py-3 text-right text-[12px] text-[#8c8c8c] num">− {formatBRL(fee * 100)}</td>
+      <td className="px-6 py-3 text-right">
+        <div className="flex items-center justify-end gap-1">
+          {isIncoming ? (
+            <ArrowUpRight className="w-3.5 h-3.5 text-[#e11d48]" weight="bold" />
+          ) : (
+            <ArrowDownRight className="w-3.5 h-3.5 text-[#8c8c8c]" weight="bold" />
+          )}
+          <span className="text-[13px] font-semibold text-[#1a1a2e] num">{formatBRL(net * 100)}</span>
         </div>
-      </div>
-      <div className="bg-white rounded-[14px] border border-[#fce4ec] overflow-hidden">
-         <div className="overflow-x-auto">
-            <table className="w-full">
-               <thead>
-                  <tr className="border-b border-[#fce4ec]">
-                     {["Serviço / Cliente", "Data", "Status", "Valor"].map(h => (
-                        <th key={h} className="text-left px-6 py-4 text-[10px] font-bold uppercase tracking-widest text-[#8c8c8c]">{h}</th>
-                     ))}
-                  </tr>
-               </thead>
-               <tbody className="divide-y divide-[#fce4ec]">
-                  {filtered.map(c => (
-                     <tr key={c.id} className="hover:bg-[#fff1f2] transition-colors cursor-pointer group">
-                        <td className="px-6 py-4">
-                           <div className="flex items-center gap-3">
-                              <div className="w-9 h-9 rounded-full bg-[#fff1f2] text-[#e11d48] flex items-center justify-center text-[11px] font-bold">
-                                 {c.payer_name?.slice(0, 2).toUpperCase() || "CF"}
-                              </div>
-                              <div>
-                                 <p className="text-[13px] font-bold text-[#1a1a2e] group-hover:text-[#e11d48] transition-colors">{c.service_name}</p>
-                                 <p className="text-[11px] text-[#8c8c8c]">{c.payer_name || "Cliente Final"}</p>
-                              </div>
-                           </div>
-                        </td>
-                        <td className="px-6 py-4 text-[12px] font-medium text-[#8c8c8c]">{formatDate(c.created_at)}</td>
-                        <td className="px-6 py-4">
-                           <div className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest ${
-                              c.status === 'paid' ? 'bg-emerald-50 text-emerald-600' : c.status === 'pending' ? 'bg-amber-50 text-amber-600' : 'bg-gray-50 text-gray-400'
-                           }`}>
-                              <div className={`w-1.5 h-1.5 rounded-full ${c.status === 'paid' ? 'bg-emerald-500' : c.status === 'pending' ? 'bg-amber-500' : 'bg-gray-400'}`} />
-                              {c.status === 'paid' ? 'Pago' : c.status === 'pending' ? 'Pendente' : 'Cancelado'}
-                           </div>
-                        </td>
-                        <td className="px-6 py-4 text-right">
-                           <div className="flex items-center justify-end gap-1.5">
-                              {c.status === 'paid' ? <ArrowUpRight size={14} className="text-[#e11d48]" /> : <ArrowDownRight size={14} className="text-[#8c8c8c]" />}
-                              <span className="text-[14px] font-bold text-[#1a1a2e] num">{formatBRL(c.amount_cents)}</span>
-                           </div>
-                        </td>
-                     </tr>
-                  ))}
-               </tbody>
-            </table>
-         </div>
-      </div>
-    </div>
+      </td>
+    </tr>
   );
 }
 
@@ -543,7 +651,7 @@ function CreateChargeFlowModal({ onClose, onCreated, createdCharge }: { onClose:
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
       <div className="absolute inset-0 bg-black/60 backdrop-blur-md" onClick={onClose} />
-      <div className={`relative w-full max-h-[90vh] overflow-y-auto rounded-[24px] bg-white shadow-2xl transition-all duration-500 ${step === "share" ? "max-w-4xl" : "max-w-xl"}`}>
+      <div className={cn("relative w-full max-h-[90vh] overflow-y-auto rounded-[24px] bg-white shadow-2xl transition-all duration-500", step === "share" ? "max-w-4xl" : "max-w-xl")}>
         <button onClick={onClose} className="absolute top-6 right-6 z-10 h-10 w-10 flex items-center justify-center rounded-full bg-gray-50 text-gray-400 hover:text-gray-600">
           <X size={20} weight="bold" />
         </button>
@@ -573,7 +681,7 @@ function CreateChargeFlowModal({ onClose, onCreated, createdCharge }: { onClose:
                </div>
                <div className="w-full bg-gray-50 p-2 rounded-xl flex items-center gap-2 pl-4">
                   <span className="flex-1 truncate text-xs font-bold text-gray-400">{checkoutUrl.replace('https://', '')}</span>
-                  <button onClick={() => { navigator.clipboard.writeText(checkoutUrl); setCopied(true); setTimeout(() => setCopied(false), 2000); }} className={`px-6 py-2.5 rounded-lg text-[10px] font-bold uppercase tracking-widest transition-all ${copied ? 'bg-emerald-500' : 'bg-[#e11d48]'} text-white`}>
+                  <button onClick={() => { navigator.clipboard.writeText(checkoutUrl); setCopied(true); setTimeout(() => setCopied(false), 2000); }} className={cn("px-6 py-2.5 rounded-lg text-[10px] font-bold uppercase tracking-widest transition-all", copied ? 'bg-emerald-500' : 'bg-[#e11d48]', "text-white")}>
                      {copied ? 'Copiado' : 'Copiar'}
                   </button>
                </div>
@@ -591,8 +699,8 @@ function CreateChargeFlowModal({ onClose, onCreated, createdCharge }: { onClose:
              <h3 className="text-2xl font-bold text-[#1a1a2e] tracking-tight">Nova Cobrança</h3>
              <p className="text-sm font-medium text-[#8c8c8c] mb-8">Defina os detalhes do pagamento</p>
              <div className="grid grid-cols-2 gap-3 bg-gray-50 p-1.5 rounded-xl mb-8">
-                <button onClick={() => setStep("product")} className={`py-3 rounded-lg text-[10px] font-bold uppercase tracking-widest transition-all ${step === "product" ? "bg-white text-[#e11d48] shadow-sm" : "text-[#8c8c8c]"}`}>Meus Produtos</button>
-                <button onClick={() => setStep("custom")} className={`py-3 rounded-lg text-[10px] font-bold uppercase tracking-widest transition-all ${step === "custom" || step === "choose" ? "bg-white text-[#e11d48] shadow-sm" : "text-[#8c8c8c]"}`}>Valor Manual</button>
+                <button onClick={() => setStep("product")} className={cn("py-3 rounded-lg text-[10px] font-bold uppercase tracking-widest transition-all", step === "product" ? "bg-white text-[#e11d48] shadow-sm" : "text-[#8c8c8c]")}>Meus Produtos</button>
+                <button onClick={() => setStep("custom")} className={cn("py-3 rounded-lg text-[10px] font-bold uppercase tracking-widest transition-all", step === "custom" || step === "choose" ? "bg-white text-[#e11d48] shadow-sm" : "text-[#8c8c8c]")}>Valor Manual</button>
              </div>
 
              {step === "product" ? (

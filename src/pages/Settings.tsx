@@ -2,30 +2,26 @@ import { useState, useEffect } from "react";
 import { useAuth } from "../context/AuthContext";
 import * as api from "../lib/api";
 import Shell from "../components/Shell";
-import { LinkIcon, ArrowIcon, CameraIcon } from "../components/Icons";
+import { cn } from "../lib/utils";
+import { Camera, ArrowRight, LinkBreak, CheckCircle, Globe, Envelope, User } from "phosphor-react";
 import toast from "react-hot-toast";
-
 
 function Field({ label, id, hint, children }: { label: string; id: string; hint?: string; children: React.ReactNode }) {
   return (
-    <div>
-      <label htmlFor={id} className="mb-1.5 block text-xs font-semibold uppercase tracking-[0.16em] text-[#9f1239]">
+    <div className="space-y-1.5">
+      <label htmlFor={id} className="block text-[11px] font-bold uppercase tracking-[0.15em] text-[#8c8c8c]">
         {label}
       </label>
       {children}
-      {hint && <p className="mt-1.5 text-[11px] text-[#9f1239]/80">{hint}</p>}
+      {hint && <p className="text-[11px] text-[#8c8c8c]">{hint}</p>}
     </div>
   );
 }
-
-// --- Page Component ---
 
 export default function Settings() {
   const { profile, refresh } = useAuth();
   const [loading, setLoading] = useState(false);
   const [uploading, setUploading] = useState(false);
-
-
 
   const [formData, setFormData] = useState({
     full_name: "",
@@ -54,9 +50,9 @@ export default function Settings() {
         slug: formData.slug.trim().toLowerCase().replace(/[^a-z0-9-]/g, '-'),
       });
       await refresh();
-      alert("Perfil atualizado!");
+      toast.success("Perfil atualizado com sucesso!");
     } catch (err: any) {
-      alert(err.message);
+      toast.error(err.message);
     } finally {
       setLoading(false);
     }
@@ -72,13 +68,13 @@ export default function Settings() {
     }
 
     setUploading(true);
-    const tid = toast.loading("Enviando logo...");
+    const tid = toast.loading("Enviando imagem...");
     try {
       await api.uploadAvatar(profile.id, file);
       await refresh();
-      toast.success("Logo atualizada com sucesso!", { id: tid });
+      toast.success("Logo atualizada!", { id: tid });
     } catch (err: any) {
-      toast.error("Erro ao enviar imagem: " + err.message, { id: tid });
+      toast.error("Erro ao enviar: " + err.message, { id: tid });
     } finally {
       setUploading(false);
     }
@@ -95,70 +91,129 @@ export default function Settings() {
 
   return (
     <Shell>
-      <div className="space-y-5 sm:space-y-6">
+      <div className="space-y-8 a-fade pb-10">
+        {/* Header Section */}
         <div>
-          <p className="text-sm font-semibold uppercase tracking-[0.18em] text-[#e11d48]">Meu perfil</p>
-          <h1 className="mt-3 text-3xl font-semibold tracking-[-0.065em] text-[#4c0519] sm:text-5xl">Sua conta, seus dados.</h1>
-          <p className="mt-4 max-w-[560px] text-base leading-7 text-[#881337]">Atualize suas informações, seu slug público e conecte sua conta do Mercado Pago.</p>
+           <p className="text-[11px] font-bold uppercase tracking-[0.15em] text-[#8c8c8c]">Personalização</p>
+           <h1 className="text-[24px] lg:text-[28px] font-bold tracking-[-0.03em] text-[#1a1a2e] leading-tight mt-0.5">Configurações da Conta</h1>
+           <p className="text-[14px] text-[#71717a] mt-1.5">Gerencie seus dados, sua marca e conexões de pagamento.</p>
         </div>
-        <div className="grid gap-6 xl:grid-cols-[1fr_420px]">
-          <section className="rounded-3xl border border-[#fecdd3] bg-white p-4 shadow-[0_14px_36px_rgba(136,19,55,0.06)] sm:p-6 sm:shadow-[0_18px_50px_rgba(136,19,55,0.07)]">
-            <div className="mb-8 flex flex-col items-center gap-6 sm:flex-row">
-                <div className="relative group">
-                    <div className="h-24 w-24 overflow-hidden rounded-[2rem] border-4 border-[#fff1f2] bg-white shadow-xl sm:h-28 sm:w-28">
-                        {profile?.avatar_url ? (
-                            <img src={profile.avatar_url} alt="Logo" className="h-full w-full object-cover" />
-                        ) : (
-                            <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-[#881337] to-[#e11d48] text-3xl font-black text-white">
-                                {profile?.full_name?.slice(0, 2).toUpperCase()}
-                            </div>
-                        )}
-                    </div>
-                    <label className="absolute -bottom-2 -right-2 flex h-10 w-10 cursor-pointer items-center justify-center rounded-2xl bg-[#e11d48] text-white shadow-lg transition hover:scale-110 active:scale-95">
-                        <CameraIcon className="h-5 w-5" />
-                        <input type="file" className="hidden" accept="image/*" onChange={handleAvatarUpload} disabled={uploading} />
-                    </label>
-                </div>
-                <div>
-                    <h2 className="text-xl font-semibold tracking-[-0.04em] text-[#4c0519]">Sua marca</h2>
-                    <p className="mt-1 text-sm text-[#881337]/70">Essa imagem aparecerá em todas as suas cobranças e faturas.</p>
-                </div>
-            </div>
 
-            <hr className="mb-8 border-[#fecdd3]/50" />
+        <div className="grid gap-8 xl:grid-cols-[1fr_400px]">
+          {/* Main Profile Settings */}
+          <section className="a-up-1">
+             <div className="rounded-[18px] bg-white p-6 lg:p-8 shadow-sm border border-[#e8e8ec]">
+                
+                {/* Branding Section */}
+                <div className="flex flex-col sm:flex-row items-center gap-8 mb-10">
+                   <div className="relative group">
+                      <div className="h-24 w-24 overflow-hidden rounded-[24px] border-4 border-[#f8f7f5] bg-white shadow-md transition-all group-hover:shadow-lg">
+                          {profile?.avatar_url ? (
+                              <img src={profile.avatar_url} alt="Logo" className="h-full w-full object-cover" />
+                          ) : (
+                              <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-[#e11d48] to-[#be123c] text-2xl font-black text-white">
+                                  {profile?.full_name?.slice(0, 2).toUpperCase()}
+                              </div>
+                          )}
+                      </div>
+                      <label className="absolute -bottom-2 -right-2 flex h-9 w-9 cursor-pointer items-center justify-center rounded-xl bg-[#e11d48] text-white shadow-lg transition hover:scale-110 active:scale-95">
+                          <Camera size={18} weight="bold" />
+                          <input type="file" className="hidden" accept="image/*" onChange={handleAvatarUpload} disabled={uploading} />
+                      </label>
+                   </div>
+                   <div className="text-center sm:text-left">
+                      <h2 className="text-[18px] font-bold text-[#1a1a2e]">Identidade Visual</h2>
+                      <p className="text-[14px] text-[#8c8c8c] mt-1">Esta logo será exibida nos seus links de pagamento.</p>
+                   </div>
+                </div>
 
-            <h2 className="text-xl font-semibold tracking-[-0.04em] text-[#4c0519]">Informações pessoais</h2>
-            <form className="mt-5 grid gap-4 md:grid-cols-2" onSubmit={handleUpdate}>
-              <Field label="Nome completo" id="perfil-nome">
-                <input className="auth-input" value={formData.full_name} onChange={e => setFormData({...formData, full_name: e.target.value})} />
-              </Field>
-              <Field label="Email" id="perfil-email">
-                <input className="auth-input" value={formData.email} onChange={e => setFormData({...formData, email: e.target.value})} />
-              </Field>
-              <Field label="Slug da conta" id="perfil-slug" hint="Esse é seu endereço público de cobrança.">
-                <input className="auth-input" value={formData.slug} onChange={e => setFormData({...formData, slug: e.target.value})} />
-              </Field>
-              <Field label="Link público" id="perfil-link">
-                <input className="auth-input" readOnly value={`${window.location.origin}/${formData.slug}`} />
-              </Field>
-              <div className="md:col-span-2">
-                <button type="submit" disabled={loading} className="inline-flex items-center gap-2 rounded-full bg-[#e11d48] px-6 py-4 text-sm font-semibold text-white shadow-[0_18px_40px_rgba(225,29,72,0.28)] transition hover:-translate-y-0.5">
-                  {loading ? "Atualizando..." : "Atualizar dados"} <ArrowIcon />
-                </button>
-              </div>
-            </form>
+                <hr className="mb-8 border-[#e8e8ec]" />
+
+                {/* Form Section */}
+                <form className="grid gap-6 md:grid-cols-2" onSubmit={handleUpdate}>
+                   <div className="md:col-span-2">
+                      <h3 className="text-[15px] font-bold text-[#1a1a2e] mb-5">Dados Cadastrais</h3>
+                   </div>
+                   <Field label="Nome completo" id="perfil-nome">
+                      <div className="relative">
+                         <User size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-[#8c8c8c]" />
+                         <input 
+                           className="w-full bg-[#f8f7f5] border border-transparent rounded-xl py-3.5 pl-11 pr-4 text-[13px] font-bold focus:bg-white focus:border-[#e11d48] transition-all outline-none" 
+                           value={formData.full_name} onChange={e => setFormData({...formData, full_name: e.target.value})} />
+                      </div>
+                   </Field>
+                   <Field label="E-mail de contato" id="perfil-email">
+                      <div className="relative">
+                         <Envelope size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-[#8c8c8c]" />
+                         <input 
+                           className="w-full bg-[#f8f7f5] border border-transparent rounded-xl py-3.5 pl-11 pr-4 text-[13px] font-bold focus:bg-white focus:border-[#e11d48] transition-all outline-none" 
+                           value={formData.email} onChange={e => setFormData({...formData, email: e.target.value})} />
+                      </div>
+                   </Field>
+                   <Field label="Slug personalizado" id="perfil-slug" hint="Ex: cloudepay.com.br/seu-nome">
+                      <div className="relative">
+                         <Globe size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-[#8c8c8c]" />
+                         <input 
+                           className="w-full bg-[#f8f7f5] border border-transparent rounded-xl py-3.5 pl-11 pr-4 text-[13px] font-bold focus:bg-white focus:border-[#e11d48] transition-all outline-none" 
+                           value={formData.slug} onChange={e => setFormData({...formData, slug: e.target.value})} />
+                      </div>
+                   </Field>
+                   <Field label="Seu link público" id="perfil-link">
+                      <input 
+                        className="w-full bg-[#f8f7f5] border border-[#e8e8ec] rounded-xl py-3.5 px-4 text-[13px] font-medium text-[#8c8c8c] outline-none" 
+                        readOnly value={`${window.location.origin}/${formData.slug}`} />
+                   </Field>
+                   <div className="md:col-span-2 pt-4">
+                      <button type="submit" disabled={loading} className="inline-flex items-center gap-2 rounded-xl bg-[#e11d48] px-8 py-4 text-[13px] font-bold text-white shadow-lg shadow-rose-100 hover:bg-[#be123c] transition-all active:scale-[0.97]">
+                         {loading ? "Salvando..." : "Salvar Alterações"}
+                         <ArrowRight size={16} weight="bold" />
+                      </button>
+                   </div>
+                </form>
+             </div>
           </section>
-          <section className="rounded-3xl border border-[#fecdd3] bg-[#4c0519] p-4 text-white shadow-[0_18px_50px_rgba(76,5,25,0.18)] sm:p-6 sm:shadow-[0_24px_70px_rgba(76,5,25,0.2)]">
-            <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white/10 text-[#fb7185]"><LinkIcon className="h-5 w-5" /></span>
-            <h2 className="mt-5 text-2xl font-semibold tracking-[-0.05em]">Conectar Mercado Pago</h2>
-            <p className="mt-3 text-sm leading-6 text-white/70">Conecte sua conta para receber pagamentos PIX com confirmação automática, webhook validado e conciliação no painel.</p>
-            <div className="mt-5 rounded-2xl border border-white/10 bg-white/[0.06] p-4 text-sm text-white/75">
-              <p>Status: <span className="font-semibold text-[#fb7185]">{isConnected ? "conectado" : "não conectado"}</span></p>
-              <p className="mt-1">Conta: {isConnected ? "autorizada" : "aguardando autorização"}</p>
-            </div>
-            <button type="button" onClick={handleConnectMP} className="mt-5 inline-flex w-full items-center justify-center gap-2 rounded-full bg-white px-6 py-4 text-sm font-semibold text-[#4c0519] transition hover:-translate-y-0.5">
-              {isConnected ? "Trocar conta" : "Conectar conta"} <ArrowIcon />
-            </button>
+
+          {/* Connection Card */}
+          <section className="a-up-2">
+             <div className="rounded-[18px] bg-[#1a1a2e] p-8 text-white shadow-xl">
+                <div className="h-12 w-12 flex items-center justify-center rounded-[14px] bg-white/10 text-[#e11d48] mb-6">
+                   <LinkBreak size={24} weight="bold" />
+                </div>
+                <h2 className="text-[22px] font-bold tracking-tight mb-3">Gateway de Pagamento</h2>
+                <p className="text-[14px] text-white/60 leading-relaxed mb-8">
+                   Conecte sua conta do Mercado Pago para habilitar transações automáticas e recebimento instantâneo.
+                </p>
+
+                <div className="space-y-4 mb-8">
+                   <div className="flex items-center justify-between p-4 rounded-xl bg-white/5 border border-white/5">
+                      <div className="flex items-center gap-3">
+                         <div className={cn("w-2 h-2 rounded-full", isConnected ? "bg-emerald-500" : "bg-amber-500")} />
+                         <span className="text-[12px] font-medium text-white/80">Status da Conexão</span>
+                      </div>
+                      <span className={cn("text-[11px] font-bold uppercase tracking-wider", isConnected ? "text-emerald-500" : "text-amber-500")}>
+                         {isConnected ? "Ativo" : "Pendente"}
+                      </span>
+                   </div>
+                   {isConnected && (
+                      <div className="flex items-center gap-2 px-4 text-emerald-500">
+                         <CheckCircle size={14} weight="bold" />
+                         <span className="text-[12px] font-bold uppercase tracking-wider">Conta Validada</span>
+                      </div>
+                   )}
+                </div>
+
+                <button 
+                  type="button" 
+                  onClick={handleConnectMP} 
+                  className={cn(
+                    "w-full inline-flex items-center justify-center gap-2 rounded-xl px-6 py-4 text-[13px] font-bold transition-all active:scale-[0.97]",
+                    isConnected ? "bg-white/10 text-white hover:bg-white/20" : "bg-white text-[#1a1a2e] hover:bg-gray-100 shadow-lg"
+                  )}
+                >
+                   {isConnected ? "Alternar Conta" : "Conectar agora"}
+                   <ArrowRight size={16} weight="bold" />
+                </button>
+             </div>
           </section>
         </div>
       </div>
