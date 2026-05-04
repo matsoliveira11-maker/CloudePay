@@ -1,0 +1,57 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Sora", ui-sans-serif, system-ui, -apple-system, sans-serif;
+}
+
+html, body, #root { height: 100%; }
+
+body {
+  font-family: var(--font-sans);
+  font-feature-settings: "cv02","cv03","cv04","cv11","tnum";
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+  background: #f8f7f5;
+  color: #1a1a2e;
+  line-height: 1.5;
+}
+
+::selection { background: #fecdd3; color: #be123c; }
+
+::-webkit-scrollbar { width: 5px; }
+::-webkit-scrollbar-thumb { background: #e8e8ec; border-radius: 99px; }
+
+*:focus-visible { outline: 2px solid #e11d48; outline-offset: 2px; border-radius: 6px; }
+
+input[type=number]::-webkit-outer-spin-button,
+input[type=number]::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+input[type=number] { -moz-appearance: textfield; }
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+@keyframes scaleIn {
+  from { opacity: 0; transform: scale(0.96); }
+  to   { opacity: 1; transform: scale(1); }
+}
+
+.a-up    { animation: fadeUp 0.4s cubic-bezier(0.16,1,0.3,1) both; }
+.a-up-1  { animation: fadeUp 0.4s cubic-bezier(0.16,1,0.3,1) 0.05s both; }
+.a-up-2  { animation: fadeUp 0.4s cubic-bezier(0.16,1,0.3,1) 0.10s both; }
+.a-up-3  { animation: fadeUp 0.4s cubic-bezier(0.16,1,0.3,1) 0.15s both; }
+.a-up-4  { animation: fadeUp 0.4s cubic-bezier(0.16,1,0.3,1) 0.20s both; }
+.a-up-5  { animation: fadeUp 0.4s cubic-bezier(0.16,1,0.3,1) 0.25s both; }
+.a-fade  { animation: fadeIn 0.3s ease both; }
+.a-scale { animation: scaleIn 0.3s cubic-bezier(0.16,1,0.3,1) both; }
+
+.num {
+  font-family: "Sora", ui-sans-serif, system-ui, -apple-system, sans-serif;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.035em;
+}

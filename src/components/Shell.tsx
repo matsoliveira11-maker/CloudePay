@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
-import Logo from "./Logo";
+import LogoMark from "./LogoMark";
 import SupportWidget from "./SupportWidget";
 import { 
   Layout, 
@@ -13,10 +13,15 @@ import {
   SignOut,
   Bell,
   Plus,
-  List,
   X,
   Question
 } from "phosphor-react";
+import { clsx } from "clsx";
+import { twMerge } from "tailwind-merge";
+
+function cn(...inputs: any[]) {
+  return twMerge(clsx(inputs));
+}
 
 interface ShellProps {
   children: React.ReactNode;
@@ -30,139 +35,161 @@ export default function Shell({ children }: ShellProps) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const menuItems = [
-    { label: "Dashboard", Icon: Layout, path: "/painel", active: location.pathname === "/painel" },
-    { label: "Cobranças", Icon: Receipt, path: "/cobrancas", active: location.pathname === "/cobrancas" },
-    { label: "Produtos", Icon: Package, path: "/produtos", active: location.pathname === "/produtos" },
-    { label: "Relatórios", Icon: ChartBar, path: "/relatorios", active: location.pathname === "/relatorios" },
+    { id: "dashboard", label: "Dashboard", Icon: Layout, path: "/painel" },
+    { id: "cobrancas", label: "Cobranças", Icon: Receipt, path: "/cobrancas" },
+    { id: "produtos", label: "Produtos", Icon: Package, path: "/produtos" },
+    { id: "relatorios", label: "Relatórios", Icon: ChartBar, path: "/relatorios" },
   ];
 
   const bottomItems = [
-    { label: "Perfil", Icon: User, path: "/perfil", active: location.pathname === "/perfil" },
-    { label: "Ajustes", Icon: Gear, path: "/configuracoes", active: location.pathname === "/configuracoes" },
+    { id: "perfil", label: "Perfil", Icon: User, path: "/perfil" },
+    { id: "config", label: "Ajustes", Icon: Gear, path: "/configuracoes" },
   ];
 
+  const handleCreateCharge = () => {
+    window.dispatchEvent(new CustomEvent("open-create-charge"));
+  };
+
   return (
-    <div className="flex min-h-screen bg-[#FDFDFD]">
+    <div className="flex min-h-screen" style={{ background: "#f8f7f5" }}>
       {/* Sidebar - Desktop */}
-      <aside className="fixed inset-y-0 left-0 z-50 hidden w-72 flex-col bg-white border-r border-gray-100 lg:flex shadow-[4px_0_24px_rgba(0,0,0,0.02)]">
-        <div className="flex h-24 items-center px-10">
-          <Logo size="md" />
+      <aside className="fixed inset-y-0 left-0 z-50 hidden w-[68px] xl:w-[220px] shrink-0 flex-col bg-white lg:flex"
+        style={{ borderRight: "1px solid #fce4ec" }}>
+        
+        {/* Brand */}
+        <div className="flex items-center justify-center xl:justify-start xl:px-5 h-16"
+          style={{ borderBottom: "1px solid #fce4ec" }}>
+          <LogoMark className="w-9 h-9 shrink-0" />
+          <span className="hidden xl:block ml-3 text-[15px] font-bold tracking-[-0.03em] text-[#1a1a2e]">CloudePay</span>
         </div>
 
-        <div className="flex flex-1 flex-col justify-between px-6 py-6">
-          <nav className="space-y-1.5">
-            {menuItems.map((item) => (
+        {/* Nav */}
+        <nav className="flex-1 px-2 pt-3 space-y-0.5">
+          {menuItems.map((item) => {
+            const on = location.pathname === item.path;
+            return (
               <Link
-                key={item.path}
+                key={item.id}
                 to={item.path}
-                className={`flex items-center gap-3.5 rounded-2xl px-5 py-4 text-[11px] font-black uppercase tracking-[0.15em] transition-all duration-300 ${
-                  item.active 
-                    ? "bg-[#e11d48] text-white shadow-xl shadow-rose-200" 
-                    : "text-gray-400 hover:bg-gray-50 hover:text-gray-600"
-                }`}
+                className={cn(
+                  "w-full flex items-center justify-center xl:justify-start gap-3 px-3 py-2.5 rounded-lg text-[12px] font-medium transition-all duration-200",
+                  on ? "text-white shadow-[0_2px_8px_rgba(225,29,72,0.3)]" : "text-[#8c8c8c] hover:text-[#e11d48] hover:bg-[#fff1f2]"
+                )}
+                style={on ? { background: "linear-gradient(135deg, #e11d48, #be123c)" } : undefined}
               >
-                <item.Icon size={20} weight={item.active ? "bold" : "regular"} />
-                {item.label}
+                <item.Icon size={18} weight={on ? "bold" : "regular"} />
+                <span className="hidden xl:block">{item.label}</span>
               </Link>
-            ))}
-          </nav>
+            );
+          })}
+        </nav>
 
-          <div className="space-y-1.5 border-t border-gray-50 pt-8">
-            {bottomItems.map((item) => (
+        {/* Footer */}
+        <div className="px-2 pb-4 space-y-0.5">
+          <div className="h-px mb-3 mx-2" style={{ background: "#fce4ec" }} />
+          
+          <button
+            onClick={() => setSupportOpen(true)}
+            className="w-full flex items-center justify-center xl:justify-start gap-3 px-3 py-2.5 rounded-lg text-[12px] text-[#8c8c8c] hover:text-[#e11d48] hover:bg-[#fff1f2] transition-colors"
+          >
+            <Question size={18} weight="regular" />
+            <span className="hidden xl:block">Suporte</span>
+          </button>
+
+          {bottomItems.map((item) => {
+             const on = location.pathname === item.path;
+             return (
               <Link
-                key={item.path}
+                key={item.id}
                 to={item.path}
-                className={`flex items-center gap-3.5 rounded-2xl px-5 py-4 text-[11px] font-black uppercase tracking-[0.15em] transition-all duration-300 ${
-                  item.active 
-                    ? "bg-[#e11d48] text-white shadow-xl shadow-rose-200" 
-                    : "text-gray-400 hover:bg-gray-50 hover:text-gray-600"
-                }`}
+                className={cn(
+                  "w-full flex items-center justify-center xl:justify-start gap-3 px-3 py-2.5 rounded-lg text-[12px] font-medium transition-all duration-200",
+                  on ? "text-white shadow-[0_2px_8px_rgba(225,29,72,0.3)]" : "text-[#8c8c8c] hover:text-[#e11d48] hover:bg-[#fff1f2]"
+                )}
+                style={on ? { background: "linear-gradient(135deg, #e11d48, #be123c)" } : undefined}
               >
-                <item.Icon size={20} weight={item.active ? "bold" : "regular"} />
-                {item.label}
+                <item.Icon size={18} weight={on ? "bold" : "regular"} />
+                <span className="hidden xl:block">{item.label}</span>
               </Link>
-            ))}
-            <button
-              onClick={() => setSupportOpen(true)}
-              className="flex w-full items-center gap-3.5 rounded-2xl px-5 py-4 text-[11px] font-black uppercase tracking-[0.15em] text-gray-400 hover:bg-gray-50 hover:text-gray-600 transition-all"
-            >
-              <Question size={20} />
-              Suporte
-            </button>
-            <button
-              onClick={() => signOut().then(() => navigate("/login"))}
-              className="flex w-full items-center gap-3.5 rounded-2xl px-5 py-4 text-[11px] font-black uppercase tracking-[0.15em] text-gray-400 hover:bg-rose-50 hover:text-[#e11d48] transition-all"
-            >
-              <SignOut size={20} />
-              Sair
-            </button>
-          </div>
+             );
+          })}
+
+          <button
+            onClick={() => signOut().then(() => navigate("/login"))}
+            className="w-full flex items-center justify-center xl:justify-start gap-3 px-3 py-2.5 rounded-lg text-[12px] text-[#8c8c8c] hover:text-[#e11d48] hover:bg-[#fff1f2] transition-colors"
+          >
+            <SignOut size={18} />
+            <span className="hidden xl:block">Sair</span>
+          </button>
         </div>
       </aside>
 
       {/* Main Wrapper */}
-      <div className="flex flex-1 flex-col lg:pl-72">
-        {/* Header */}
-        <header className="sticky top-0 z-40 flex h-20 items-center justify-between border-b border-gray-100 bg-white/80 px-6 backdrop-blur-xl lg:px-10">
-          <button 
-            onClick={() => setMobileMenuOpen(true)}
-            className="flex h-10 w-10 items-center justify-center rounded-xl bg-gray-50 text-gray-400 lg:hidden"
-          >
-            <List size={22} weight="bold" />
-          </button>
-
-          <div className="hidden lg:block">
-             <p className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-300">Overview</p>
-             <h2 className="text-sm font-black text-[#1A1A1A] mt-0.5">Olá, Bem-vindo de volta!</h2>
+      <div className="flex flex-1 flex-col lg:pl-[68px] xl:pl-[220px]">
+        {/* Topbar */}
+        <header className="sticky top-0 z-30 h-14 flex items-center justify-between px-4 sm:px-6 lg:px-8 bg-white/70 backdrop-blur-xl"
+          style={{ borderBottom: "1px solid #fce4ec" }}>
+          
+          <div className="flex items-center gap-3">
+            <button onClick={() => setMobileMenuOpen(true)} className="lg:hidden">
+               <LogoMark className="w-8 h-8" />
+            </button>
+            <h1 className="text-[17px] font-semibold tracking-tight text-[#1a1a2e]">
+               {menuItems.find(i => i.path === location.pathname)?.label || "Dashboard"}
+            </h1>
           </div>
 
-          <div className="flex items-center gap-4 lg:gap-6">
-            <button className="relative flex h-10 w-10 items-center justify-center rounded-xl text-gray-400 transition-colors hover:bg-gray-50 hover:text-[#e11d48]">
-              <Bell size={22} />
-              <span className="absolute top-2.5 right-2.5 h-2 w-2 rounded-full bg-[#e11d48] border-2 border-white" />
-            </button>
-            <div className="h-8 w-px bg-gray-100" />
-            <button 
-              onClick={() => window.dispatchEvent(new CustomEvent("open-create-charge"))}
-              className="flex items-center gap-2 rounded-full bg-[#e11d48] px-6 py-3 text-[10px] font-black uppercase tracking-[0.2em] text-white shadow-2xl shadow-rose-200 transition-all hover:scale-105 active:scale-95"
-            >
+          <div className="flex items-center gap-2">
+            <button
+              onClick={handleCreateCharge}
+              className="hidden sm:flex items-center gap-1.5 px-4 py-2 rounded-xl text-[12px] font-semibold text-white transition-all active:scale-[0.97]"
+              style={{ background: "linear-gradient(135deg, #e11d48, #be123c)", boxShadow: "0 2px 8px rgba(225,29,72,0.25)" }}>
               <Plus size={16} weight="bold" />
-              <span className="hidden sm:inline">Nova Cobrança</span>
+              Nova cobrança
+            </button>
+            <button className="relative w-9 h-9 rounded-full flex items-center justify-center hover:bg-[#fff1f2] transition-colors">
+              <Bell size={18} className="text-[#8c8c8c]" />
             </button>
           </div>
         </header>
 
-        {/* Page Content */}
-        <main className="flex-1 overflow-x-hidden">
-          <div className="mx-auto w-full max-w-[1400px] p-6 lg:p-10">
-             {children}
-          </div>
+        {/* Content */}
+        <main className="flex-1 p-4 sm:p-6 lg:p-8 max-w-[1320px] w-full mx-auto">
+          {children}
         </main>
       </div>
 
-      {/* Mobile Sidebar Overlay */}
+      {/* Mobile Menu Overlay */}
       {mobileMenuOpen && (
         <div className="fixed inset-0 z-[100] lg:hidden">
           <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={() => setMobileMenuOpen(false)} />
-          <aside className="absolute inset-y-0 left-0 w-80 bg-white p-8 animate-in slide-in-from-left duration-300">
-            <div className="flex items-center justify-between mb-12">
-               <Logo size="md" />
-               <button onClick={() => setMobileMenuOpen(false)} className="text-gray-400"><X size={24} weight="bold" /></button>
+          <aside className="absolute inset-y-0 left-0 w-72 bg-white flex flex-col animate-in slide-in-from-left duration-300">
+            <div className="flex h-16 items-center px-6 border-b border-[#fce4ec]">
+               <LogoMark className="w-8 h-8" />
+               <span className="ml-3 text-lg font-bold text-[#1a1a2e]">CloudePay</span>
+               <button onClick={() => setMobileMenuOpen(false)} className="ml-auto text-gray-400">
+                  <X size={24} />
+               </button>
             </div>
-            <nav className="space-y-2">
-              {menuItems.concat(bottomItems).map((item) => (
-                <Link
-                  key={item.path}
-                  to={item.path}
-                  onClick={() => setMobileMenuOpen(false)}
-                  className={`flex items-center gap-4 rounded-2xl px-6 py-4 text-xs font-black uppercase tracking-widest ${
-                    item.active ? "bg-[#e11d48] text-white shadow-xl shadow-rose-200" : "text-gray-400"
-                  }`}
-                >
-                  <item.Icon size={22} />
-                  {item.label}
-                </Link>
-              ))}
+            <nav className="flex-1 px-4 py-6 space-y-1">
+              {menuItems.concat(bottomItems).map((item) => {
+                const on = location.pathname === item.path;
+                return (
+                  <Link
+                    key={item.id}
+                    to={item.path}
+                    onClick={() => setMobileMenuOpen(false)}
+                    className={cn(
+                      "flex items-center gap-4 px-4 py-3.5 rounded-xl text-sm font-semibold transition-all",
+                      on ? "text-white" : "text-[#8c8c8c]"
+                    )}
+                    style={on ? { background: "linear-gradient(135deg, #e11d48, #be123c)" } : undefined}
+                  >
+                    <item.Icon size={22} weight={on ? "bold" : "regular"} />
+                    {item.label}
+                  </Link>
+                );
+              })}
             </nav>
           </aside>
         </div>
