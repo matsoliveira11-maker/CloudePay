@@ -56,7 +56,6 @@ const TABS: { id: "all" | ChargeStatusLocal; label: string }[] = [
 
 export default function Dashboard() {
   const { profile } = useAuth();
-  const navigate = useNavigate();
   const [charges, setCharges] = useState<Charge[]>([]);
   const [stats, setStats] = useState({ monthNet: 0, monthGross: 0, totalNet: 0, totalGross: 0 });
   const [period, setPeriod] = useState<PeriodFilter>("month");
@@ -508,7 +507,6 @@ function StatusDot({ status }: { status: string }) {
 
 function MobileRow({ charge: c }: { charge: Charge }) {
   const net = (c.amount_cents / 100) * 0.99;
-  const isIncoming = c.status === "paid";
   return (
     <li className="flex items-center gap-4 px-5 py-4 hover:bg-[#f8f7f5] transition-all">
       <Avatar name={c.payer_name || "CF"} />
