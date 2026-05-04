@@ -98,21 +98,23 @@ export default function Dashboard() {
 
   return (
     <Shell>
-      <div className="space-y-8 a-fade pb-10">
+      <div className="space-y-8 pb-10">
         
         {/* CTA Banner Section */}
-        <CtaBanner name={profile?.full_name?.split(' ')[0] || "Usuário"} />
+        <div>
+           <CtaBanner name={profile?.full_name?.split(' ')[0] || "Usuário"} />
+        </div>
 
         {/* Filters and KPI Row */}
         <div className="space-y-4">
-           <div className="flex justify-start">
-              <div className="flex gap-1 bg-white p-1 rounded-xl border border-[#e8e8ec]">
+           <div className="flex justify-start px-1 sm:px-0">
+              <div className="flex gap-1 bg-white p-1 rounded-xl border border-[#e8e8ec] w-full sm:w-auto">
                 {(["today", "month", "all"] as const).map((p) => (
                   <button
                     key={p}
                     onClick={() => setPeriod(p)}
                     className={cn(
-                      "px-4 py-2 text-[10px] sm:text-[11px] font-bold uppercase tracking-widest rounded-lg transition-all",
+                      "flex-1 sm:flex-none px-4 py-2 text-[10px] sm:text-[11px] font-bold uppercase tracking-widest rounded-lg transition-all",
                       period === p ? "bg-[#e11d48] text-white shadow-md" : "text-[#8c8c8c] hover:text-[#e11d48]"
                     )}
                   >
@@ -122,7 +124,7 @@ export default function Dashboard() {
               </div>
            </div>
 
-           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 a-up-1">
+           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               <KpiCard label="Total em vendas" value={formatBRL(kpis.gross)} icon={<TrendUp size={18} weight="bold" />} accent />
               <KpiCard label="Transações" value={String(kpis.count)} icon={<Receipt size={18} weight="bold" />} />
               <KpiCard label="Ticket Médio" value={formatBRL(kpis.avg)} icon={<ArrowCircleUp size={18} weight="bold" />} />
@@ -285,15 +287,14 @@ function PerformanceChart({ charges }: { charges: Charge[] }) {
   }, [charges]);
 
   return (
-    <div className="rounded-[14px] p-5 lg:p-6 bg-white transition-all duration-200 hover:shadow-md"
-      style={{ border: "1px solid #fce4ec" }}>
+    <div className="rounded-[20px] p-5 sm:p-6 bg-white border border-[#fce4ec] transition-all duration-200 hover:shadow-md">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
         <div className="flex items-center gap-2">
           <TrendUp size={18} className="text-[#e11d48]" weight="bold" />
           <h3 className="text-[14px] font-bold text-[#1a1a2e]">Desempenho de vendas</h3>
         </div>
       </div>
-      <div className="h-[220px] sm:h-[280px] lg:h-[320px] -mx-2">
+      <div className="h-[220px] sm:h-[280px] lg:h-[320px] w-full">
         <ResponsiveContainer width="100%" height="100%">
           <AreaChart data={data} margin={{ top: 4, right: 4, left: 0, bottom: 0 }}>
             <defs>
@@ -332,13 +333,12 @@ function TicketEvolutionChart({ charges }: { charges: Charge[] }) {
   }, [charges]);
 
   return (
-    <div className="rounded-[14px] p-5 lg:p-6 bg-white transition-all duration-200 hover:shadow-md"
-      style={{ border: "1px solid #fce4ec" }}>
-      <div className="flex items-center gap-2 mb-5">
+    <div className="rounded-[20px] p-5 sm:p-6 bg-white border border-[#fce4ec] transition-all duration-200 hover:shadow-md">
+      <div className="flex items-center gap-2 mb-6">
         <ArrowCircleUp size={18} className="text-[#e11d48]" weight="bold" />
         <h3 className="text-[14px] font-bold text-[#1a1a2e]">Evolução do Ticket Médio</h3>
       </div>
-      <div className="h-[200px] -mx-2">
+      <div className="h-[220px] sm:h-[280px] lg:h-[320px] w-full">
         <ResponsiveContainer width="100%" height="100%">
           <LineChart data={data} margin={{ top: 4, right: 4, left: 0, bottom: 0 }}>
             <XAxis dataKey="name" tickLine={false} axisLine={false} tick={{ fill: "#8c8c8c", fontSize: 11 }} dy={6} />
@@ -369,8 +369,7 @@ function StatusDistribution({ charges }: { charges: Charge[] }) {
   ] : [{ name: "Vazio", value: 1, color: "#f8f7f5" }];
 
   return (
-    <div className="rounded-[14px] p-5 lg:p-6 bg-white transition-all duration-200 hover:shadow-md h-full"
-      style={{ border: "1px solid #fce4ec" }}>
+    <div className="rounded-[20px] p-5 sm:p-6 bg-white border border-[#fce4ec] transition-all duration-200 hover:shadow-md h-full">
       <div className="flex items-center gap-2 mb-5">
         <ChartPie size={18} className="text-[#e11d48]" weight="bold" />
         <h3 className="text-[14px] font-bold text-[#1a1a2e]">Distribuição por status</h3>
@@ -420,7 +419,7 @@ function SalesHistory({ charges }: { charges: Charge[] }) {
   }, [charges, tab, search]);
 
   return (
-    <div className="a-up-6">
+    <div>
       <div className="flex flex-col sm:flex-row sm:items-end gap-4 sm:justify-between mb-5">
         <div>
            <p className="text-[11px] font-semibold uppercase tracking-[0.15em] text-[#8c8c8c]">Histórico de vendas</p>

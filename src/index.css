@@ -18,7 +18,8 @@ html, body {
   margin: 0;
   padding: 0;
   width: 100%;
-  min-width: 100%;
+  max-width: 100vw;
+  min-height: 100%;
   overflow-x: hidden;
   font-family: "Sora", sans-serif;
   background-color: #f8f7f5;
@@ -27,6 +28,7 @@ html, body {
 
 * {
   box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
 }
 
 button,
@@ -36,6 +38,7 @@ textarea,
 h1, h2, h3, h4, h5, h6, p, span, div {
   font-family: "Sora", sans-serif;
 }
+
 
 /* ===========================================================
    CUSTOM SCROLLBAR (OLED MASTERY)
@@ -785,21 +788,16 @@ summary {
 }
 
 /* Mobile first: menos camadas animadas, sem tilt pesado e sem overflow lateral. */
-@media (max-width: 767px) {
-  .page-grid {
-    background-size: 92px 92px;
-  }
-
+@media (max-width: 1023px) {
   .section-frame {
-    border-left: 0;
-    border-right: 0;
+    border-left: 0 !important;
+    border-right: 0 !important;
+    max-width: 100% !important;
+    margin-inline: 0 !important;
   }
 
   .perspective-stage,
-  .auth-card-wrap {
-    perspective: none;
-  }
-
+  .auth-card-wrap,
   .tilt-3d,
   .dashboard-shell,
   .phone-mock,
@@ -809,22 +807,23 @@ summary {
   .calc-3d,
   .auth-card,
   .suite-icon-tile,
-  .icon-3d {
+  .icon-3d,
+  .pill-3d,
+  .testimonial-card {
+    perspective: none !important;
     animation: none !important;
     transform: none !important;
-  }
-
-  .dashboard-shell,
-  .calc-3d,
-  .auth-card,
-  .card-tilt-left,
-  .card-tilt-right {
-    will-change: auto;
+    transition: none !important;
+    will-change: auto !important;
   }
 
   .hero-visual::before {
-    animation: none;
-    filter: blur(30px);
-    opacity: 0.6;
+    animation: none !important;
+    filter: blur(40px) !important;
+    opacity: 0.5 !important;
+    inset: 0 !important;
+    width: 100% !important;
+    height: 100% !important;
   }
 }
+
