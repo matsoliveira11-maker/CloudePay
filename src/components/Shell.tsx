@@ -90,21 +90,21 @@ export default function Shell({ children }: ShellProps) {
       {/* Main Content Area */}
       <div className="flex flex-1 flex-col lg:pl-64">
         {/* Header */}
-        <header className="sticky top-0 z-40 h-20 border-b border-gray-100 bg-white/80 backdrop-blur-xl">
-          <div className="flex h-full items-center justify-between px-4 sm:px-8">
-            <h1 className="text-xl font-bold text-[#1A1A1A]">Dashboard</h1>
-            
-            <div className="flex items-center gap-4">
+        <header className="sticky top-0 z-40 flex h-16 shrink-0 items-center gap-x-4 border-b border-gray-100 bg-white/80 px-4 backdrop-blur-md sm:gap-x-6 sm:px-6 lg:px-8">
+          <div className="flex flex-1 gap-x-4 self-stretch lg:gap-x-6 items-center">
+            <div className="flex-1" />
+            <div className="flex items-center gap-x-4 lg:gap-x-6">
+              <button className="relative p-2.5 text-gray-400 hover:text-[#e11d48] transition-colors">
+                <Bell size={22} />
+                <span className="absolute top-2 right-2 h-2 w-2 rounded-full bg-[#e11d48] border-2 border-white" />
+              </button>
+              <div className="h-6 w-px bg-gray-100" />
               <button 
                 onClick={handleCreateCharge}
-                className="flex items-center gap-2 rounded-full bg-[#e11d48] px-5 py-2.5 text-sm font-bold text-white shadow-lg shadow-rose-500/20 transition-all hover:bg-[#be123c] active:scale-95"
+                className="flex items-center gap-2 rounded-full bg-[#e11d48] px-5 py-2.5 text-[11px] font-black uppercase tracking-widest text-white shadow-lg shadow-rose-200 hover:scale-105 active:scale-95 transition-all"
               >
-                <Plus size={18} weight="bold" />
-                Nova cobrança
-              </button>
-              
-              <button className="flex h-10 w-10 items-center justify-center rounded-full bg-gray-50 text-gray-400 transition-all hover:bg-gray-100 hover:text-gray-600">
-                <Bell size={20} />
+                <Plus size={16} weight="bold" />
+                <span className="hidden sm:inline">Nova cobrança</span>
               </button>
             </div>
           </div>
