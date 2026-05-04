@@ -4,7 +4,6 @@ import * as api from "../lib/api";
 import { formatBRL, maskBRLInput, parseBRLToCents } from "../lib/format";
 import { sanitizeText } from "../lib/validators";
 import Shell from "../components/Shell";
-import { cn } from "../lib/utils";
 import { Package, Plus, Trash, ArrowRight } from "phosphor-react";
 
 function Field({ label, id, hint, children }: { label: string; id: string; hint?: string; children: React.ReactNode }) {

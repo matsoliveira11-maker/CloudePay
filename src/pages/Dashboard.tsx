@@ -24,8 +24,7 @@ import {
   TelegramLogo,
   ShareNetwork,
   X,
-  ArrowRight,
-  Plus
+  ArrowRight
 } from "phosphor-react";
 import { 
   Area, 
@@ -44,13 +43,13 @@ import {
 import QRCode from "qrcode";
 
 type PeriodFilter = "today" | "month" | "all";
-type ChargeStatus = "paid" | "pending" | "canceled";
+type ChargeStatusLocal = "paid" | "pending" | "expired";
 
-const TABS: { id: "all" | ChargeStatus; label: string }[] = [
+const TABS: { id: "all" | ChargeStatusLocal; label: string }[] = [
   { id: "all", label: "Todas" },
   { id: "paid", label: "Pagas" },
   { id: "pending", label: "Pendentes" },
-  { id: "canceled", label: "Canceladas" },
+  { id: "expired", label: "Canceladas" },
 ];
 
 // --- Main Page Component ---
@@ -347,12 +346,12 @@ function TicketEvolutionChart({ charges }: { charges: Charge[] }) {
 function StatusDistribution({ charges }: { charges: Charge[] }) {
   const paid = charges.filter(c => c.status === "paid").length;
   const pending = charges.filter(c => c.status === "pending").length;
-  const canceled = charges.filter(c => c.status === "canceled").length;
+  const expired = charges.filter(c => c.status === "expired").length;
   const total = charges.length;
   const data = total ? [
     { name: "Pago", value: paid, color: "#e11d48" },
     { name: "Pendente", value: pending, color: "#f59e0b" },
-    { name: "Cancelado", value: canceled, color: "#d4d4d8" }
+    { name: "Expirado", value: expired, color: "#d4d4d8" }
   ] : [{ name: "Vazio", value: 1, color: "#f8f7f5" }];
 
   return (
@@ -379,7 +378,7 @@ function StatusDistribution({ charges }: { charges: Charge[] }) {
             {[
                { label: "Pago", value: paid, color: "#e11d48" },
                { label: "Pendente", value: pending, color: "#f59e0b" },
-               { label: "Cancelado", value: canceled, color: "#d4d4d8" },
+               { label: "Expirado", value: expired, color: "#d4d4d8" },
             ].map(item => (
                <div key={item.label} className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
@@ -396,7 +395,7 @@ function StatusDistribution({ charges }: { charges: Charge[] }) {
 }
 
 function SalesHistory({ charges }: { charges: Charge[] }) {
-  const [tab, setTab] = useState<"all" | ChargeStatus>("all");
+  const [tab, setTab] = useState<"all" | ChargeStatusLocal>("all");
   const [search, setSearch] = useState("");
 
   const filtered = useMemo(() => {
@@ -489,7 +488,7 @@ function StatusDot({ status }: { status: string }) {
   const colors: Record<string, string> = {
     paid: "#e11d48",
     pending: "#f59e0b",
-    canceled: "#d4d4d8",
+    expired: "#d4d4d8",
   };
   return <span className="w-1.5 h-1.5 rounded-full shrink-0" style={{ background: colors[status] || "#d4d4d8" }} />;
 }
@@ -516,7 +515,7 @@ function MobileRow({ charge: c }: { charge: Charge }) {
           <p className="text-[11px] text-[#8c8c8c]">{c.payer_name || "Cliente Final"} · {formatDate(c.created_at)}</p>
           <span className="flex items-center gap-1.5 text-[11px] text-[#5c5c6d]">
             <StatusDot status={c.status} />
-            {c.status === 'paid' ? 'Pago' : c.status === 'pending' ? 'Pendente' : 'Cancelado'}
+            {c.status === 'paid' ? 'Pago' : c.status === 'pending' ? 'Pendente' : 'Expirado'}
           </span>
         </div>
       </div>
@@ -545,7 +544,7 @@ function DesktopRow({ charge: c }: { charge: Charge }) {
       <td className="px-6 py-3">
         <span className="flex items-center gap-1.5 text-[12px] text-[#5c5c6d]">
           <StatusDot status={c.status} />
-          {c.status === 'paid' ? 'Pago' : c.status === 'pending' ? 'Pendente' : 'Cancelado'}
+          {c.status === 'paid' ? 'Pago' : c.status === 'pending' ? 'Pendente' : 'Expirado'}
         </span>
       </td>
       <td className="px-6 py-3 text-right text-[13px] text-[#5c5c6d] num">{formatBRL(c.amount_cents)}</td>

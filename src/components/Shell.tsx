@@ -1,38 +1,23 @@
 import React, { useState } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
-import LogoMark from "./LogoMark";
+import Logo from "./Logo";
 import SupportWidget from "./SupportWidget";
 import { cn } from "../lib/utils";
 import { 
   Layout, 
-  Receipt, 
   Package, 
-  ChartBar, 
   Gear, 
   User, 
   SignOut,
   Bell,
   Plus,
   X,
-  Question,
-  Flask
+  Question
 } from "phosphor-react";
 
 interface ShellProps {
   children: React.ReactNode;
-}
-
-function SandboxBanner() {
-  return (
-    <div className="w-full flex items-center justify-center gap-2.5 px-4 sm:px-6 py-2"
-      style={{ background: "linear-gradient(135deg, #fecdd3 0%, #fda4af 100%)" }}>
-      <div className="w-5 h-5 rounded-full bg-white/30 flex items-center justify-center">
-        <Flask size={12} weight="bold" className="text-[#be123c]" />
-      </div>
-      <span className="text-[12px] font-medium text-[#be123c]">Sandbox Mode · Você está em um ambiente de teste</span>
-    </div>
-  );
 }
 
 export default function Shell({ children }: ShellProps) {
@@ -44,9 +29,7 @@ export default function Shell({ children }: ShellProps) {
 
   const menuItems = [
     { id: "dashboard", label: "Dashboard", Icon: Layout, path: "/painel" },
-    { id: "cobrancas", label: "Cobranças", Icon: Receipt, path: "/cobrancas" },
     { id: "produtos", label: "Produtos", Icon: Package, path: "/produtos" },
-    { id: "relatorios", label: "Relatórios", Icon: ChartBar, path: "/relatorios" },
   ];
 
   const bottomItems = [
@@ -67,7 +50,7 @@ export default function Shell({ children }: ShellProps) {
         {/* Brand */}
         <div className="flex items-center justify-center xl:justify-start xl:px-5 h-16"
           style={{ borderBottom: "1px solid #fce4ec" }}>
-          <LogoMark className="w-9 h-9 shrink-0" />
+          <Logo size="sm" className="shrink-0" />
           <span className="hidden xl:block ml-3 text-[15px] font-bold tracking-[-0.03em] text-[#1a1a2e]">CloudePay</span>
         </div>
 
@@ -134,15 +117,13 @@ export default function Shell({ children }: ShellProps) {
 
       {/* Main Wrapper */}
       <div className="flex flex-1 flex-col lg:pl-[68px] xl:pl-[220px]">
-        <SandboxBanner />
-        
         {/* Topbar */}
         <header className="sticky top-0 z-30 h-14 flex items-center justify-between px-4 sm:px-6 lg:px-8 bg-white/70 backdrop-blur-xl"
           style={{ borderBottom: "1px solid #fce4ec" }}>
           
           <div className="flex items-center gap-3">
             <button onClick={() => setMobileMenuOpen(true)} className="lg:hidden">
-               <LogoMark className="w-8 h-8" />
+               <Logo size="xs" />
             </button>
             <h1 className="text-[17px] font-semibold tracking-tight text-[#1a1a2e]">
                {menuItems.find(i => i.path === location.pathname)?.label || "Dashboard"}
@@ -175,7 +156,7 @@ export default function Shell({ children }: ShellProps) {
           <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={() => setMobileMenuOpen(false)} />
           <aside className="absolute inset-y-0 left-0 w-72 bg-white flex flex-col animate-in slide-in-from-left duration-300">
             <div className="flex h-16 items-center px-6 border-b border-[#fce4ec]">
-               <LogoMark className="w-8 h-8" />
+               <Logo size="sm" />
                <span className="ml-3 text-lg font-bold text-[#1a1a2e]">CloudePay</span>
                <button onClick={() => setMobileMenuOpen(false)} className="ml-auto text-gray-400">
                   <X size={24} />
