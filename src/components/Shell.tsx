@@ -8,7 +8,6 @@ import {
   Layout, 
   Package, 
   Gear, 
-  User, 
   SignOut,
   Bell,
   Plus,
@@ -33,7 +32,6 @@ export default function Shell({ children }: ShellProps) {
   ];
 
   const bottomItems = [
-    { id: "perfil", label: "Perfil", Icon: User, path: "/perfil" },
     { id: "config", label: "Ajustes", Icon: Gear, path: "/configuracoes" },
   ];
 
@@ -47,11 +45,10 @@ export default function Shell({ children }: ShellProps) {
       <aside className="fixed inset-y-0 left-0 z-50 hidden w-[68px] xl:w-[220px] shrink-0 flex-col bg-white lg:flex"
         style={{ borderRight: "1px solid #fce4ec" }}>
         
-        {/* Brand */}
+        {/* Brand - Official Logo */}
         <div className="flex items-center justify-center xl:justify-start xl:px-5 h-16"
           style={{ borderBottom: "1px solid #fce4ec" }}>
-          <Logo size="sm" className="shrink-0" />
-          <span className="hidden xl:block ml-3 text-[15px] font-bold tracking-[-0.03em] text-[#1a1a2e]">CloudePay</span>
+          <Logo size="md" />
         </div>
 
         {/* Nav */}
@@ -123,7 +120,7 @@ export default function Shell({ children }: ShellProps) {
           
           <div className="flex items-center gap-3">
             <button onClick={() => setMobileMenuOpen(true)} className="lg:hidden">
-               <Logo size="xs" />
+               <Logo size="sm" />
             </button>
             <h1 className="text-[17px] font-semibold tracking-tight text-[#1a1a2e]">
                {menuItems.find(i => i.path === location.pathname)?.label || "Dashboard"}
@@ -156,8 +153,7 @@ export default function Shell({ children }: ShellProps) {
           <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={() => setMobileMenuOpen(false)} />
           <aside className="absolute inset-y-0 left-0 w-72 bg-white flex flex-col animate-in slide-in-from-left duration-300">
             <div className="flex h-16 items-center px-6 border-b border-[#fce4ec]">
-               <Logo size="sm" />
-               <span className="ml-3 text-lg font-bold text-[#1a1a2e]">CloudePay</span>
+               <Logo size="md" />
                <button onClick={() => setMobileMenuOpen(false)} className="ml-auto text-gray-400">
                   <X size={24} />
                </button>
