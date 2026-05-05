@@ -782,13 +782,38 @@ function CreateChargeFlowModal({ onClose, onCreated, createdCharge, isDemo }: { 
                       {products.map(p => <option key={p.id} value={p.id}>{p.name} — {formatBRL(p.amount_cents)}</option>)}
                    </select>
                    <input placeholder="Nome do cliente (opcional)" className="w-full bg-gray-50 border border-transparent rounded-xl py-4 px-6 text-[13px] font-bold focus:bg-white focus:border-[#e11d48] transition-all outline-none" value={payerName} onChange={e => setPayerName(e.target.value)} />
+                    {selectedProductId && (
+                      <div className="bg-gray-50/50 rounded-xl p-4 flex flex-col gap-2 border border-dashed border-gray-200 animate-in fade-in duration-300">
+                        <div className="flex justify-between text-[11px] font-medium text-gray-500">
+                          <span>Taxa CloudePay + MP (2%)</span>
+                          <span className="num text-[#e11d48]">− {formatBRL((products.find(p => p.id === selectedProductId)?.amount_cents || 0) * 0.02)}</span>
+                        </div>
+                        <div className="flex justify-between text-[13px] font-bold text-[#1a1a2e]">
+                          <span>Saldo a receber</span>
+                          <span className="num text-[#e11d48]">{formatBRL((products.find(p => p.id === selectedProductId)?.amount_cents || 0) * 0.98)}</span>
+                        </div>
+                      </div>
+                    )}
                    <button onClick={createFromProduct} disabled={loading || !selectedProductId} className="w-full py-4 bg-[#e11d48] text-white rounded-xl text-[11px] font-bold uppercase tracking-widest mt-4 shadow-lg active:scale-[0.98] transition-all">Gerar Pagamento</button>
                 </div>
              ) : (
                 <form onSubmit={createCustom} className="space-y-5">
-                   <div className="bg-[#fff1f2] rounded-2xl p-6 text-center border-2 border-transparent focus-within:border-[#e11d48]">
+                   <div className="bg-[#fff1f2] rounded-2xl p-6 text-center border-2 border-transparent focus-within:border-[#e11d48] transition-all">
                       <p className="text-[10px] font-bold uppercase tracking-widest text-[#e11d48] mb-1">Qual o valor?</p>
                       <input placeholder="R$ 0,00" className="w-full bg-transparent border-none text-center text-4xl font-bold tracking-tighter text-[#1a1a2e] focus:ring-0 placeholder:text-[#e11d48]/30" value={amountStr} onChange={e => setAmountStr(maskBRLInput(e.target.value))} required />
+                      {amountStr && parseBRLToCents(amountStr) > 0 && (
+                         <div className="mt-4 pt-4 border-t border-[#e11d48]/10 flex flex-col gap-1 items-center animate-in fade-in slide-in-from-top-2 duration-300">
+                           <div className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-wider text-[#e11d48]/60">
+                             <span>Taxa total (2%)</span>
+                             <span className="h-1 w-1 rounded-full bg-[#e11d48]/30" />
+                             <span className="num text-[#e11d48]">{formatBRL(parseBRLToCents(amountStr) * 0.02)}</span>
+                           </div>
+                           <div className="text-[12px] font-bold text-[#1a1a2e] flex items-center gap-1.5">
+                             <span className="text-[#8c8c8c]">Você recebe:</span>
+                             <span className="num text-[#e11d48]">{formatBRL(parseBRLToCents(amountStr) * 0.98)}</span>
+                           </div>
+                         </div>
+                       )}
                    </div>
                    <input placeholder="Descrição do serviço" className="w-full bg-gray-50 border border-transparent rounded-xl py-4 px-6 text-[13px] font-bold focus:bg-white focus:border-[#e11d48] transition-all outline-none" value={serviceName} onChange={e => setServiceName(e.target.value)} required />
                    <input placeholder="Nome do cliente (opcional)" className="w-full bg-gray-50 border border-transparent rounded-xl py-4 px-6 text-[13px] font-bold focus:bg-white focus:border-[#e11d48] transition-all outline-none" value={payerName} onChange={e => setPayerName(e.target.value)} />
