@@ -134,16 +134,11 @@ export default function Dashboard() {
         {/* CTA Banner Section */}
         <div className="flex flex-col gap-4">
            <div className="flex justify-end gap-2">
-              {demoMode ? (
-                <span className="px-3 py-1 rounded-full bg-amber-50 border border-amber-200 text-amber-600 text-[10px] font-bold uppercase tracking-widest shadow-sm">
-                  ✨ Conta de Demonstração ({profile?.email || sessionEmail})
+              {demoMode && (
+                <span className="px-3 py-1 rounded-full bg-emerald-50 border border-emerald-100 text-emerald-600 text-[10px] font-bold uppercase tracking-widest shadow-sm flex items-center gap-2">
+                  <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                  Ambiente Protegido
                 </span>
-              ) : (
-                profile?.email || sessionEmail ? (
-                  <span className="px-3 py-1 rounded-full bg-gray-50 border border-gray-200 text-gray-400 text-[10px] font-bold uppercase tracking-widest opacity-50">
-                    Conta Real: {profile?.email || sessionEmail}
-                  </span>
-                ) : null
               )}
            </div>
            <CtaBanner name={profile?.full_name?.split(' ')[0] || "Usuário"} />
