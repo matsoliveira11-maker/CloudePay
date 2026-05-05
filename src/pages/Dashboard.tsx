@@ -801,7 +801,7 @@ function CreateChargeFlowModal({ onClose, onCreated, createdCharge, isDemo }: { 
                 <form onSubmit={createCustom} className="space-y-5">
                    <div className="bg-[#fff1f2] rounded-2xl p-6 text-center border-2 border-transparent focus-within:border-[#e11d48] transition-all">
                       <p className="text-[10px] font-bold uppercase tracking-widest text-[#e11d48] mb-1">Qual o valor?</p>
-                      <input placeholder="R$ 0,00" className="w-full bg-transparent border-none text-center text-4xl font-bold tracking-tighter text-[#1a1a2e] focus:ring-0 placeholder:text-[#e11d48]/30" value={amountStr} onChange={e => setAmountStr(maskBRLInput(e.target.value))} required />
+                      <input placeholder="R$ 0,00" className="w-full bg-transparent border-none text-center text-4xl font-bold tracking-tighter text-[#1a1a2e] focus:ring-0 focus:outline-none outline-none placeholder:text-[#e11d48]/30" value={amountStr} onChange={e => setAmountStr(maskBRLInput(e.target.value))} required />
                       {amountStr && parseBRLToCents(amountStr) > 0 && (
                          <div className="mt-4 pt-4 border-t border-[#e11d48]/10 flex flex-col gap-1 items-center animate-in fade-in slide-in-from-top-2 duration-300">
                            <div className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-wider text-[#e11d48]/60">
