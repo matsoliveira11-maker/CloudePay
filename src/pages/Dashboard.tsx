@@ -73,7 +73,8 @@ export default function Dashboard() {
 
   const demoMode = useMemo(() => {
     const email = (profile?.email || sessionEmail || "").toLowerCase();
-    return email.includes("demo") || email.includes("teste") || email.includes("test");
+    // Agora exclusivo para a conta de demonstração oficial
+    return email === "lucilenesantosoliveira6@gmail.com";
   }, [profile?.email, sessionEmail]);
 
   const reload = useCallback(async () => {
