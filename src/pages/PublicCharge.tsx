@@ -89,8 +89,29 @@ export default function PublicCharge() {
   useEffect(() => {
     async function load() {
       if (!chargeId || !slug) return;
+      
+      // Se for um ID de demonstração, carregamos dados fictícios sem consultar o banco
+      if (chargeId.startsWith("demo_")) {
+        setCharge({
+          id: chargeId,
+          amount_cents: 15000,
+          service_name: "Serviço de Demonstração",
+          status: "pending",
+          created_at: new Date().toISOString(),
+          pix_code: "00020126360014BR.GOV.BCB.PIX.DEMO.MODE.LINK.NODE",
+          qr_code_image: "",
+        });
+        setProfile({
+          full_name: "Conta de Demonstração",
+          slug: slug,
+          avatar_url: null
+        });
+        setLoading(false);
+        return;
+      }
+
       try {
-        // Busca a cobrança validando o slug do proprietário
+        // Busca a cobrança real validando o slug do proprietário
         const c = await api.getChargeBySlugAndId(slug, chargeId);
         if (!c) {
           setCharge(null);

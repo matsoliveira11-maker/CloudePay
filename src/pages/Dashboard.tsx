@@ -71,11 +71,17 @@ export default function Dashboard() {
     });
   }, []);
 
-  const demoMode = useMemo(() => {
+  const isDemoUser = useMemo(() => {
     const email = (profile?.email || sessionEmail || "").toLowerCase();
-    // Agora exclusivo para a conta de demonstração oficial
     return email === "lucilenesantosoliveira6@gmail.com";
   }, [profile?.email, sessionEmail]);
+
+  const [demoMode, setDemoMode] = useState(false);
+
+  useEffect(() => {
+    if (isDemoUser) setDemoMode(true);
+    else setDemoMode(false);
+  }, [isDemoUser]);
 
   const reload = useCallback(async () => {
     if (!profile) return;
@@ -135,11 +141,19 @@ export default function Dashboard() {
         {/* CTA Banner Section */}
         <div className="flex flex-col gap-4">
            <div className="flex justify-end gap-2">
-              {demoMode && (
-                <span className="px-3 py-1 rounded-full bg-emerald-50 border border-emerald-100 text-emerald-600 text-[10px] font-bold uppercase tracking-widest shadow-sm flex items-center gap-2">
-                  <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                  Ambiente Protegido
-                </span>
+              {isDemoUser && (
+                <button 
+                  onClick={() => setDemoMode(!demoMode)}
+                  className={cn(
+                    "px-3 py-1 rounded-full border text-[10px] font-bold uppercase tracking-widest shadow-sm flex items-center gap-2 transition-all active:scale-95",
+                    demoMode 
+                      ? "bg-emerald-50 border-emerald-100 text-emerald-600" 
+                      : "bg-amber-50 border-amber-100 text-amber-600"
+                  )}
+                >
+                  <div className={cn("w-1.5 h-1.5 rounded-full animate-pulse", demoMode ? "bg-emerald-500" : "bg-amber-500")} />
+                  {demoMode ? "Modo Demo Ativo" : "Modo Real Ativo"}
+                </button>
               )}
            </div>
            <CtaBanner name={profile?.full_name?.split(' ')[0] || "Usuário"} />
