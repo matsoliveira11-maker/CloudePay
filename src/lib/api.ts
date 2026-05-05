@@ -669,3 +669,50 @@ export async function closeTicket(ticketId: string) {
   if (error) throw error;
   return data;
 }
+
+// ---------- DEMO / MOCK DATA GENERATOR ----------
+
+export function generateDemoCharges(profile_id: string): Charge[] {
+  const charges: Charge[] = [];
+  const now = new Date();
+  const services = ["Consultoria VIP", "Desenvolvimento Web", "Design de Logo", "Mentoria Individual", "Pacote Mensal"];
+  const names = ["Ana Silva", "Bruno Oliveira", "Carla Santos", "Diego Lima", "Elena Costa", "Fabio Souza", "Giovana Melo"];
+
+  // Gerar ~50 cobranças nos últimos 30 dias
+  for (let i = 0; i < 50; i++) {
+    const daysAgo = Math.floor(Math.random() * 30);
+    const date = new Date();
+    date.setDate(now.getDate() - daysAgo);
+    date.setHours(Math.floor(Math.random() * 24), Math.floor(Math.random() * 60));
+
+    const amount_cents = (Math.floor(Math.random() * 450) + 50) * 100; // R$ 50 a R$ 500
+    const status: ChargeStatus = Math.random() > 0.3 ? "paid" : (Math.random() > 0.5 ? "pending" : "expired");
+    const fee_cents = Math.round(amount_cents * 0.01);
+    
+    charges.push({
+      id: `demo_${i}`,
+      profile_id,
+      amount_cents,
+      fee_cents,
+      net_amount_cents: amount_cents - fee_cents,
+      service_name: services[Math.floor(Math.random() * services.length)],
+      payer_name: names[Math.floor(Math.random() * names.length)],
+      status,
+      charge_type: "avulsa",
+      created_at: date.toISOString(),
+      paid_at: status === "paid" ? date.toISOString() : null,
+      gateway_id: "demo_gtw",
+      pix_code: "00020126360014BR.GOV.BCB.PIX...",
+      qr_code_image: "",
+      expires_at: new Date(date.getTime() + 900000).toISOString(),
+      receipt_number: status === "paid" ? `DEMO${1000 + i}` : null,
+      receipt_sent: false,
+      payer_cpf: "000.000.000-00",
+      payer_email: "demo@cliente.com",
+      description: "Cobrança de teste modo demo",
+      notes: null
+    } as any);
+  }
+
+  return charges.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+}

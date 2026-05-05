@@ -61,16 +61,48 @@ export default function Dashboard() {
   const [period, setPeriod] = useState<PeriodFilter>("month");
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [createdCharge, setCreatedCharge] = useState<Charge | null>(null);
+  
+  // Ativa automaticamente se o email contiver palavras-chave de teste
+  const [sessionEmail, setSessionEmail] = useState<string>("");
+
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data }) => {
+      if (data.session?.user?.email) setSessionEmail(data.session.user.email.toLowerCase());
+    });
+  }, []);
+
+  const demoMode = useMemo(() => {
+    const email = (profile?.email || sessionEmail || "").toLowerCase();
+    return email.includes("demo") || email.includes("teste") || email.includes("test");
+  }, [profile?.email, sessionEmail]);
 
   const reload = useCallback(async () => {
     if (!profile) return;
+    
+    if (demoMode) {
+      const demoCharges = api.generateDemoCharges(profile.id);
+      setCharges(demoCharges);
+      
+      const paid = demoCharges.filter(c => c.status === "paid");
+      const startOfMonth = new Date(new Date().getFullYear(), new Date().getMonth(), 1);
+      
+      const stats = {
+        monthNet: paid.filter(c => new Date(c.paid_at!) >= startOfMonth).reduce((s, c) => s + c.net_amount_cents, 0),
+        monthGross: paid.filter(c => new Date(c.paid_at!) >= startOfMonth).reduce((s, c) => s + c.amount_cents, 0),
+        totalNet: paid.reduce((s, c) => s + c.net_amount_cents, 0),
+        totalGross: paid.reduce((s, c) => s + c.amount_cents, 0),
+      };
+      setStats(stats);
+      return;
+    }
+
     const [list, s] = await Promise.all([
       api.listChargesByProfile(profile.id),
       api.getDashboardStats(profile.id),
     ]);
     setCharges(list);
     setStats(s);
-  }, [profile]);
+  }, [profile, demoMode]);
 
   useEffect(() => {
     reload();
@@ -100,7 +132,20 @@ export default function Dashboard() {
       <div className="space-y-8 pb-10">
         
         {/* CTA Banner Section */}
-        <div>
+        <div className="flex flex-col gap-4">
+           <div className="flex justify-end gap-2">
+              {demoMode ? (
+                <span className="px-3 py-1 rounded-full bg-amber-50 border border-amber-200 text-amber-600 text-[10px] font-bold uppercase tracking-widest shadow-sm">
+                  ✨ Conta de Demonstração ({profile?.email || sessionEmail})
+                </span>
+              ) : (
+                profile?.email || sessionEmail ? (
+                  <span className="px-3 py-1 rounded-full bg-gray-50 border border-gray-200 text-gray-400 text-[10px] font-bold uppercase tracking-widest opacity-50">
+                    Conta Real: {profile?.email || sessionEmail}
+                  </span>
+                ) : null
+              )}
+           </div>
            <CtaBanner name={profile?.full_name?.split(' ')[0] || "Usuário"} />
         </div>
 
@@ -163,6 +208,7 @@ export default function Dashboard() {
               reload();
             }}
             createdCharge={createdCharge}
+            isDemo={demoMode}
           />
         )}
       </div>
@@ -571,7 +617,7 @@ function DesktopRow({ charge: c }: { charge: Charge }) {
 
 // --- CREATE CHARGE MODAL ---
 
-function CreateChargeFlowModal({ onClose, onCreated, createdCharge }: { onClose: () => void; onCreated: (c: Charge) => void; createdCharge: Charge | null }) {
+function CreateChargeFlowModal({ onClose, onCreated, createdCharge, isDemo }: { onClose: () => void; onCreated: (c: Charge) => void; createdCharge: Charge | null, isDemo?: boolean }) {
   const { profile } = useAuth();
   const [step, setStep] = useState<"choose" | "product" | "custom" | "share">("choose");
   const [loading, setLoading] = useState(false);
@@ -620,6 +666,19 @@ function CreateChargeFlowModal({ onClose, onCreated, createdCharge }: { onClose:
     if (!profile?.slug) return;
     setLoading(true);
     try {
+      if (isDemo) {
+        const mock: Charge = {
+           id: "demo_" + Date.now(),
+           amount_cents: products.find(p => p.id === selectedProductId)?.amount_cents || 0,
+           service_name: products.find(p => p.id === selectedProductId)?.name || "Produto Demo",
+           status: "pending",
+           created_at: new Date().toISOString(),
+           pix_code: "00020126360014BR.GOV.BCB.PIX...",
+           qr_code_image: "https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=DemoMode",
+        } as any;
+        onCreated(mock);
+        return;
+      }
       const charge = await api.createChargeFromProduct({
         profile_id: profile.id,
         slug: profile.slug,
@@ -638,6 +697,19 @@ function CreateChargeFlowModal({ onClose, onCreated, createdCharge }: { onClose:
     if (!profile?.slug) return;
     setLoading(true);
     try {
+      if (isDemo) {
+        const mock: Charge = {
+           id: "demo_" + Date.now(),
+           amount_cents: parseBRLToCents(amountStr),
+           service_name: sanitizeText(serviceName, 60),
+           status: "pending",
+           created_at: new Date().toISOString(),
+           pix_code: "00020126360014BR.GOV.BCB.PIX...",
+           qr_code_image: "https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=DemoMode",
+        } as any;
+        onCreated(mock);
+        return;
+      }
       const charge = await api.createCharge({
         profile_id: profile.id,
         slug: profile.slug,
