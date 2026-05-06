@@ -473,6 +473,19 @@ function SalesHistory({ charges }: { charges: Charge[] }) {
       .sort((a, b) => +new Date(b.created_at) - +new Date(a.created_at));
   }, [charges, tab, search]);
 
+  const totals = useMemo(() => {
+    return filtered.reduce((acc, c) => {
+      const gross = c.amount_cents;
+      const fee = Math.round(gross * 0.02);
+      const net = c.net_amount_cents ?? (gross - fee);
+      return {
+        gross: acc.gross + gross,
+        fee: acc.fee + fee,
+        net: acc.net + net
+      };
+    }, { gross: 0, fee: 0, net: 0 });
+  }, [filtered]);
+
   return (
     <div>
       <div className="flex flex-col sm:flex-row sm:items-end gap-4 sm:justify-between mb-5">
@@ -507,6 +520,22 @@ function SalesHistory({ charges }: { charges: Charge[] }) {
             </span>
           </button>
         ))}
+      </div>
+
+      {/* Totals Summary Bar */}
+      <div className="grid grid-cols-3 gap-3 mb-4">
+         <div className="bg-white border border-[#fce4ec] rounded-2xl p-4 sm:p-5">
+            <p className="text-[9px] font-bold uppercase tracking-widest text-[#8c8c8c] mb-1">Total Bruto</p>
+            <p className="text-sm sm:text-lg font-bold text-[#1a1a2e] num">{formatBRL(totals.gross)}</p>
+         </div>
+         <div className="bg-white border border-[#fce4ec] rounded-2xl p-4 sm:p-5">
+            <p className="text-[9px] font-bold uppercase tracking-widest text-[#8c8c8c] mb-1">Total Taxas</p>
+            <p className="text-sm sm:text-lg font-bold text-[#e11d48] num">− {formatBRL(totals.fee)}</p>
+         </div>
+         <div className="bg-white border border-[#fce4ec] rounded-2xl p-4 sm:p-5">
+            <p className="text-[9px] font-bold uppercase tracking-widest text-[#8c8c8c] mb-1">Total Líquido</p>
+            <p className="text-sm sm:text-lg font-bold text-emerald-600 num">{formatBRL(totals.net)}</p>
+         </div>
       </div>
 
       <div className="rounded-[14px] overflow-hidden bg-white" style={{ border: "1px solid #fce4ec" }}>
