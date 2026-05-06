@@ -189,176 +189,269 @@ export default function PublicCharge() {
 
   return (
     <main className="min-h-screen bg-[#fcfcfc] text-[#4c0519] antialiased flex flex-col items-center justify-center p-4 selection:bg-[#e11d48]/10 relative overflow-hidden">
-      {/* Background Orbs & Patterns */}
+      {/* Premium Mesh Background */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute -top-[10%] -left-[5%] h-[50%] w-[50%] rounded-full bg-rose-100/50 blur-[100px]" />
-        <div className="absolute -bottom-[10%] -right-[5%] h-[50%] w-[50%] rounded-full bg-rose-50/50 blur-[100px]" />
-        <div className="absolute inset-0 opacity-[0.03] bg-[radial-gradient(#e11d48_1px,transparent_1px)] [background-size:24px_24px]" />
+        <div className="absolute top-[-10%] left-[-10%] h-[70%] w-[70%] rounded-full bg-rose-100/40 blur-[120px] animate-pulse" />
+        <div className="absolute bottom-[-10%] right-[-10%] h-[70%] w-[70%] rounded-full bg-rose-50/40 blur-[120px] animate-pulse" style={{ animationDelay: '2s' }} />
+        <div className="absolute top-[20%] right-[10%] h-[40%] w-[40%] rounded-full bg-blue-50/30 blur-[100px]" />
+        
+        {/* Subtle Pattern Layer */}
+        <div className="absolute inset-0 opacity-[0.04]" 
+             style={{ 
+               backgroundImage: `radial-gradient(#e11d48 0.8px, transparent 0.8px)`, 
+               backgroundSize: '32px 32px' 
+             }} 
+        />
+        
+        {/* Animated Aurora Lines */}
+        <div className="absolute inset-0 opacity-[0.1] mix-blend-overlay">
+            <div className="absolute top-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-[#e11d48] to-transparent animate-aurora-line" />
+        </div>
       </div>
 
       <motion.div 
-        initial={{ opacity: 0, y: 15 }}
+        initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="w-full max-w-[420px] relative z-10"
+        transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+        className="w-full max-w-[430px] relative z-10"
       >
-        <div className="mb-8 flex items-center justify-between px-2">
-          <Logo variant="dark" />
-          <div className="flex items-center gap-2 rounded-full border border-[#e11d48]/10 bg-white/60 px-3.5 py-1.5 text-[9px] font-bold uppercase tracking-wider text-[#e11d48] backdrop-blur-sm shadow-sm">
-            <ShieldIcon className="h-3.5 w-3.5" /> <span>Transação Protegida</span>
-          </div>
+        <div className="mb-10 flex items-center justify-between px-3">
+          <motion.div 
+            whileHover={{ scale: 1.05, rotate: -2 }}
+            className="cursor-pointer"
+          >
+            <Logo variant="dark" />
+          </motion.div>
+          <motion.div 
+            initial={{ x: 20, opacity: 0 }}
+            animate={{ x: 0, opacity: 1 }}
+            transition={{ delay: 0.3 }}
+            className="flex items-center gap-2 rounded-full border border-[#e11d48]/10 bg-white/80 px-4 py-2 text-[9px] font-bold uppercase tracking-wider text-[#e11d48] backdrop-blur-md shadow-[0_2px_10px_rgba(225,29,72,0.05)]"
+          >
+            <ShieldIcon className="h-4 w-4 animate-pulse" /> 
+            <span>Transação Segura</span>
+          </motion.div>
         </div>
 
         <AnimatePresence mode="wait">
           {status === "paid" ? (
             <motion.div 
               key="paid"
-              initial={{ opacity: 0, scale: 0.98 }}
-              animate={{ opacity: 1, scale: 1 }}
+              initial={{ opacity: 0, scale: 0.98, rotateX: -10 }}
+              animate={{ opacity: 1, scale: 1, rotateX: 0 }}
               exit={{ opacity: 0, scale: 0.98 }}
               ref={receiptRef}
-              className="rounded-[2.5rem] border border-[#4c0519]/5 bg-white p-8 text-center shadow-[0_32px_64px_-12px_rgba(76,5,25,0.08)] overflow-hidden relative"
+              className="rounded-[3rem] border border-white bg-white/70 p-10 text-center shadow-[0_50px_100px_-20px_rgba(76,5,25,0.1)] backdrop-blur-3xl overflow-hidden relative"
+              style={{ perspective: '1000px' }}
             >
-                <div className="absolute top-0 right-0 p-8 opacity-[0.05] pointer-events-none">
+                {/* Decorative Elements */}
+                <div className="absolute -top-10 -right-10 w-40 h-40 bg-emerald-500/5 rounded-full blur-3xl" />
+                <div className="absolute top-0 right-0 p-10 opacity-[0.06] pointer-events-none">
                     <Logo variant="dark" />
                 </div>
                 
                 <motion.div 
-                    initial={{ scale: 0 }}
-                    animate={{ scale: 1 }}
-                    transition={{ type: "spring", damping: 15 }}
-                    className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-emerald-50 text-emerald-500 mb-6 shadow-sm border border-emerald-100"
+                    initial={{ scale: 0, rotate: -45 }}
+                    animate={{ scale: 1, rotate: 0 }}
+                    transition={{ type: "spring", damping: 12, stiffness: 200, delay: 0.2 }}
+                    className="mx-auto flex h-20 w-20 items-center justify-center rounded-3xl bg-emerald-50 text-emerald-500 mb-8 shadow-inner border border-emerald-100"
                 >
-                  <svg className="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M5 13l4 4L19 7" />
+                  <svg className="h-10 w-10" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M5 13l4 4L19 7" />
                   </svg>
                 </motion.div>
                 
-                <p className="text-[10px] font-bold uppercase tracking-[0.25em] text-[#4c0519]/40">Pagamento Confirmado</p>
-                <h1 className="mt-2 text-5xl font-bold tracking-tight text-[#4c0519]">{formatBRL(charge.amount_cents)}</h1>
+                <p className="text-[11px] font-bold uppercase tracking-[0.3em] text-[#4c0519]/40 mb-3">Pagamento Concluído</p>
+                <motion.h1 
+                    initial={{ y: 10, opacity: 0 }}
+                    animate={{ y: 0, opacity: 1 }}
+                    transition={{ delay: 0.4 }}
+                    className="text-6xl font-bold tracking-tight text-[#4c0519] mb-2"
+                >
+                    {formatBRL(charge.amount_cents)}
+                </motion.h1>
                 
-                <div className="mt-8 space-y-4">
-                  <div className="flex justify-between border-b border-[#4c0519]/5 pb-3.5 text-[11px]">
-                    <span className="font-semibold uppercase tracking-wider text-[#4c0519]/30">Recebedor</span>
+                <div className="mt-10 space-y-5">
+                  <div className="flex justify-between border-b border-[#4c0519]/5 pb-4 text-[12px]">
+                    <span className="font-semibold uppercase tracking-widest text-[#4c0519]/25">Favorecido</span>
                     <span className="text-[#4c0519] font-bold">{profile?.full_name}</span>
                   </div>
-                  <div className="flex justify-between border-b border-[#4c0519]/5 pb-3.5 text-[11px]">
-                    <span className="font-semibold uppercase tracking-wider text-[#4c0519]/30">Data e Hora</span>
+                  <div className="flex justify-between border-b border-[#4c0519]/5 pb-4 text-[12px]">
+                    <span className="font-semibold uppercase tracking-widest text-[#4c0519]/25">Data do Pagamento</span>
                     <span className="text-[#4c0519] font-medium">{new Date().toLocaleString('pt-BR')}</span>
                   </div>
-                  <div className="flex justify-between pb-1 text-[11px]">
-                    <span className="font-semibold uppercase tracking-wider text-[#4c0519]/30">ID Único</span>
-                    <span className="text-[#4c0519]/50 font-mono text-[10px]">{charge.id.slice(0, 12).toUpperCase()}</span>
+                  <div className="flex justify-between pb-2 text-[12px]">
+                    <span className="font-semibold uppercase tracking-widest text-[#4c0519]/25">Código da Transação</span>
+                    <span className="text-[#4c0519]/50 font-mono text-[11px]">{charge.id.slice(0, 16).toUpperCase()}</span>
                   </div>
                 </div>
 
-                <div className="mt-8 pt-6 border-t border-[#4c0519]/5 flex flex-col gap-4">
-                    <button 
+                <div className="mt-10 pt-8 border-t border-[#4c0519]/5 flex flex-col gap-5">
+                    <motion.button 
+                        whileHover={{ scale: 1.02 }}
+                        whileTap={{ scale: 0.98 }}
                         onClick={downloadReceipt}
-                        className="w-full rounded-2xl bg-[#4c0519] h-12 text-[10px] font-bold uppercase tracking-[0.2em] text-white hover:bg-[#e11d48] transition-all active:scale-[0.98] shadow-lg shadow-[#4c0519]/10"
+                        className="w-full rounded-[1.5rem] bg-[#4c0519] h-14 text-[11px] font-bold uppercase tracking-[0.25em] text-white hover:bg-[#e11d48] transition-all shadow-2xl shadow-[#4c0519]/20"
                     >
-                        Baixar Comprovante
-                    </button>
-                    <p className="text-[8px] font-bold uppercase tracking-[0.3em] text-[#4c0519]/20">
-                        CloudePay Network Verified
-                    </p>
+                        Baixar Comprovante PDF
+                    </motion.button>
+                    <div className="flex flex-col items-center gap-2">
+                        <div className="h-1 w-8 rounded-full bg-emerald-500/20" />
+                        <p className="text-[9px] font-bold uppercase tracking-[0.4em] text-[#4c0519]/20">
+                            Verified by CloudePay Protocol
+                        </p>
+                    </div>
                 </div>
             </motion.div>
           ) : (
             <motion.div 
               key="unpaid"
-              initial={{ opacity: 0, scale: 0.98 }}
-              animate={{ opacity: 1, scale: 1 }}
+              initial={{ opacity: 0, scale: 0.98, y: 10 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.98 }}
-              className="rounded-[2.5rem] border border-[#4c0519]/5 bg-white shadow-[0_40px_80px_-15px_rgba(76,5,25,0.12)] overflow-hidden relative"
+              className="rounded-[3rem] border border-white/80 bg-white/80 shadow-[0_60px_120px_-20px_rgba(76,5,25,0.12)] backdrop-blur-3xl overflow-hidden relative group"
             >
-                {/* Top Section: Amount & Store */}
-                <div className="p-8 text-center border-b border-[#4c0519]/5 bg-[#fcfcfc]/50">
-                    <p className="text-[10px] font-bold uppercase tracking-[0.25em] text-[#e11d48] mb-2.5 opacity-80">Valor da Cobrança</p>
-                    <h1 className="text-5xl md:text-6xl font-bold tracking-tight text-[#4c0519]">{formatBRL(charge.amount_cents)}</h1>
+                {/* Subtle Border Glow */}
+                <div className="absolute inset-0 border border-[#e11d48]/10 rounded-[3rem] pointer-events-none" />
+                
+                {/* Top Section: Hero Amount */}
+                <div className="p-10 text-center border-b border-[#4c0519]/5 bg-gradient-to-b from-white/50 to-transparent">
+                    <motion.p 
+                        initial={{ opacity: 0, letterSpacing: '0.1em' }}
+                        animate={{ opacity: 1, letterSpacing: '0.3em' }}
+                        className="text-[11px] font-bold uppercase text-[#e11d48] mb-4 opacity-80"
+                    >
+                        Checkout Seguro
+                    </motion.p>
+                    <motion.h1 
+                        layoutId="amount"
+                        className="text-6xl md:text-7xl font-bold tracking-tight text-[#4c0519] mb-8"
+                    >
+                        {formatBRL(charge.amount_cents)}
+                    </motion.h1>
                     
-                    <div className="mt-8 inline-flex items-center gap-3.5 rounded-2xl border border-[#4c0519]/5 bg-white p-3 pr-5 shadow-sm">
-                      <div className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-[#fcfcfc] border border-[#4c0519]/5 shadow-sm">
+                    <motion.div 
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 0.2 }}
+                        className="inline-flex items-center gap-4 rounded-3xl border border-white bg-white/50 p-4 pr-7 shadow-[0_8px_30px_rgb(0,0,0,0.04)] backdrop-blur-sm"
+                    >
+                      <div className="flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-white border border-[#4c0519]/5 shadow-sm p-0.5">
                         {profile?.avatar_url ? (
-                          <img src={profile.avatar_url} alt="Logo" className="h-full w-full object-cover" />
+                          <img src={profile.avatar_url} alt="Logo" className="h-full w-full object-cover rounded-[14px]" />
                         ) : (
-                          <div className="font-bold text-[#e11d48] text-sm uppercase">{profile?.full_name?.slice(0, 2)}</div>
+                          <div className="flex h-full w-full items-center justify-center bg-rose-50 text-[#e11d48] font-bold text-base rounded-[14px]">
+                            {profile?.full_name?.slice(0, 2).toUpperCase()}
+                          </div>
                         )}
                       </div>
                       <div className="text-left">
-                          <p className="text-[12px] font-bold text-[#4c0519] tracking-tight">{profile?.full_name}</p>
-                          <p className="text-[10px] text-[#4c0519]/40 font-medium tracking-tight">@{profile?.slug}</p>
+                          <p className="text-[13px] font-bold text-[#4c0519] tracking-tight">{profile?.full_name}</p>
+                          <div className="flex items-center gap-1.5">
+                            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]" />
+                            <p className="text-[10px] text-[#4c0519]/50 font-semibold tracking-tight">@{profile?.slug}</p>
+                          </div>
                       </div>
-                    </div>
+                    </motion.div>
                 </div>
 
-                {/* Middle Section: QR Code */}
-                <div className="p-8 flex flex-col items-center gap-8">
-                    <div className="relative group">
-                        <div className="absolute inset-0 bg-[#e11d48]/5 blur-3xl rounded-full scale-110 opacity-0 group-hover:opacity-100 transition-all duration-700" />
-                        <div className="relative rounded-[2.2rem] border border-[#4c0519]/5 bg-white p-3 shadow-xl transition-all hover:scale-[1.02] duration-500">
+                {/* Middle Section: High-End QR */}
+                <div className="p-10 flex flex-col items-center gap-10">
+                    <div className="relative">
+                        {/* Decorative Rings */}
+                        <div className="absolute inset-[-20px] border border-[#e11d48]/5 rounded-full animate-[spin_20s_linear_infinite]" />
+                        <div className="absolute inset-[-40px] border border-[#e11d48]/5 rounded-full animate-[spin_15s_linear_infinite_reverse]" />
+                        
+                        <motion.div 
+                            whileHover={{ scale: 1.05, rotate: 1 }}
+                            className="relative rounded-[2.5rem] border border-white bg-white p-4 shadow-2xl transition-all duration-500"
+                        >
                             {(charge.qr_code_image || generatedQr) ? (
-                                <img src={charge.qr_code_image || generatedQr} alt="Pix QR" className="h-36 w-36 rounded-2xl" />
+                                <div className="relative">
+                                    <img src={charge.qr_code_image || generatedQr} alt="Pix QR" className="h-40 w-40 rounded-3xl" />
+                                    {/* Scanning Line Animation */}
+                                    <motion.div 
+                                        animate={{ top: ['0%', '100%', '0%'] }}
+                                        transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
+                                        className="absolute left-0 right-0 h-1 bg-[#e11d48]/20 blur-sm pointer-events-none"
+                                    />
+                                </div>
                             ) : (
-                                <div className="h-36 w-36 animate-pulse bg-zinc-50 rounded-2xl" />
+                                <div className="h-40 w-40 animate-pulse bg-rose-50/50 rounded-3xl" />
                             )}
-                        </div>
+                        </motion.div>
                     </div>
 
-                    <div className="w-full space-y-5">
-                        <div className="space-y-2.5">
-                            <div className="flex items-center justify-between px-1">
-                                <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#4c0519]/30">Copia e Cola</p>
-                                <div className="flex items-center gap-2">
-                                    <div className="h-1.5 w-1.5 rounded-full bg-amber-500 animate-pulse" />
-                                    <span className="text-[9px] font-bold uppercase tracking-wider text-amber-600/80">Aguardando PIX</span>
+                    <div className="w-full space-y-6">
+                        <div className="space-y-3">
+                            <div className="flex items-center justify-between px-2">
+                                <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-[#4c0519]/30">Copia e Cola</p>
+                                <div className="flex items-center gap-2.5 rounded-full bg-amber-50/80 px-3 py-1 border border-amber-100/50">
+                                    <motion.div 
+                                        animate={{ opacity: [1, 0.4, 1] }}
+                                        transition={{ duration: 1.5, repeat: Infinity }}
+                                        className="h-1.5 w-1.5 rounded-full bg-amber-500" 
+                                    />
+                                    <span className="text-[9px] font-bold uppercase tracking-widest text-amber-600">Aguardando PIX</span>
                                 </div>
                             </div>
-                            <div className="relative group">
-                                <div className="rounded-2xl border border-[#4c0519]/10 bg-[#fcfcfc] p-4 pr-14 font-mono text-[11px] text-[#4c0519]/60 break-all line-clamp-2 leading-relaxed h-[56px] transition-colors group-hover:border-[#e11d48]/20 group-hover:bg-white">
+                            <div className="relative group/copy">
+                                <div className="rounded-[1.5rem] border border-[#4c0519]/10 bg-[#fcfcfc]/80 p-5 pr-16 font-mono text-[12px] text-[#4c0519]/70 break-all line-clamp-2 leading-relaxed h-[64px] transition-all group-hover/copy:border-[#e11d48]/30 group-hover/copy:bg-white shadow-inner">
                                     {charge.pix_code}
                                 </div>
-                                <button
+                                <motion.button
+                                    whileHover={{ scale: 1.1 }}
+                                    whileTap={{ scale: 0.9 }}
                                     onClick={copyPix}
-                                    className={`absolute right-2 top-2 h-10 w-10 rounded-xl flex items-center justify-center transition-all active:scale-90 shadow-sm ${
-                                        copied ? "bg-emerald-500 text-white" : "bg-white border border-[#4c0519]/5 text-[#4c0519]/40 hover:text-[#e11d48] hover:border-[#e11d48]/20"
+                                    className={`absolute right-3 top-3 h-10 w-10 rounded-xl flex items-center justify-center transition-all shadow-md ${
+                                        copied ? "bg-emerald-500 text-white" : "bg-white border border-[#4c0519]/5 text-[#4c0519]/30 hover:text-[#e11d48]"
                                     }`}
                                 >
                                     {copied ? (
-                                        <svg className="h-4.5 w-4.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M5 13l4 4L19 7" /></svg>
+                                        <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M5 13l4 4L19 7" /></svg>
                                     ) : (
-                                        <svg className="h-4.5 w-4.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" /></svg>
+                                        <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" /></svg>
                                     )}
-                                </button>
+                                </motion.button>
                             </div>
                         </div>
 
-                        <button
+                        <motion.button
+                            whileHover={{ scale: 1.02, backgroundColor: '#881337' }}
+                            whileTap={{ scale: 0.98 }}
                             onClick={copyPix}
-                            className={`w-full h-14 rounded-2xl text-[11px] font-bold uppercase tracking-[0.25em] transition-all active:scale-[0.98] shadow-lg ${
-                                copied ? "bg-emerald-500 text-white shadow-emerald-500/10" : "bg-[#e11d48] text-white hover:bg-[#881337] shadow-[#e11d48]/20"
+                            className={`w-full h-16 rounded-[1.5rem] text-[12px] font-bold uppercase tracking-[0.3em] transition-all shadow-2xl ${
+                                copied ? "bg-emerald-500 text-white shadow-emerald-500/20" : "bg-[#e11d48] text-white shadow-[#e11d48]/20"
                             }`}
                         >
-                            {copied ? "PIX Copiado!" : "Copiar Código PIX"}
-                        </button>
+                            {copied ? "Código Copiado com Sucesso" : "Copiar Código PIX"}
+                        </motion.button>
                     </div>
                 </div>
 
-                {/* Bottom Section: Hint */}
-                <div className="p-5 bg-[#fcfcfc]/50 border-t border-[#4c0519]/5 text-center">
-                    <p className="text-[10px] font-medium text-[#4c0519]/40 tracking-tight">
-                        A tela atualizará <span className="text-[#4c0519] font-bold italic">automaticamente</span> após o pagamento.
+                {/* Bottom Section: Verification Hint */}
+                <div className="p-6 bg-[#fcfcfc]/50 border-t border-[#4c0519]/5 text-center backdrop-blur-sm">
+                    <p className="text-[11px] font-medium text-[#4c0519]/40 tracking-tight">
+                        Confirmação instantânea via <span className="text-[#4c0519] font-bold italic">Smart Protocol</span>
                     </p>
                 </div>
             </motion.div>
           )}
         </AnimatePresence>
 
-        <div className="mt-10 flex flex-col items-center gap-4 opacity-40">
-             <div className="h-[1px] w-12 bg-[#4c0519]/10" />
-             <p className="text-[8px] font-bold uppercase tracking-[0.4em] text-[#4c0519]/40">
-                CLOUDEPAY NETWORK · SECURE TRANSACTION
-            </p>
-        </div>
+        <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 0.5 }}
+            transition={{ delay: 1 }}
+            className="mt-12 flex flex-col items-center gap-5"
+        >
+             <div className="h-[1px] w-16 bg-gradient-to-r from-transparent via-[#4c0519]/20 to-transparent" />
+             <div className="flex items-center gap-3">
+                <span className="text-[9px] font-bold uppercase tracking-[0.5em] text-[#4c0519]">CloudePay Network</span>
+                <span className="w-1 h-1 rounded-full bg-[#4c0519]/30" />
+                <span className="text-[9px] font-bold uppercase tracking-[0.5em] text-[#4c0519]">Secure Checkout</span>
+             </div>
+        </motion.div>
       </motion.div>
     </main>
   );

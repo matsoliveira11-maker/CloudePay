@@ -205,136 +205,209 @@ export default function FixedQRCode() {
 
   return (
     <main className="min-h-screen bg-[#fcfcfc] text-[#4c0519] antialiased flex flex-col items-center py-10 px-4 relative overflow-hidden">
-      {/* Background Orbs & Patterns */}
+      {/* Premium Mesh Background */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute -top-[10%] -left-[5%] h-[50%] w-[50%] rounded-full bg-rose-100/50 blur-[100px]" />
-        <div className="absolute -bottom-[10%] -right-[5%] h-[50%] w-[50%] rounded-full bg-rose-50/50 blur-[100px]" />
-        <div className="absolute inset-0 opacity-[0.03] bg-[radial-gradient(#e11d48_1px,transparent_1px)] [background-size:24px_24px]" />
+        <div className="absolute top-[-10%] left-[-10%] h-[70%] w-[70%] rounded-full bg-rose-100/40 blur-[120px] animate-pulse" />
+        <div className="absolute bottom-[-10%] right-[-10%] h-[70%] w-[70%] rounded-full bg-rose-50/40 blur-[120px] animate-pulse" style={{ animationDelay: '2s' }} />
+        <div className="absolute top-[20%] right-[10%] h-[40%] w-[40%] rounded-full bg-blue-50/30 blur-[100px]" />
+        
+        {/* Subtle Pattern Layer */}
+        <div className="absolute inset-0 opacity-[0.04]" 
+             style={{ 
+               backgroundImage: `radial-gradient(#e11d48 0.8px, transparent 0.8px)`, 
+               backgroundSize: '32px 32px' 
+             }} 
+        />
       </div>
 
-      <div className="w-full max-w-md relative z-10 animate-in fade-in slide-in-from-bottom-4 duration-1000">
+      <div className="w-full max-w-md relative z-10 animate-in fade-in slide-in-from-bottom-6 duration-1000">
         <div className="mb-12 flex flex-col items-center text-center">
-          <Logo variant="dark" />
-          <div className="mt-6 flex items-center gap-2 rounded-full border border-[#e11d48]/10 bg-white/60 px-4 py-1.5 text-[9px] font-bold uppercase tracking-wider text-[#e11d48] backdrop-blur-sm shadow-sm">
-            <ShieldIcon /> Gateway de Pagamento Seguro
-          </div>
+          <motion.div whileHover={{ scale: 1.05, rotate: -2 }}>
+            <Logo variant="dark" />
+          </motion.div>
+          <motion.div 
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.3 }}
+            className="mt-6 flex items-center gap-2 rounded-full border border-[#e11d48]/10 bg-white/60 px-4 py-2 text-[9px] font-bold uppercase tracking-wider text-[#e11d48] backdrop-blur-md shadow-sm"
+          >
+            <ShieldIcon /> <span>Gateway de Pagamento Seguro</span>
+          </motion.div>
         </div>
 
-        {stage === "form" && (
-          <section className="rounded-[3rem] border border-[#4c0519]/5 bg-white p-8 shadow-[0_40px_80px_-15px_rgba(76,5,25,0.12)]">
-            <div className="mb-10 text-center">
-                <div className="mx-auto h-20 w-20 overflow-hidden rounded-[1.8rem] border border-[#4c0519]/5 bg-[#fcfcfc] mb-5 shadow-sm p-1">
-                    {profile?.avatar_url ? (
-                        <img src={profile.avatar_url} alt="Logo" className="h-full w-full object-cover rounded-[1.5rem]" />
-                    ) : (
-                        <div className="flex h-full w-full items-center justify-center text-[#e11d48]">
-                            <UserIcon className="h-10 w-10 opacity-20" />
-                        </div>
-                    )}
-                </div>
-              <h1 className="text-2xl font-bold tracking-tight text-[#4c0519]">{profile.full_name}</h1>
-              <p className="mt-1 text-sm text-[#4c0519]/40 font-medium tracking-tight">{profile.service_name || "Profissional Verificado"}</p>
-            </div>
+        <AnimatePresence mode="wait">
+          {stage === "form" && (
+            <motion.section 
+              key="form"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              className="rounded-[3.5rem] border border-white/80 bg-white/80 p-10 shadow-[0_60px_120px_-20px_rgba(76,5,25,0.12)] backdrop-blur-3xl"
+            >
+              <div className="mb-10 text-center">
+                  <motion.div 
+                    initial={{ scale: 0.8 }}
+                    animate={{ scale: 1 }}
+                    className="mx-auto h-24 w-24 overflow-hidden rounded-[2.2rem] border border-white bg-white mb-6 shadow-[0_8px_30px_rgba(0,0,0,0.04)] p-1.5"
+                  >
+                      {profile?.avatar_url ? (
+                          <img src={profile.avatar_url} alt="Logo" className="h-full w-full object-cover rounded-[1.8rem]" />
+                      ) : (
+                          <div className="flex h-full w-full items-center justify-center bg-rose-50 text-[#e11d48] font-bold text-xl rounded-[1.8rem]">
+                              {profile?.full_name?.slice(0, 2).toUpperCase()}
+                          </div>
+                      )}
+                  </motion.div>
+                <h1 className="text-2xl font-bold tracking-tight text-[#4c0519]">{profile.full_name}</h1>
+                <p className="mt-1.5 text-sm text-[#4c0519]/40 font-semibold tracking-tight">{profile.service_name || "Profissional Verificado"}</p>
+              </div>
 
-            <form onSubmit={handleSubmit} className="space-y-6">
-              <Field label="Quanto você quer pagar?" id="f-amount">
-                <input className="auth-input text-3xl font-bold tracking-tighter !bg-[#fcfcfc] border-[#4c0519]/5 focus:border-[#e11d48]/20 transition-all text-[#4c0519]" placeholder="R$ 0,00" value={amount} onChange={e => setAmount(maskBRLInput(e.target.value))} required />
-              </Field>
-              
-              <div className="space-y-4">
-                <Field label="Seu Nome Completo" id="f-name">
-                    <input className="auth-input !bg-[#fcfcfc] border-[#4c0519]/5 text-[#4c0519]" placeholder="Nome do pagador" value={payerName} onChange={e => setPayerName(e.target.value)} required />
+              <form onSubmit={handleSubmit} className="space-y-7">
+                <Field label="Quanto você quer pagar?" id="f-amount">
+                  <input className="auth-input text-4xl font-bold tracking-tighter !bg-[#fcfcfc]/50 border-white focus:border-[#e11d48]/20 transition-all text-[#4c0519] h-20 shadow-inner" placeholder="R$ 0,00" value={amount} onChange={e => setAmount(maskBRLInput(e.target.value))} required />
                 </Field>
                 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <Field label="Seu CPF" id="f-cpf">
-                    <input className="auth-input !bg-[#fcfcfc] border-[#4c0519]/5 text-[#4c0519]" placeholder="000.000.000-00" value={payerCpf} onChange={e => setPayerCpf(maskCPFInput(e.target.value))} required />
-                    </Field>
-                    <Field label="Seu Melhor Email" id="f-email">
-                    <input className="auth-input !bg-[#fcfcfc] border-[#4c0519]/5 text-[#4c0519]" placeholder="seu@email.com" value={payerEmail} onChange={e => setPayerEmail(e.target.value)} required />
-                    </Field>
+                <div className="space-y-5">
+                  <Field label="Seu Nome Completo" id="f-name">
+                      <input className="auth-input !bg-[#fcfcfc]/50 border-white text-[#4c0519] h-14" placeholder="Como no seu documento" value={payerName} onChange={e => setPayerName(e.target.value)} required />
+                  </Field>
+                  
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                      <Field label="Seu CPF" id="f-cpf">
+                      <input className="auth-input !bg-[#fcfcfc]/50 border-white text-[#4c0519] h-14" placeholder="000.000.000-00" value={payerCpf} onChange={e => setPayerCpf(maskCPFInput(e.target.value))} required />
+                      </Field>
+                      <Field label="Melhor Email" id="f-email">
+                      <input className="auth-input !bg-[#fcfcfc]/50 border-white text-[#4c0519] h-14" placeholder="seu@email.com" value={payerEmail} onChange={e => setPayerEmail(e.target.value)} required />
+                      </Field>
+                  </div>
+
+                  <Field label="Descrição (Opcional)" id="f-desc">
+                      <input className="auth-input !bg-[#fcfcfc]/50 border-white text-[#4c0519] h-14" placeholder="Ex: Pagamento serviço" value={description} onChange={e => setDescription(e.target.value)} />
+                  </Field>
                 </div>
 
-                <Field label="Descrição (Opcional)" id="f-desc">
-                    <input className="auth-input !bg-[#fcfcfc] border-[#4c0519]/5 text-[#4c0519]" placeholder="Ex: Pagamento serviço" value={description} onChange={e => setDescription(e.target.value)} />
-                </Field>
-              </div>
+                {error && (
+                  <motion.div 
+                    initial={{ opacity: 0, scale: 0.95 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    className="p-4 rounded-2xl bg-red-50 border border-red-100 text-red-500 text-[10px] font-bold uppercase tracking-widest text-center"
+                  >
+                      {error}
+                  </motion.div>
+                )}
 
-              {error && (
-                <div className="p-4 rounded-2xl bg-red-50 border border-red-100 text-red-500 text-[10px] font-bold uppercase tracking-widest text-center">
-                    {error}
-                </div>
-              )}
+                <motion.button 
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                    type="submit" 
+                    disabled={loading} 
+                    className="w-full h-16 rounded-[1.5rem] bg-[#e11d48] text-white text-[12px] font-bold uppercase tracking-[0.25em] transition-all hover:bg-[#881337] mt-4 shadow-2xl shadow-[#e11d48]/20 disabled:opacity-50"
+                >
+                  {loading ? "Processando..." : "Gerar QR Code PIX"}
+                </motion.button>
+              </form>
+            </motion.section>
+          )}
 
-              <button type="submit" disabled={loading} className="w-full h-16 rounded-2xl bg-[#e11d48] text-white text-[11px] font-bold uppercase tracking-[0.25em] transition-all hover:bg-[#881337] active:scale-[0.98] mt-4 shadow-lg shadow-[#e11d48]/20">
-                {loading ? "Processando..." : "Gerar QR Code PIX"}
-              </button>
-            </form>
-          </section>
-        )}
-
-        {stage === "paying" && (
-          <section className="rounded-[3rem] border border-[#4c0519]/5 bg-white p-10 text-center shadow-[0_40px_80px_-15px_rgba(76,5,25,0.12)]">
-            <p className="text-[10px] font-bold uppercase tracking-[0.25em] text-[#4c0519]/40">Total a Transferir</p>
-            <div className="mt-3 text-5xl font-bold tracking-tight text-[#4c0519]">{formatBRL(charge.amount_cents)}</div>
-            
-            <div className="mt-10 flex justify-center">
-                <div className="rounded-[2.5rem] border border-[#4c0519]/5 bg-white p-3.5 shadow-xl transition-all hover:scale-[1.02] duration-500">
-                    {(charge.qr_code_image || generatedQr) ? (
-                      <img src={charge.qr_code_image || generatedQr} alt="QR Code" className="h-48 w-48 rounded-2xl sm:h-56 sm:w-56" />
-                    ) : (
-                      <div className="h-48 w-48 sm:h-56 sm:w-56 animate-pulse bg-zinc-50 rounded-2xl" />
-                    )}
-                </div>
-            </div>
-
-            <div className="mt-12 space-y-4">
-              <button
-                onClick={copyPix}
-                className={`flex w-full h-16 items-center justify-center gap-3 rounded-2xl text-[11px] font-bold uppercase tracking-[0.25em] transition-all active:scale-[0.98] shadow-lg ${
-                  copied ? "bg-emerald-500 text-white shadow-emerald-500/10" : "bg-[#e11d48] text-white hover:bg-[#881337] shadow-[#e11d48]/20"
-                }`}
+          {stage === "paying" && (
+            <motion.section 
+              key="paying"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              className="rounded-[3.5rem] border border-white bg-white/80 p-10 text-center shadow-[0_60px_120px_-20px_rgba(76,5,25,0.12)] backdrop-blur-3xl"
+            >
+              <p className="text-[11px] font-bold uppercase tracking-[0.3em] text-[#e11d48]">Total a Transferir</p>
+              <motion.div 
+                layoutId="amount"
+                className="mt-4 text-6xl font-bold tracking-tight text-[#4c0519]"
               >
-                {copied ? "Código Copiado!" : <><CopyIcon /> Copiar Código PIX</>}
-              </button>
+                {formatBRL(charge.amount_cents)}
+              </motion.div>
               
-              <div className="flex items-center justify-center gap-2.5 text-[9px] font-bold uppercase tracking-wider text-[#4c0519]/30 py-2">
-                <div className="h-1.5 w-1.5 rounded-full bg-amber-500 animate-pulse" />
-                <ClockIcon /> Aguardando Confirmação em Tempo Real
+              <div className="mt-12 flex justify-center relative">
+                  <div className="absolute inset-0 bg-rose-100/20 blur-3xl rounded-full scale-150" />
+                  <motion.div 
+                    whileHover={{ scale: 1.05, rotate: 1 }}
+                    className="relative rounded-[2.8rem] border border-white bg-white p-5 shadow-2xl transition-all duration-500"
+                  >
+                      {(charge.qr_code_image || generatedQr) ? (
+                        <div className="relative">
+                            <img src={charge.qr_code_image || generatedQr} alt="QR Code" className="h-52 w-52 rounded-[2rem] sm:h-64 sm:w-64" />
+                            <motion.div 
+                                animate={{ top: ['0%', '100%', '0%'] }}
+                                transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
+                                className="absolute left-0 right-0 h-1 bg-[#e11d48]/20 blur-sm pointer-events-none"
+                            />
+                        </div>
+                      ) : (
+                        <div className="h-52 w-52 sm:h-64 sm:w-64 animate-pulse bg-rose-50/50 rounded-[2rem]" />
+                      )}
+                  </motion.div>
               </div>
-            </div>
-          </section>
-        )}
 
-        {stage === "success" && (
-          <section className="rounded-[3rem] border border-[#4c0519]/5 bg-white p-10 text-center shadow-[0_40px_80px_-15px_rgba(76,5,25,0.12)]">
-            <div className="mx-auto flex h-24 w-24 items-center justify-center rounded-full bg-emerald-50 text-emerald-500 shadow-sm border border-emerald-100">
-              <svg className="h-12 w-12" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M5 13l4 4L19 7" />
-              </svg>
-            </div>
-            <h1 className="mt-8 text-3xl font-bold tracking-tight text-[#4c0519]">Pagamento Realizado</h1>
-            <p className="mt-3 text-[#4c0519]/60 text-sm font-medium">Obrigado. Sua transferência foi confirmada.</p>
-            
-            <div className="mt-10 space-y-4 text-left">
-              <div className="flex justify-between border-b border-[#4c0519]/5 pb-4 text-sm">
-                <span className="text-[#4c0519]/30 uppercase text-[10px] font-bold tracking-wider">Valor</span>
-                <span className="font-bold text-[#4c0519] tracking-tight">{formatBRL(charge.amount_cents)}</span>
+              <div className="mt-12 space-y-5">
+                <motion.button
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  onClick={copyPix}
+                  className={`flex w-full h-16 items-center justify-center gap-3 rounded-[1.5rem] text-[12px] font-bold uppercase tracking-[0.25em] transition-all shadow-2xl ${
+                    copied ? "bg-emerald-500 text-white shadow-emerald-500/20" : "bg-[#e11d48] text-white shadow-[#e11d48]/20"
+                  }`}
+                >
+                  {copied ? "Código Copiado!" : <><CopyIcon /> Copiar Código PIX</>}
+                </motion.button>
+                
+                <div className="flex items-center justify-center gap-3 text-[10px] font-bold uppercase tracking-wider text-[#4c0519]/30 py-3 bg-[#fcfcfc]/50 rounded-2xl">
+                  <div className="h-1.5 w-1.5 rounded-full bg-amber-500 animate-pulse" />
+                  <ClockIcon className="h-3.5 w-3.5" /> <span>Aguardando Confirmação Instantânea</span>
+                </div>
               </div>
-              <div className="flex justify-between border-b border-[#4c0519]/5 pb-4 text-sm">
-                <span className="text-[#4c0519]/30 uppercase text-[10px] font-bold tracking-wider">Favorecido</span>
-                <span className="font-bold text-[#4c0519] tracking-tight">{profile.full_name}</span>
+            </motion.section>
+          )}
+
+          {stage === "success" && (
+            <motion.section 
+              key="success"
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              className="rounded-[3.5rem] border border-white bg-white/80 p-12 text-center shadow-[0_60px_120px_-20px_rgba(76,5,25,0.12)] backdrop-blur-3xl"
+            >
+              <motion.div 
+                initial={{ scale: 0 }}
+                animate={{ scale: 1 }}
+                transition={{ type: "spring", damping: 12 }}
+                className="mx-auto flex h-24 w-24 items-center justify-center rounded-[2rem] bg-emerald-50 text-emerald-500 shadow-sm border border-emerald-100 mb-8"
+              >
+                <svg className="h-12 w-12" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M5 13l4 4L19 7" />
+                </svg>
+              </motion.div>
+              <h1 className="text-3xl font-bold tracking-tight text-[#4c0519]">Pagamento Realizado</h1>
+              <p className="mt-3 text-[#4c0519]/60 text-sm font-medium">Sua transferência foi confirmada com sucesso.</p>
+              
+              <div className="mt-12 space-y-5 text-left">
+                <div className="flex justify-between border-b border-[#4c0519]/5 pb-5 text-[13px]">
+                  <span className="text-[#4c0519]/30 uppercase text-[10px] font-bold tracking-wider">Valor Transferido</span>
+                  <span className="font-bold text-[#4c0519] tracking-tight">{formatBRL(charge.amount_cents)}</span>
+                </div>
+                <div className="flex justify-between border-b border-[#4c0519]/5 pb-5 text-[13px]">
+                  <span className="text-[#4c0519]/30 uppercase text-[10px] font-bold tracking-wider">Recebedor</span>
+                  <span className="font-bold text-[#4c0519] tracking-tight">{profile.full_name}</span>
+                </div>
               </div>
-            </div>
-            <p className="mt-10 text-[9px] font-bold uppercase tracking-widest text-[#4c0519]/20">Esta página já pode ser fechada.</p>
-          </section>
-        )}
+              <p className="mt-12 text-[10px] font-bold uppercase tracking-widest text-[#4c0519]/20">Esta página já pode ser fechada com segurança.</p>
+            </motion.section>
+          )}
+        </AnimatePresence>
 
         <footer className="mt-16 text-center opacity-40">
-             <div className="h-[1px] w-12 bg-[#4c0519]/10 mx-auto mb-6" />
-             <p className="text-[8px] font-bold uppercase tracking-[0.4em] text-[#4c0519]/40">
-                CLOUDEPAY NETWORK · SECURE TRANSACTION
-            </p>
+             <div className="h-[1px] w-16 bg-gradient-to-r from-transparent via-[#4c0519]/10 to-transparent mx-auto mb-8" />
+             <div className="flex items-center justify-center gap-4">
+                <span className="text-[9px] font-bold uppercase tracking-[0.4em] text-[#4c0519]">Luxus Financial</span>
+                <span className="w-1 h-1 rounded-full bg-[#4c0519]/20" />
+                <span className="text-[9px] font-bold uppercase tracking-[0.4em] text-[#4c0519]">CloudePay Network</span>
+             </div>
         </footer>
       </div>
     </main>
