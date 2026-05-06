@@ -186,97 +186,104 @@ export default function FixedQRCode() {
 
   if (stage === "loading") {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-[#000000]">
-        <div className="h-10 w-10 border-2 border-white/5 border-t-white rounded-full animate-spin" />
+      <div className="flex min-h-screen items-center justify-center bg-[#fcfcfc]">
+        <div className="h-10 w-10 border-2 border-[#e11d48]/5 border-t-[#e11d48] rounded-full animate-spin" />
       </div>
     );
   }
 
   if (stage === "notfound") {
     return (
-      <div className="flex min-h-screen flex-col items-center justify-center bg-[#000000] p-6 text-center">
-        <div className="mb-8 opacity-20"><Logo variant="light" /></div>
-        <h1 className="text-xl font-bold text-white tracking-tight">Vendedor Não Localizado</h1>
-        <p className="mt-3 text-sm text-zinc-500 max-w-[280px]">O link pode estar incorreto ou a conta foi desativada.</p>
-        <Link to="/" className="mt-10 text-[10px] font-black uppercase tracking-[0.3em] text-white/40 hover:text-white transition-colors">Voltar ao Início</Link>
+      <div className="flex min-h-screen flex-col items-center justify-center bg-[#fcfcfc] p-6 text-center">
+        <div className="mb-8 opacity-20"><Logo variant="dark" /></div>
+        <h1 className="text-xl font-bold text-[#4c0519] tracking-tight">Vendedor Não Localizado</h1>
+        <p className="mt-3 text-sm text-[#4c0519]/60 max-w-[280px]">O link pode estar incorreto ou a conta foi desativada.</p>
+        <Link to="/" className="mt-10 text-[10px] font-black uppercase tracking-[0.3em] text-[#4c0519]/40 hover:text-[#e11d48] transition-colors">Voltar ao Início</Link>
       </div>
     );
   }
 
   return (
-    <main className="min-h-screen bg-[#000000] text-white antialiased flex flex-col items-center py-10 px-4">
-      <div className="w-full max-w-md animate-in fade-in slide-in-from-bottom-4 duration-1000">
+    <main className="min-h-screen bg-[#fcfcfc] text-[#4c0519] antialiased flex flex-col items-center py-10 px-4 relative overflow-hidden">
+      {/* Background Orbs & Patterns */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute -top-[10%] -left-[5%] h-[50%] w-[50%] rounded-full bg-rose-100/50 blur-[100px]" />
+        <div className="absolute -bottom-[10%] -right-[5%] h-[50%] w-[50%] rounded-full bg-rose-50/50 blur-[100px]" />
+        <div className="absolute inset-0 opacity-[0.03] bg-[radial-gradient(#e11d48_1px,transparent_1px)] [background-size:24px_24px]" />
+      </div>
+
+      <div className="w-full max-w-md relative z-10 animate-in fade-in slide-in-from-bottom-4 duration-1000">
         <div className="mb-12 flex flex-col items-center text-center">
-          <Logo variant="light" />
-          <div className="mt-6 flex items-center gap-2 rounded-full border border-white/[0.05] bg-white/[0.02] px-4 py-1.5 text-[9px] font-black uppercase tracking-[0.2em] text-zinc-400">
+          <Logo variant="dark" />
+          <div className="mt-6 flex items-center gap-2 rounded-full border border-[#e11d48]/10 bg-white/60 px-4 py-1.5 text-[9px] font-bold uppercase tracking-wider text-[#e11d48] backdrop-blur-sm shadow-sm">
             <ShieldIcon /> Gateway de Pagamento Seguro
           </div>
         </div>
 
         {stage === "form" && (
-          <section className="rounded-[3rem] border border-white/[0.05] bg-[#050505] p-8 shadow-2xl backdrop-blur-xl">
-            <div className="mb-8 text-center">
-                <div className="mx-auto h-20 w-20 overflow-hidden rounded-[1.5rem] border border-white/[0.1] bg-white/[0.02] mb-4">
+          <section className="rounded-[3rem] border border-[#4c0519]/5 bg-white p-8 shadow-[0_40px_80px_-15px_rgba(76,5,25,0.12)]">
+            <div className="mb-10 text-center">
+                <div className="mx-auto h-20 w-20 overflow-hidden rounded-[1.8rem] border border-[#4c0519]/5 bg-[#fcfcfc] mb-5 shadow-sm p-1">
                     {profile?.avatar_url ? (
-                        <img src={profile.avatar_url} alt="Logo" className="h-full w-full object-cover" />
+                        <img src={profile.avatar_url} alt="Logo" className="h-full w-full object-cover rounded-[1.5rem]" />
                     ) : (
-                        <div className="flex h-full w-full items-center justify-center text-white">
-                            <UserIcon className="h-10 w-10" />
+                        <div className="flex h-full w-full items-center justify-center text-[#e11d48]">
+                            <UserIcon className="h-10 w-10 opacity-20" />
                         </div>
                     )}
                 </div>
-              <h1 className="text-2xl font-bold tracking-tight text-white">{profile.full_name}</h1>
-              <p className="mt-1 text-sm text-zinc-500">{profile.service_name || "Profissional Verificado"}</p>
+              <h1 className="text-2xl font-bold tracking-tight text-[#4c0519]">{profile.full_name}</h1>
+              <p className="mt-1 text-sm text-[#4c0519]/40 font-medium tracking-tight">{profile.service_name || "Profissional Verificado"}</p>
             </div>
 
-            <form onSubmit={handleSubmit} className="space-y-5">
+            <form onSubmit={handleSubmit} className="space-y-6">
               <Field label="Quanto você quer pagar?" id="f-amount">
-                <input className="auth-input text-3xl font-bold tracking-tighter !bg-white/[0.02] border-white/[0.05] focus:border-white/20 transition-all" placeholder="R$ 0,00" value={amount} onChange={e => setAmount(maskBRLInput(e.target.value))} required />
+                <input className="auth-input text-3xl font-bold tracking-tighter !bg-[#fcfcfc] border-[#4c0519]/5 focus:border-[#e11d48]/20 transition-all text-[#4c0519]" placeholder="R$ 0,00" value={amount} onChange={e => setAmount(maskBRLInput(e.target.value))} required />
               </Field>
               
               <div className="space-y-4">
                 <Field label="Seu Nome Completo" id="f-name">
-                    <input className="auth-input !bg-white/[0.01] border-white/[0.05]" placeholder="Nome do pagador" value={payerName} onChange={e => setPayerName(e.target.value)} required />
+                    <input className="auth-input !bg-[#fcfcfc] border-[#4c0519]/5 text-[#4c0519]" placeholder="Nome do pagador" value={payerName} onChange={e => setPayerName(e.target.value)} required />
                 </Field>
                 
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <Field label="Seu CPF" id="f-cpf">
-                    <input className="auth-input !bg-white/[0.01] border-white/[0.05]" placeholder="000.000.000-00" value={payerCpf} onChange={e => setPayerCpf(maskCPFInput(e.target.value))} required />
+                    <input className="auth-input !bg-[#fcfcfc] border-[#4c0519]/5 text-[#4c0519]" placeholder="000.000.000-00" value={payerCpf} onChange={e => setPayerCpf(maskCPFInput(e.target.value))} required />
                     </Field>
                     <Field label="Seu Melhor Email" id="f-email">
-                    <input className="auth-input !bg-white/[0.01] border-white/[0.05]" placeholder="seu@email.com" value={payerEmail} onChange={e => setPayerEmail(e.target.value)} required />
+                    <input className="auth-input !bg-[#fcfcfc] border-[#4c0519]/5 text-[#4c0519]" placeholder="seu@email.com" value={payerEmail} onChange={e => setPayerEmail(e.target.value)} required />
                     </Field>
                 </div>
 
-                <Field label="Descrição da Transferência (Opcional)" id="f-desc">
-                    <input className="auth-input !bg-white/[0.01] border-white/[0.05]" placeholder="Ex: Pagamento serviço" value={description} onChange={e => setDescription(e.target.value)} />
+                <Field label="Descrição (Opcional)" id="f-desc">
+                    <input className="auth-input !bg-[#fcfcfc] border-[#4c0519]/5 text-[#4c0519]" placeholder="Ex: Pagamento serviço" value={description} onChange={e => setDescription(e.target.value)} />
                 </Field>
               </div>
 
               {error && (
-                <div className="p-4 rounded-2xl bg-red-500/10 border border-red-500/20 text-red-500 text-[10px] font-black uppercase tracking-widest text-center">
+                <div className="p-4 rounded-2xl bg-red-50 border border-red-100 text-red-500 text-[10px] font-bold uppercase tracking-widest text-center">
                     {error}
                 </div>
               )}
 
-              <button type="submit" disabled={loading} className="w-full h-16 rounded-2xl bg-white text-black text-xs font-black uppercase tracking-[0.2em] transition-all hover:bg-zinc-200 active:scale-[0.98] mt-4">
-                {loading ? "Processando Requisição..." : "Gerar QR Code PIX"}
+              <button type="submit" disabled={loading} className="w-full h-16 rounded-2xl bg-[#e11d48] text-white text-[11px] font-bold uppercase tracking-[0.25em] transition-all hover:bg-[#881337] active:scale-[0.98] mt-4 shadow-lg shadow-[#e11d48]/20">
+                {loading ? "Processando..." : "Gerar QR Code PIX"}
               </button>
             </form>
           </section>
         )}
 
         {stage === "paying" && (
-          <section className="rounded-[3rem] border border-white/[0.05] bg-[#050505] p-10 text-center shadow-2xl backdrop-blur-xl">
-            <p className="text-[10px] font-black uppercase tracking-[0.3em] text-zinc-600">Total a Transferir</p>
-            <div className="mt-3 text-5xl font-bold tracking-tighter text-white">{formatBRL(charge.amount_cents)}</div>
+          <section className="rounded-[3rem] border border-[#4c0519]/5 bg-white p-10 text-center shadow-[0_40px_80px_-15px_rgba(76,5,25,0.12)]">
+            <p className="text-[10px] font-bold uppercase tracking-[0.25em] text-[#4c0519]/40">Total a Transferir</p>
+            <div className="mt-3 text-5xl font-bold tracking-tight text-[#4c0519]">{formatBRL(charge.amount_cents)}</div>
             
             <div className="mt-10 flex justify-center">
-                <div className="rounded-[2.5rem] border border-white/[0.08] bg-white p-3.5 shadow-[0_0_60px_rgba(255,255,255,0.05)]">
+                <div className="rounded-[2.5rem] border border-[#4c0519]/5 bg-white p-3.5 shadow-xl transition-all hover:scale-[1.02] duration-500">
                     {(charge.qr_code_image || generatedQr) ? (
                       <img src={charge.qr_code_image || generatedQr} alt="QR Code" className="h-48 w-48 rounded-2xl sm:h-56 sm:w-56" />
                     ) : (
-                      <div className="h-48 w-48 sm:h-56 sm:w-56 animate-pulse bg-zinc-100 rounded-2xl" />
+                      <div className="h-48 w-48 sm:h-56 sm:w-56 animate-pulse bg-zinc-50 rounded-2xl" />
                     )}
                 </div>
             </div>
@@ -284,14 +291,14 @@ export default function FixedQRCode() {
             <div className="mt-12 space-y-4">
               <button
                 onClick={copyPix}
-                className={`flex w-full h-16 items-center justify-center gap-3 rounded-2xl text-xs font-black uppercase tracking-[0.2em] transition-all active:scale-[0.98] ${
-                  copied ? "bg-emerald-500 text-white" : "bg-white text-black hover:bg-zinc-200"
+                className={`flex w-full h-16 items-center justify-center gap-3 rounded-2xl text-[11px] font-bold uppercase tracking-[0.25em] transition-all active:scale-[0.98] shadow-lg ${
+                  copied ? "bg-emerald-500 text-white shadow-emerald-500/10" : "bg-[#e11d48] text-white hover:bg-[#881337] shadow-[#e11d48]/20"
                 }`}
               >
                 {copied ? "Código Copiado!" : <><CopyIcon /> Copiar Código PIX</>}
               </button>
               
-              <div className="flex items-center justify-center gap-2.5 text-[9px] font-black uppercase tracking-[0.3em] text-zinc-700 py-2">
+              <div className="flex items-center justify-center gap-2.5 text-[9px] font-bold uppercase tracking-wider text-[#4c0519]/30 py-2">
                 <div className="h-1.5 w-1.5 rounded-full bg-amber-500 animate-pulse" />
                 <ClockIcon /> Aguardando Confirmação em Tempo Real
               </div>
@@ -300,32 +307,33 @@ export default function FixedQRCode() {
         )}
 
         {stage === "success" && (
-          <section className="rounded-[3rem] border border-white/[0.05] bg-white/[0.01] p-10 text-center shadow-2xl backdrop-blur-xl">
-            <div className="mx-auto flex h-24 w-24 items-center justify-center rounded-full bg-emerald-500/10 text-emerald-500 shadow-[0_0_50px_rgba(16,185,129,0.1)]">
+          <section className="rounded-[3rem] border border-[#4c0519]/5 bg-white p-10 text-center shadow-[0_40px_80px_-15px_rgba(76,5,25,0.12)]">
+            <div className="mx-auto flex h-24 w-24 items-center justify-center rounded-full bg-emerald-50 text-emerald-500 shadow-sm border border-emerald-100">
               <svg className="h-12 w-12" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M5 13l4 4L19 7" />
               </svg>
             </div>
-            <h1 className="mt-8 text-3xl font-bold tracking-tight text-white">Pagamento Realizado</h1>
-            <p className="mt-3 text-zinc-500 text-sm">Obrigado. Sua transferência foi confirmada.</p>
+            <h1 className="mt-8 text-3xl font-bold tracking-tight text-[#4c0519]">Pagamento Realizado</h1>
+            <p className="mt-3 text-[#4c0519]/60 text-sm font-medium">Obrigado. Sua transferência foi confirmada.</p>
             
-            <div className="mt-10 space-y-3 text-left">
-              <div className="flex justify-between border-b border-white/[0.05] pb-4 text-sm">
-                <span className="text-zinc-600 uppercase text-[10px] font-black tracking-widest">Valor</span>
-                <span className="font-bold text-white tracking-tight">{formatBRL(charge.amount_cents)}</span>
+            <div className="mt-10 space-y-4 text-left">
+              <div className="flex justify-between border-b border-[#4c0519]/5 pb-4 text-sm">
+                <span className="text-[#4c0519]/30 uppercase text-[10px] font-bold tracking-wider">Valor</span>
+                <span className="font-bold text-[#4c0519] tracking-tight">{formatBRL(charge.amount_cents)}</span>
               </div>
-              <div className="flex justify-between border-b border-white/[0.05] pb-4 text-sm">
-                <span className="text-zinc-600 uppercase text-[10px] font-black tracking-widest">Favorecido</span>
-                <span className="font-bold text-white tracking-tight">{profile.full_name}</span>
+              <div className="flex justify-between border-b border-[#4c0519]/5 pb-4 text-sm">
+                <span className="text-[#4c0519]/30 uppercase text-[10px] font-bold tracking-wider">Favorecido</span>
+                <span className="font-bold text-[#4c0519] tracking-tight">{profile.full_name}</span>
               </div>
             </div>
-            <p className="mt-10 text-[9px] font-black uppercase tracking-[0.2em] text-zinc-700">Esta página já pode ser fechada.</p>
+            <p className="mt-10 text-[9px] font-bold uppercase tracking-widest text-[#4c0519]/20">Esta página já pode ser fechada.</p>
           </section>
         )}
 
-        <footer className="mt-16 text-center">
-            <p className="text-[9px] font-black uppercase tracking-[0.4em] text-zinc-800">
-                Luxus Financial Technology • CloudePay Network
+        <footer className="mt-16 text-center opacity-40">
+             <div className="h-[1px] w-12 bg-[#4c0519]/10 mx-auto mb-6" />
+             <p className="text-[8px] font-bold uppercase tracking-[0.4em] text-[#4c0519]/40">
+                CLOUDEPAY NETWORK · SECURE TRANSACTION
             </p>
         </footer>
       </div>
