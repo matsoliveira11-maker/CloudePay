@@ -523,7 +523,7 @@ function SalesHistory({ charges }: { charges: Charge[] }) {
               <table className="w-full">
                 <thead>
                   <tr style={{ borderBottom: "1px solid #fce4ec" }}>
-                    {["Serviço / Cliente", "Data", "Status", "Bruto", "Taxa (1%)", "Líquido"].map(h => (
+                    {["Serviço / Cliente", "Data", "Status", "Bruto", "Taxa (2%)", "Líquido"].map(h => (
                       <th key={h} className="text-left px-6 py-3 text-[10px] font-semibold uppercase tracking-[0.12em] text-[#8c8c8c]">
                         {h}
                       </th>
@@ -562,14 +562,14 @@ function StatusDot({ status }: { status: string }) {
 }
 
 function MobileRow({ charge: c }: { charge: Charge }) {
-  const net = (c.amount_cents / 100) * 0.99;
+  const netCents = c.net_amount_cents ?? (c.amount_cents * 0.98);
   return (
     <li className="flex items-center gap-4 px-5 py-4 hover:bg-[#f8f7f5] transition-all">
       <Avatar name={c.payer_name || "CF"} />
       <div className="flex-1 min-w-0">
         <div className="flex items-center justify-between gap-2">
           <p className="text-[14px] font-bold text-[#1a1a2e] truncate tracking-tight">{c.service_name}</p>
-          <p className="text-[14px] font-bold text-[#1a1a2e] num whitespace-nowrap">{formatBRL(net * 100)}</p>
+          <p className="text-[14px] font-bold text-[#1a1a2e] num whitespace-nowrap">{formatBRL(netCents)}</p>
         </div>
         <div className="flex items-center justify-between mt-1">
           <p className="text-[12px] text-[#8c8c8c] font-medium">{c.payer_name || "Cliente Final"} · {formatDate(c.created_at)}</p>
@@ -586,9 +586,9 @@ function MobileRow({ charge: c }: { charge: Charge }) {
 }
 
 function DesktopRow({ charge: c }: { charge: Charge }) {
-  const gross = c.amount_cents / 100;
-  const fee = gross * 0.01;
-  const net = gross - fee;
+  const gross = c.amount_cents;
+  const fee = Math.round(gross * 0.02);
+  const net = c.net_amount_cents ?? (gross - fee);
   const isIncoming = c.status === "paid";
 
   return (
@@ -610,7 +610,7 @@ function DesktopRow({ charge: c }: { charge: Charge }) {
         </span>
       </td>
       <td className="px-6 py-3 text-right text-[13px] text-[#5c5c6d] num">{formatBRL(c.amount_cents)}</td>
-      <td className="px-6 py-3 text-right text-[12px] text-[#8c8c8c] num">− {formatBRL(fee * 100)}</td>
+      <td className="px-6 py-3 text-right text-[12px] text-[#8c8c8c] num">− {formatBRL(fee)}</td>
       <td className="px-6 py-3 text-right">
         <div className="flex items-center justify-end gap-1">
           {isIncoming ? (
@@ -618,7 +618,7 @@ function DesktopRow({ charge: c }: { charge: Charge }) {
           ) : (
             <ArrowDownRight className="w-3.5 h-3.5 text-[#8c8c8c]" weight="bold" />
           )}
-          <span className="text-[13px] font-semibold text-[#1a1a2e] num">{formatBRL(net * 100)}</span>
+          <span className="text-[13px] font-semibold text-[#1a1a2e] num">{formatBRL(net)}</span>
         </div>
       </td>
     </tr>

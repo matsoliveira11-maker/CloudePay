@@ -687,14 +687,15 @@ export function generateDemoCharges(profile_id: string): Charge[] {
 
     const amount_cents = (Math.floor(Math.random() * 450) + 50) * 100; // R$ 50 a R$ 500
     const status: ChargeStatus = Math.random() > 0.3 ? "paid" : (Math.random() > 0.5 ? "pending" : "expired");
-    const fee_cents = Math.round(amount_cents * 0.01);
+    const fee_cents = Math.round(amount_cents * 0.01); // Nossa parte (1%)
+    const total_fee_cents = Math.round(amount_cents * 0.02); // Total (1% CP + 1% MP)
     
     charges.push({
       id: `demo_${i}`,
       profile_id,
       amount_cents,
-      fee_cents,
-      net_amount_cents: amount_cents - fee_cents,
+      fee_cents, // Registramos 1% como nossa receita
+      net_amount_cents: amount_cents - total_fee_cents, // O lojista recebe líquido de 2%
       service_name: services[Math.floor(Math.random() * services.length)],
       payer_name: names[Math.floor(Math.random() * names.length)],
       status,

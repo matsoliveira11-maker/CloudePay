@@ -628,7 +628,7 @@ function DashboardApp({ stats, charges }: { stats: any; charges: any[] }) {
         <div className="space-y-5">
             {/* KPIs */}
             <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
-                <KpiCard label="Receita (Taxas)" value={fmtBRL(revenue)} delta={0} icon={TrendUp} />
+                <KpiCard label="Receita CloudePay (1%)" value={fmtBRL(revenue)} delta={0} icon={TrendUp} />
                 <KpiCard label="Usuários cadastrados" value={String(users)} delta={0} icon={UsersFour} />
                 <KpiCard label="GMV Total" value={fmtBRL(gmv)} delta={0} icon={ChartBar} />
                 <KpiCard label="Conversão" value={`${conversion.toFixed(1)}%`} delta={0} icon={Pulse} />
@@ -984,7 +984,7 @@ function FinanceApp({ stats, charges }: { stats: any; charges: any[] }) {
     return (
         <div className="space-y-4">
             <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
-                <KpiCard label="Receita (Taxas)" value={fmtBRL(totalReceita)} delta={0} icon={TrendUp} />
+                <KpiCard label="Receita CloudePay (1%)" value={fmtBRL(totalReceita)} delta={0} icon={TrendUp} />
                 <KpiCard label="GMV Total" value={fmtBRL(gmv)} delta={0} icon={ChartBar} />
                 <KpiCard label="Conversão" value={`${conversao.toFixed(1)}%`} delta={0} icon={Pulse} />
                 <KpiCard label="Ticket Médio" value={fmtBRL(Math.round(ticketMedio))} delta={0} icon={Receipt} />
@@ -997,9 +997,9 @@ function FinanceApp({ stats, charges }: { stats: any; charges: any[] }) {
                         { key: "1", cells: ["Total de cobranças geradas", String(totalCharges)] },
                         { key: "2", cells: ["Cobranças pagas", String(paidCharges.length)] },
                         { key: "3", cells: ["Volume bruto processado (GMV)", fmtBRL(gmv)] },
-                        { key: "4", cells: ["Receita líquida (taxas)", fmtBRL(totalReceita)] },
-                        { key: "5", cells: ["Taxa aplicada", "2% por transação"] },
-                        { key: "6", cells: ["Ticket médio", fmtBRL(Math.round(ticketMedio))] },
+                        { key: "4", cells: ["Receita CloudePay (1%)", fmtBRL(totalReceita)] },
+                        { key: "5", cells: ["Taxa aplicada", "2% (1% CP + 1% MP)"] },
+                        { key: "6", cells: ["Ticket médio bruto", fmtBRL(Math.round(ticketMedio))] },
                     ]}
                 />
             </Panel>
